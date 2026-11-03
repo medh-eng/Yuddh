@@ -1,126 +1,53 @@
-# YUDDH — Rise of the Rajyas
+# YUDDH: Rise of the Rajyas
 
-A tactical card game of ancient India, in the tradition of WWII card games like KARDS: two
-capitals, one contested line between them, and a single treasury that has to pay for both
-your army and the orders that command it.
+A tactical card game of ancient India: Maurya, Gupta, Chalukya, Chola and Rajput armies fighting over one contested line, in the tradition of KARDS. Headed for the web and Google Play.
 
-Play it by opening **`index.html`** in any browser — no install, no build step, no network.
-It is one self-contained file, so it also works offline and from a phone.
+**Play:** https://medh-eng.github.io/Yuddh/ (the original prototype is at `/prototype/`).
 
----
+## Where the project stands
 
-## What is in it
-
-- **Nine single-player missions** — a guided tutorial, then eight historical situations from
-  the Mauryan rise to the Deccan wars. Fixed decks, fixed situations, three kinds of objective
-  (break the Durg, survive N turns, win before a deadline).
-- **Five playable empires** — Maurya, Gupta, Chalukya, Chola, Rajput — each with its own passive
-  and card pool, plus a neutral mercenary pool.
-- **50 cards** across four types: Units, Mantras (one-shot orders), **Yantras** (defence cards set
-  face down that spring on the enemy's turn) and **Shakti** (expensive power cards).
-- **Meta progression** — battles pay *Kirti*, which buys permanent upgrades. A unit gains +1/+1 per
-  level; a Mantra, Yantra or Shakti costs 1 less Kosha per level. Two levels per card, saved in
-  the browser.
-- **Skirmish** — any empire, any ally, three AI levels, with your upgrades applied.
-- **Procedural everything** — card art is SVG generated from each card's identity, sound effects
-  and the music bed are synthesised with the Web Audio API. No image or audio files at all, which
-  is why the whole game is one 134 KB file.
-
-## The rules in one page
-
-**The board.** Each side has a **Rajya** line (four units) where their Durg — the capital — sits,
-and a shared **Yudhbhumi** that only one side can hold at a time. Units in your Rajya can only
-strike enemy units standing in the Yudhbhumi; that is how you break an enemy's hold on it. To
-reach the enemy Durg or their rear line, a unit must spend Kosha to **advance** into the
-Yudhbhumi.
-
-**Kosha.** Every card has a deployment cost. Every move and every attack costs that unit's
-**operation cost** again. The treasury grows by one each turn (maximum 12) and refills at the
-start of your turn. Over-extend and you own an army you cannot afford to command.
-
-**Combat.** Melee attackers take a counter-blow; ranged attackers do not. A Durg can only be
-attacked from the Yudhbhumi.
-
-**Keywords.** *Vega* — acts the turn it arrives. *Raksha* — enemy attacks in that line must hit
-it first (it shields units, not your Durg). *Dhuan* — cannot be attacked until it attacks.
-
-**Card types.** *Units* fight. *Mantras* resolve immediately. *Yantras* are set face down (two at
-a time) and spring automatically — Vighna destroys a unit as it is deployed, Kavach prevents 4
-damage to your Durg, Pratikar punishes any unit that attacks yours. *Shakti* are the decisive
-strokes: Agni Baan, Chakravyuha, Ashwamedha.
-
-## The chronicle
-
-| # | Mission | Place | Year | Objective |
-|---|---------|-------|------|-----------|
-| 0 | The Training Ground | Magadha | tutorial | Break the Durg |
-| 1 | The First Throne | Pataliputra | c. 321 BCE | Break the Durg |
-| 2 | The Indus Line | the Indus | c. 305 BCE | Break the Durg |
-| 3 | The Golden Age | Ujjain | 4th c. CE | Break the Durg |
-| 4 | Pulakeshin's Stand | the Narmada | c. 620 CE | Survive 9 turns |
-| 5 | The Sea Road | Thanjavur | c. 1014 CE | Break the Durg |
-| 6 | Prithviraj's Charge | Tarain | 1191 CE | Break the Durg in 12 turns |
-| 7 | The Burning Library | Nalanda | c. 8th c. CE | Break the Durg |
-| 8 | Samrat | the Deccan | c. 1160 CE | Break the Durg |
+| Phase | What | Status |
+| --- | --- | --- |
+| 0 | Foundation: TypeScript engine, PixiJS renderer, automatic publishing | Done |
+| 1 | The Look: one battle (Maurya against the Nandas) at KARDS quality | Next. Waiting on the first 20 card paintings ([prompts](art/PROMPTS-PHASE1.md)) |
+| 2 | Deeper war: formations, promotion, elephant rampage, morale, terrain, Dharma–Kuta, heroes, new AI | |
+| 3 | Itihasa campaigns, Digvijaya conquest mode, Chanakya's Puzzles | |
+| 4 | Collection, deck builder, Kirti crafting | |
+| 5 | Polish, Hindi and Marathi, Google Play release | |
 
 ## Project layout
 
 ```
-index.html          the built game (single file, committed so Pages works)
-src/engine.js       rules engine: cards, board, legality, actions, AI, events
-src/campaign.js     the nine missions, their decks, objectives and scripted hands
-src/meta.js         Kirti, upgrades, saved progress
-src/art.js          procedural SVG card art and battlefield backdrop
-src/audio.js        procedural Web Audio sound effects and music
-src/template.html   the interface (screens, board, animations, codex)
-src/build.js        concatenates src/ into index.html
-test/               engine tests: card mechanics, mission balance, AI levels
+src/engine/        rules engine: types, card data, rules, AI (no screen code)
+src/campaign/      the prototype's nine missions
+src/meta/          Kirti and per-card upgrades (saved in the browser)
+src/game/          PixiJS renderer: stage, theme, scenes, card view
+src/assets/        art manifest (which cards have paintings)
+art/               prompt sheets; masters go in art/source/ (not committed)
+scripts/           convert-assets.mjs: masters → small WebP game files
+tests/             rules tests and the golden-trace test
+legacy/            Sarwam's prototype source and tests, unchanged
+public/prototype/  the prototype build, still playable
 ```
 
-Rebuild after editing anything in `src/`:
+## Commands
 
 ```bash
-node src/build.js
+npm install
+npm run dev        # play locally with live reload
+npm test           # rules tests + golden traces
+npm run build      # typecheck and build to dist/
+npm run assets     # convert art/source/* into public/assets/*
 ```
 
-## Testing
+## The golden-trace test
 
-The rules engine is deliberately free of DOM code, so it can be simulated headlessly:
+`legacy/golden.cjs` plays 154 seeded games (every empire pairing at every AI level, plus all nine missions) with the prototype engine and records each result. `tests/golden.test.ts` replays them on the TypeScript engine and requires identical winners, turn counts, logs and final boards. Re-record with `npm run golden` only when a rule is changed on purpose.
 
-```bash
-node test/yantra-test.js     # 8 mechanics assertions: yantras, shakti, upgrades, events
-node test/mission-test.js    # 60 AI-played games per mission, prints win rates
-node test/ai-check.js        # AI difficulty levels head to head
-```
+## Rules in brief
 
-Current mission win rates, with the AI playing the player's side:
+Each side has a **Rajya** line (four units) where its **Durg** (capital) sits, and both share the **Yudhbhumi**, which only one side can hold. **Kosha** (the treasury) pays both to deploy a card and to move or attack with a unit. It grows by one each turn, up to 12. A Durg can only be attacked from the Yudhbhumi. Keywords: *Vega* (acts at once), *Raksha* (guard), *Dhuan* (smokescreen). Card types: Units, Mantras (orders), Yantras (face-down traps), Shakti (power orders).
 
-| Mission | Win rate |
-|---|---|
-| Tutorial / The First Throne | 100% (they are meant to be won) |
-| The Indus Line / The Golden Age | 42–47% |
-| Pulakeshin's Stand / The Sea Road | 62–65% |
-| Prithviraj's Charge / The Burning Library | 55–57% |
-| Samrat | 37% |
+## Credits
 
-## Known limitations
-
-- **Skirmish balance is not tight.** Across a round robin the empires land between roughly 40%
-  and 68% — Gupta is currently the strongest. The campaign is unaffected because its decks are
-  fixed.
-- **The AI is heuristic, not searching.** Three levels exist, but "Untried" is the only one that
-  is clearly weaker; the other two play about evenly. Mission difficulty comes from the
-  situation, not from a deeper opponent.
-- **No network play, no accounts, no monetisation** — it is a single-player game by design.
-
-## Roadmap ideas
-
-1. More missions — the engine already supports any scenario, objective and scripted opening hand.
-2. A genuinely stronger AI (search over the attack sequence rather than heuristics).
-3. Deck building for skirmish, so the card pool becomes a toy rather than a fixed list.
-4. Better art: the procedural motifs are a stand-in for real illustrations.
-
-## Licence
-
-No licence file is included, which means the default is all rights reserved. If you want others
-to reuse it, add a `LICENSE` (MIT is the usual choice for a project like this).
+Prototype engine, campaign and tests by Sarwam and Pon. New engine and renderer built with Claude.

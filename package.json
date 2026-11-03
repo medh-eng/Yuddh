@@ -1,0 +1,27 @@
+{
+  "name": "yuddh",
+  "private": true,
+  "version": "0.2.0",
+  "description": "YUDDH: Rise of the Rajyas — a tactical card game of ancient India",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "assets": "node scripts/convert-assets.mjs",
+    "golden": "node legacy/golden.cjs tests/golden/traces.json"
+  },
+  "dependencies": {
+    "gsap": "3.15.0",
+    "pixi.js": "8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "sharp": "^0.34.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "vitest": "5.1.0"
+  }
+}
