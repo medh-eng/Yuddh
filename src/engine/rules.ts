@@ -391,7 +391,17 @@ function applyOrder(st: GameState, pIdx: PlayerIndex, cardId: string, target?: T
 }
 
 /* ---------------- actions ---------------- */
+/** Observers called after every successful action — the renderer uses
+    this to replay the computer's turn one step at a time. */
+export const actionObservers = new Set<(st: GameState, action: Action) => void>();
+
 export function applyAction(st: GameState, action: Action): Check {
+  const res = applyActionCore(st, action);
+  if (res.ok && actionObservers.size) actionObservers.forEach(fn => fn(st, action));
+  return res;
+}
+
+function applyActionCore(st: GameState, action: Action): Check {
   if (st.over) return { ok: false, reason: 'Game over' };
   const pIdx = st.active;
   const p = st.players[pIdx];

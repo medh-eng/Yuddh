@@ -7,7 +7,7 @@ import { lampGlow, teak, vignette } from '../textures';
 import { makeButton } from '../ui/button';
 import type { Scene } from '../stage';
 
-export function titleScene(go: { preview(): void; prototype(): void }): Scene {
+export function titleScene(go: { battle(): void; preview(): void; prototype(): void }): Scene {
   const s: Scene = new Container();
   const cx = DESIGN_W / 2;
 
@@ -39,13 +39,15 @@ export function titleScene(go: { preview(): void; prototype(): void }): Scene {
     .poly([cx, 572, cx + 8, 580, cx, 588, cx - 8, 580]).fill(INK.gold);
   s.addChild(deva, title, sub, rule);
 
-  const b1 = makeButton('Battle preview', go.preview, { primary: true, w: 380 });
-  b1.position.set(cx, 690);
-  const b2 = makeButton('Play the prototype', go.prototype, { w: 380 });
-  b2.position.set(cx, 776);
-  s.addChild(b1, b2);
+  const b1 = makeButton('To battle', go.battle, { primary: true, w: 400 });
+  b1.position.set(cx, 680);
+  const b2 = makeButton('Watch two generals', go.preview, { w: 400 });
+  b2.position.set(cx, 766);
+  const b3 = makeButton('Play the prototype', go.prototype, { w: 400 });
+  b3.position.set(cx, 852);
+  s.addChild(b1, b2, b3);
 
-  const note = new Text({ text: 'Phase 0 build · the new engine is live; the painted look arrives in Phase 1', style: { fontFamily: FONT_SERIF, fontSize: 20, fontStyle: 'italic', fill: INK.smoke } });
+  const note = new Text({ text: 'Phase 1 build · The First Throne, Pataliputra, c. 321 BCE', style: { fontFamily: FONT_SERIF, fontSize: 20, fontStyle: 'italic', fill: INK.smoke } });
   note.anchor.set(0.5); note.position.set(cx, 1010);
   s.addChild(note);
 
@@ -74,7 +76,7 @@ export function titleScene(go: { preview(): void; prototype(): void }): Scene {
   s.enter = () => {
     Ticker.shared.add(tick);
     gsap.from([deva, title, sub], { y: '+=30', alpha: 0, duration: 1.2, stagger: 0.15, ease: 'power3.out' });
-    gsap.from([b1, b2], { alpha: 0, duration: 0.8, delay: 0.7, stagger: 0.12 });
+    gsap.from([b1, b2, b3], { alpha: 0, duration: 0.8, delay: 0.7, stagger: 0.12 });
   };
   s.leave = () => Ticker.shared.remove(tick);
   return s;

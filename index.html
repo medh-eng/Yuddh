@@ -5,19 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#120c08" />
   <title>YUDDH: Rise of the Rajyas</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <meta name="description" content="A tactical card game of ancient India — Maurya, Gupta, Chalukya, Chola and Rajput armies on one contested line." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet" />
   <style>
     html, body { margin: 0; height: 100%; background: #120c08; overflow: hidden; touch-action: none; }
     canvas { display: block; }
+    #rotate { display: none; position: fixed; inset: 0; z-index: 10; background: #120c08; color: #e7c46e;
+      font: 600 22px 'Cormorant Garamond', Georgia, serif; text-align: center; place-items: center; padding: 32px; }
+    @media (orientation: portrait) and (max-width: 900px) { #rotate { display: grid; } }
     #boot { position: fixed; inset: 0; display: grid; place-items: center; color: #c9a45c;
       font: 600 20px 'Cormorant Garamond', Georgia, serif; letter-spacing: .3em; }
   </style>
 </head>
 <body>
   <div id="boot">YUDDH</div>
+  <div id="rotate"><div><div style="font-size:56px">⟳</div>Turn your phone sideways to command the army.</div></div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
