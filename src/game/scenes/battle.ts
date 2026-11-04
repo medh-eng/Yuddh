@@ -6,36 +6,98 @@
 
    The engine owns the rules; this file only shows them. The enemy's
    turn is recorded action by action and replayed with animation.
+
+   Every position comes from a layout table (battleLayout): one for
+   desktop (the original 1920×1080 board) and one for phones held
+   sideways, where the board is drawn larger and text bigger. When the
+   window switches between them the board is rebuilt from the state.
    ============================================================ */
-import { Assets, Container, FederatedPointerEvent, Graphics, Point, Sprite, Text, Texture } from 'pixi.js';
+import { Container, FederatedPointerEvent, Graphics, Point, Sprite, Text, Texture } from 'pixi.js';
 import gsap from 'gsap';
 import {
   CARDS, EMPIRES, actionObservers, aiTurn, allUnits, applyAction, canAttack, canMove, canPlay,
   drainEvents, type Action, type GameEvent, type GameState, type PlayerIndex, type Target, type Unit
 } from '../../engine';
 import { FIRST_THRONE, firstThroneGame } from '../../campaign/firstThrone';
-import { DESIGN_H, DESIGN_W, FONT_SERIF, INK } from '../theme';
+import { FONT_SERIF, INK } from '../theme';
+import { view, type View } from '../view';
 import { audio, type Sfx } from '../audio';
 import { cardFace } from '../cards/paint';
-import { DurgView, HAND_SCALE, HandCard, TOKEN_DH, TokenView, drawDiyas, stopTweens } from '../cards/views';
+import { DurgView, HandCard, TOKEN_DH, TokenView, drawDiyas, stopTweens } from '../cards/views';
 import { makeButton } from '../ui/button';
+import { inspectOverlay } from '../ui/inspect';
+import { battlefieldUrl, loadArt, loadBattlefield } from '../../assets/manifest';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
-/* ---------------- layout (design px, 1920×1080) ---------------- */
-const LANE_X = 300, LANE_W = 1120, LANE_H = 236;
-const LINE_Y = { enemy: 186, front: 448, mine: 710 } as const;
-const SLOT_CX = LANE_X + LANE_W / 2, SLOT_GAP = 196;
-const slotX = (i: number, n: number) => SLOT_CX + (i - (n - 1) / 2) * SLOT_GAP;
-const DURG_X = 158;
-const HAND_Y = 964, HAND_CX = 860;
-const ENEMY_HAND = { x: 1690, y: 70 };
-const RIGHT_X = 1690;
+/* ---------------- layout ---------------- */
+interface Layout {
+  W: number; H: number; phone: boolean; ui: number;
+  laneX: number; laneW: number; laneH: number;
+  line: { enemy: number; front: number; mine: number };
+  slotGap: number; tok: number;
+  durgX: number; durgS: number; durgText: number;
+  handY: number; handCX: number; handScale: number; handSpan: number; handMaxGap: number; handTop: number;
+  liftY: number; liftScale: number; dragScale: number;
+  enemyHand: { x: number; y: number; s: number };
+  rightX: number; enemyInfoY: number; enemyDiyas: { x: number; y: number; s: number };
+  endY: number; endS: number;
+  koshaLabelY: number; koshaY: number; myDiyas: { x: number; y: number; s: number };
+  deck: { x: number; y: number; s: number };
+  yantraX: number; yantraS: number; yantraGap: number;
+  roundY: number; roundX: [number, number, number]; roundR: number;
+  hintY: number;
+  /** where a card the enemy plays is shown, and how big (HandCard scale) */
+  reveal: { x: number; y: number; s: number };
+  /** phones: a large copy of the card you have selected, so its text can be read */
+  preview: { x: number; y: number; s: number } | null;
+}
+
+function battleLayout(v: View): Layout {
+  if (!v.phone) {
+    return {
+      W: 1920, H: 1080, phone: false, ui: 1,
+      laneX: 300, laneW: 1120, laneH: 236, line: { enemy: 186, front: 448, mine: 710 },
+      slotGap: 196, tok: 1, durgX: 158, durgS: 1, durgText: 1,
+      handY: 964, handCX: 860, handScale: 0.31, handSpan: 900, handMaxGap: 150, handTop: 814,
+      liftY: 814, liftScale: 1, dragScale: 0.72,
+      enemyHand: { x: 1690, y: 70, s: 0.24 },
+      rightX: 1690, enemyInfoY: 180, enemyDiyas: { x: 1605, y: 222, s: 0.8 },
+      endY: 448, endS: 1, koshaLabelY: 766, koshaY: 800, myDiyas: { x: 1584, y: 846, s: 1 },
+      deck: { x: 1852, y: 905, s: 0.2 },
+      yantraX: 1486, yantraS: 0.22, yantraGap: 80,
+      roundY: 1040, roundX: [1720, 1780, 1840], roundR: 26, hintY: 38,
+      reveal: { x: 860, y: 448, s: 1.15 }, preview: null
+    };
+  }
+  const W = v.w, H = v.h, ui = v.ui;
+  const laneX = 236, laneH = 176, rightX = W - 170;
+  const laneW = W - laneX - 120 - 340;
+  const line = { enemy: 132, front: 316, mine: 500 };
+  const handScale = 0.4;
+  return {
+    W, H, phone: true, ui,
+    laneX, laneW, laneH, line, slotGap: 160, tok: 0.82,
+    durgX: 118, durgS: 0.72, durgText: 1.5,
+    handY: H - 60, handCX: laneX + laneW / 2, handScale, handSpan: laneW * 0.92, handMaxGap: 165, handTop: H - 200,
+    liftY: H - 186, liftScale: 1.05, dragScale: 0.6,
+    enemyHand: { x: rightX, y: 34, s: 0.17 },
+    rightX, enemyInfoY: 118, enemyDiyas: { x: rightX - 78, y: 176, s: 0.8 },
+    endY: line.front, endS: 0.95, koshaLabelY: 432, koshaY: 472, myDiyas: { x: rightX - 102, y: 520, s: 1 },
+    deck: { x: W - 58, y: 655, s: 0.2 },
+    yantraX: laneX + laneW + 52, yantraS: 0.17, yantraGap: 62,
+    roundY: H - 40, roundX: [rightX - 125, rightX - 50, rightX + 25], roundR: 30, hintY: 26,
+    reveal: { x: laneX + laneW / 2, y: line.front, s: 1.35 },
+    preview: { x: W - 250, y: H / 2 - 4, s: (H * 0.8) / 672 }
+  };
+}
 
 type Snap = GameState;
+type Spawn = Map<number, { x: number; y: number; scale?: number }>;
 type Drag =
   | { kind: 'card'; index: number; view: HandCard; moved: boolean; sx: number; sy: number; downAt: number }
   | { kind: 'unit'; uid: number; view: TokenView; moved: boolean; sx: number; sy: number; downAt: number };
 type Pick = { kind: 'card'; index: number } | { kind: 'unit'; uid: number } | null;
+type Overlay = { kind: 'briefing' | 'end' | 'confirm' | 'inspect'; view: Container; won?: boolean } | null;
 
 function snapshot(st: GameState): Snap {
   const { rng, ...rest } = st;
@@ -46,57 +108,68 @@ function snapshot(st: GameState): Snap {
 
 export function battleScene(stage: Stage, exit: () => void): Scene {
   const s: Scene = new Container();
+  let L = battleLayout(view);
   let st: GameState;
   let shown: Snap;                       // what the screen currently shows
   let busy = false, alive = true;
+  let animating = false, layoutPending = false;
+  let handHeld = true;                   // the opening hand waits until the briefing closes
+  let intense = false;
+  let dealUntil = 0;                     // cards drawn from the deck are still flying in until then
+  const dealing = () => performance.now() < dealUntil;
   let drag: Drag | null = null;
   let pick: Pick = null;
   let longPress: ReturnType<typeof setTimeout> | null = null;
-  let inspecting: Container | null = null;
+  let overlay: Overlay = null;
   let hoverIdx = -1;
   let pressAt: { x: number; y: number } | null = null;
 
   const tokens = new Map<number, TokenView>();
   let hand: HandCard[] = [];
   let enemyHand: HandCard[] = [];
+  const slotX = (i: number, n: number) => L.laneX + L.laneW / 2 + (i - (n - 1) / 2) * L.slotGap;
+  const fsz = (n: number) => Math.round(n * L.ui);
 
   /* ---------------- scenery ---------------- */
-  const tex = Texture.from(`${import.meta.env.BASE_URL}assets/battlefields/${FIRST_THRONE.battlefield}.webp`);
-  stage.setBackdrop(tex, 0.62);
+  stage.setBackdrop(Texture.from(battlefieldUrl(FIRST_THRONE.battlefield)), 0.62);
 
   const lanes = new Graphics();
+  const zoneGlow = new Graphics();
   const frontGlow = new Graphics();
-  s.addChild(lanes, frontGlow);
-  const laneLabel = (t: string, y: number) => {
+  s.addChild(lanes, frontGlow, zoneGlow);
+  const laneLabels = ['ENEMY RAJYA', 'YUDHBHUMI', 'YOUR RAJYA'].map(t => {
     const x = new Text({ text: t, style: { fontFamily: FONT_SERIF, fontSize: 18, fontWeight: '700', letterSpacing: 7, fill: INK.goldPale } });
-    x.alpha = 0.55; x.anchor.set(0, 0.5); x.position.set(LANE_X + 18, y - LANE_H / 2 + 18); s.addChild(x);
-  };
-  laneLabel('ENEMY RAJYA', LINE_Y.enemy); laneLabel('YUDHBHUMI', LINE_Y.front); laneLabel('YOUR RAJYA', LINE_Y.mine);
+    x.alpha = 0.55; x.anchor.set(0, 0.5); s.addChild(x); return x;
+  });
 
-  const durg: [DurgView, DurgView] = [new DurgView(0, 'n_sena_bhojan'), new DurgView(1, 'y_kavach')];
-  durg[0].position.set(DURG_X, LINE_Y.mine); durg[1].position.set(DURG_X, LINE_Y.enemy);
+  const durg: [DurgView, DurgView] = [new DurgView(0, 'durg_maurya_camp'), new DurgView(1, 'durg_pataliputra')];
   s.addChild(durg[0], durg[1]);
 
-  // right column: enemy info, end turn, your treasury, yantras
-  const enemyInfo = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 22, fill: INK.goldPale, align: 'center' } });
-  enemyInfo.anchor.set(0.5); enemyInfo.position.set(RIGHT_X, 180);
-  const enemyDiyas = new Graphics(); enemyDiyas.position.set(RIGHT_X - 85, 222); enemyDiyas.scale.set(0.8);
-  const myDiyas = new Graphics(); myDiyas.position.set(RIGHT_X - 106, 846);
+  // right column: enemy info, end turn, your treasury, deck
+  const enemyInfo = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 22, fill: INK.goldPale, align: 'center', stroke: { color: 0x000000, width: 3 } } });
+  enemyInfo.anchor.set(0.5);
+  const enemyDiyas = new Graphics();
+  const myDiyas = new Graphics();
   const myKosha = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 40, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 5 } } });
-  myKosha.anchor.set(0.5); myKosha.position.set(RIGHT_X, 800);
-  const koshaLabel = new Text({ text: 'KOSHA', style: { fontFamily: FONT_SERIF, fontSize: 16, fontWeight: '700', letterSpacing: 6, fill: INK.gold } });
-  koshaLabel.anchor.set(0.5); koshaLabel.position.set(RIGHT_X, 766);
+  myKosha.anchor.set(0.5);
+  const koshaLabel = new Text({ text: 'KOSHA', style: { fontFamily: FONT_SERIF, fontSize: 16, fontWeight: '700', letterSpacing: 6, fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
+  koshaLabel.anchor.set(0.5);
   s.addChild(enemyInfo, enemyDiyas, myDiyas, myKosha, koshaLabel);
 
+  // your deck: a short stack of card backs with the count on top
+  const deckPile = new Container();
+  const deckCount = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 30, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 5 } } });
+  deckCount.anchor.set(0.5);
+  s.addChild(deckPile);
+
   const yantraRow: [Container, Container] = [new Container(), new Container()];
-  yantraRow[0].position.set(LANE_X + LANE_W + 66, LINE_Y.mine); yantraRow[1].position.set(LANE_X + LANE_W + 66, LINE_Y.enemy);
   s.addChild(yantraRow[0], yantraRow[1]);
 
   const endBtn = new Container();
   const endG = new Graphics();
   const endT = new Text({ text: 'END TURN', style: { fontFamily: FONT_SERIF, fontSize: 26, fontWeight: '700', letterSpacing: 4, fill: 0x24170e, align: 'center' } });
   endT.anchor.set(0.5);
-  endBtn.addChild(endG, endT); endBtn.position.set(RIGHT_X, LINE_Y.front);
+  endBtn.addChild(endG, endT);
   endBtn.eventMode = 'static'; endBtn.cursor = 'pointer';
   endBtn.on('pointertap', () => { if (!busy && shown.active === 0 && !shown.over) void endTurn(); });
   s.addChild(endBtn);
@@ -109,106 +182,163 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     endG.circle(0, 0, 72).stroke({ width: 2, color: 0x24170e, alpha: 0.5 });
     endT.text = state === 'enemy' ? 'ENEMY\nTURN' : 'END\nTURN';
     endT.style.fill = state === 'enemy' ? INK.smoke : 0x24170e;
-    endPulse?.kill(); endBtn.scale.set(1);
-    if (state === 'ready') endPulse = gsap.to(endBtn.scale, { x: 1.06, y: 1.06, duration: 0.7, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+    endPulse?.kill(); endBtn.scale.set(L.endS);
+    if (state === 'ready') endPulse = gsap.to(endBtn.scale, { x: L.endS * 1.06, y: L.endS * 1.06, duration: 0.7, yoyo: true, repeat: -1, ease: 'sine.inOut' });
   }
 
   // top hint bar
   const hint = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 24, fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 4 } } });
-  hint.anchor.set(0.5); hint.position.set(SLOT_CX, 38);
+  hint.anchor.set(0.5);
   s.addChild(hint);
 
   const unitLayer = new Container();
   const handLayer = new Container();
   const fx = new Container();
   const arrow = new Graphics();
-  s.addChild(unitLayer, handLayer, arrow, fx);
+  const previewLayer = new Container();
+  s.addChild(unitLayer, handLayer, arrow, previewLayer, fx);
+  // The scene itself listens for taps, which makes everything inside it hit-testable; pure decoration
+  // must opt out, or a passing spark or the turn banner swallows a press on the unit beneath it.
+  for (const deco of [lanes, frontGlow, zoneGlow, arrow, previewLayer, fx]) deco.eventMode = 'none';
 
   // small round buttons: menu, music, sound
-  const mkRound = (label: string, x: number, fn: () => void) => {
+  const rounds = [
+    { label: '✕', fn: () => confirmLeave() },
+    { label: '♪', fn: () => { roundT[1].alpha = audio.toggleMusic() ? 1 : 0.35; } },
+    { label: '◈', fn: () => { roundT[2].alpha = audio.toggleSfx() ? 1 : 0.35; } }
+  ].map(r => {
     const c = new Container();
-    const g = new Graphics().circle(0, 0, 26).fill({ color: 0x140c07, alpha: 0.85 }).stroke({ width: 2, color: INK.gold });
-    const t = new Text({ text: label, style: { fontFamily: FONT_SERIF, fontSize: 20, fontWeight: '700', fill: INK.goldPale } }); t.anchor.set(0.5);
-    c.addChild(g, t); c.position.set(x, 1040); c.eventMode = 'static'; c.cursor = 'pointer'; c.on('pointertap', fn);
-    s.addChild(c); return t;
-  };
-  const musicT = mkRound('♪', 1780, () => { musicT.alpha = audio.toggleMusic() ? 1 : 0.35; });
-  const sfxT = mkRound('◈', 1840, () => { sfxT.alpha = audio.toggleSfx() ? 1 : 0.35; });
-  mkRound('✕', 1720, () => confirmLeave());
+    const g = new Graphics();
+    const t = new Text({ text: r.label, style: { fontFamily: FONT_SERIF, fontSize: 20, fontWeight: '700', fill: INK.goldPale } }); t.anchor.set(0.5);
+    c.addChild(g, t); c.eventMode = 'static'; c.cursor = 'pointer'; c.on('pointertap', r.fn);
+    s.addChild(c); return { c, g, t };
+  });
+  const roundT = rounds.map(r => r.t);
+  roundT[1].alpha = audio.music ? 1 : 0.35; roundT[2].alpha = audio.sfx ? 1 : 0.35;
+
+  /** put every fixed part of the board where the current layout says */
+  function applyLayout(): void {
+    const ly = [L.line.enemy, L.line.front, L.line.mine];
+    laneLabels.forEach((t, i) => { t.style.fontSize = fsz(18); t.style.letterSpacing = L.phone ? 5 : 7; t.position.set(L.laneX + 18, ly[i] - L.laneH / 2 + fsz(18)); });
+    durg[0].position.set(L.durgX, L.line.mine); durg[1].position.set(L.durgX, L.line.enemy);
+    durg.forEach(d => { d.scale.set(L.durgS); d.setTextScale(L.durgText); });
+    enemyInfo.style.fontSize = fsz(22); enemyInfo.position.set(L.rightX, L.enemyInfoY);
+    enemyDiyas.position.set(L.enemyDiyas.x, L.enemyDiyas.y); enemyDiyas.scale.set(L.enemyDiyas.s);
+    myDiyas.position.set(L.myDiyas.x, L.myDiyas.y); myDiyas.scale.set(L.myDiyas.s);
+    myKosha.style.fontSize = fsz(40); myKosha.position.set(L.rightX, L.koshaY);
+    koshaLabel.style.fontSize = fsz(16); koshaLabel.position.set(L.rightX, L.koshaLabelY);
+    deckPile.position.set(L.deck.x, L.deck.y);
+    deckCount.style.fontSize = fsz(30);
+    yantraRow[0].position.set(L.yantraX, L.line.mine); yantraRow[1].position.set(L.yantraX, L.line.enemy);
+    endBtn.position.set(L.rightX, L.endY); endBtn.scale.set(L.endS);
+    endT.style.fontSize = L.phone ? 28 : 26;
+    hint.style.fontSize = fsz(24); hint.position.set(L.laneX + L.laneW / 2, L.hintY);
+    rounds.forEach((r, i) => {
+      r.g.clear().circle(0, 0, L.roundR).fill({ color: 0x140c07, alpha: 0.85 }).stroke({ width: 2, color: INK.gold });
+      r.t.style.fontSize = Math.round(L.roundR * 0.78);
+      r.c.position.set(L.roundX[i], L.roundY);
+    });
+  }
 
   /* ---------------- start ---------------- */
   function start(): void {
     st = firstThroneGame(Math.floor(Math.random() * 1e9), 'normal');
     drainEvents(st);
     shown = snapshot(st);
+    intense = false;
+    clearBoard();
+    handHeld = true;
+    applyLayout();
+    reconcile(shown, true);
+    briefing(true);
+  }
+
+  /** remove every unit, card and yantra view, so reconcile can rebuild them */
+  function clearBoard(): void {
     tokens.forEach(t => t.destroy()); tokens.clear();
     hand.forEach(h => h.destroy()); hand = [];
     enemyHand.forEach(h => h.destroy()); enemyHand = [];
-    reconcile(shown, true);
-    void briefing();
+    yantraRow.forEach(r => r.removeChildren().forEach(c => destroyTree(c as Container)));
+    deckPile.removeChildren().forEach(c => { if (c !== deckCount) c.destroy(); });
   }
 
-  async function briefing(): Promise<void> {
+  function briefing(animate: boolean): void {
     busy = true;
+    audio.playMusic('music_briefing');
+    const W = L.W, H = L.H, k = L.ui;
     const panel = new Container();
-    const dim = new Graphics().rect(0, 0, DESIGN_W, DESIGN_H).fill({ color: 0x000000, alpha: 0.72 });
+    const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.72 });
     dim.eventMode = 'static';
-    const art = new Sprite(cardFace('m_chandragupta')); art.anchor.set(0.5); art.scale.set(0.8); art.position.set(560, 520); art.rotation = -0.05;
-    const t1 = new Text({ text: `${FIRST_THRONE.place.toUpperCase()} · ${FIRST_THRONE.year.toUpperCase()}`, style: { fontFamily: FONT_SERIF, fontSize: 22, fontWeight: '700', letterSpacing: 8, fill: INK.gold } });
+    const art = new Sprite(cardFace('m_chandragupta')); art.anchor.set(0.5); art.rotation = -0.05;
+    const tx = L.phone ? 700 : 860, wrap = L.phone ? W - tx - 70 : 820;
+    art.scale.set(L.phone ? 0.95 : 0.8); art.position.set(L.phone ? 380 : 560, L.phone ? 400 : 520);
+    const t1 = new Text({ text: `${FIRST_THRONE.place.toUpperCase()} · ${FIRST_THRONE.year.toUpperCase()}`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(22 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold } });
     const t2 = new Text({ text: FIRST_THRONE.title, style: { fontFamily: FONT_SERIF, fontSize: 86, fontWeight: '700', fill: INK.goldPale } });
-    const t3 = new Text({ text: FIRST_THRONE.briefing, style: { fontFamily: FONT_SERIF, fontSize: 30, fill: INK.cream, wordWrap: true, wordWrapWidth: 820, lineHeight: 42 } });
-    const t4 = new Text({ text: 'Destroy the Nanda Durg before they destroy yours.', style: { fontFamily: FONT_SERIF, fontSize: 26, fontStyle: 'italic', fill: INK.gold } });
-    t1.position.set(860, 300); t2.position.set(856, 336); t3.position.set(860, 460); t4.position.set(860, 680);
+    const t3 = new Text({ text: FIRST_THRONE.briefing, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * k), fill: INK.cream, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(42 * k) } });
+    const t4 = new Text({ text: 'Destroy the Nanda Durg before they destroy yours.', style: { fontFamily: FONT_SERIF, fontSize: Math.round(26 * k), fontStyle: 'italic', fill: INK.gold, wordWrap: true, wordWrapWidth: wrap } });
+    if (L.phone) { t1.position.set(tx, 70); t2.position.set(tx - 4, 104); t3.position.set(tx, 222); t4.position.set(tx, t3.y + t3.height + 26); }
+    else { t1.position.set(tx, 300); t2.position.set(tx - 4, 336); t3.position.set(tx, 460); t4.position.set(tx, 680); }
     const go = makeButton('To battle', () => {
       audio.unlock(); audio.play('conch');
-      gsap.to(panel, { alpha: 0, duration: 0.4, onComplete: () => { destroyTree(panel); busy = false; void turnBanner(0); refreshInteractivity(); } });
+      audio.playMusic('music_battle_calm');
+      overlay = null;
+      gsap.to(panel, {
+        alpha: 0, duration: 0.4, onComplete: () => {
+          destroyTree(panel); busy = false;
+          handHeld = false; syncHand(shown, false);
+          void turnBanner(0); refreshInteractivity();
+        }
+      });
     }, { primary: true, w: 340 });
-    go.position.set(1030, 800);
+    go.position.set(L.phone ? tx + 230 : 1030, L.phone ? Math.min(H - 70, t4.y + t4.height + 80) : 800);
     panel.addChild(dim, art, t1, t2, t3, t4, go);
     s.addChild(panel);
-    gsap.from([t1, t2, t3, t4, go], { alpha: 0, y: '+=24', duration: 0.8, stagger: 0.1, ease: 'power2.out' });
-    gsap.from(art, { alpha: 0, x: '-=60', duration: 0.9, ease: 'power2.out' });
+    overlay = { kind: 'briefing', view: panel };
+    if (animate) {
+      gsap.from([t1, t2, t3, t4, go], { alpha: 0, y: '+=24', duration: 0.8, stagger: 0.1, ease: 'power2.out' });
+      gsap.from(art, { alpha: 0, x: '-=60', duration: 0.9, ease: 'power2.out' });
+    }
   }
 
   /* ============================================================
      reconcile: make the screen match a game state.
      Damage shows as floating numbers; the fallen burn away.
      ============================================================ */
-  function reconcile(state: Snap, instant = false, spawn = new Map<number, { x: number; y: number; scale?: number }>()): void {
+  function reconcile(state: Snap, instant = false, spawn: Spawn = new Map()): void {
     shown = state;
     const d = instant ? 0 : 0.42;
     const place = (list: Unit[], y: number, defaultFrom: { x: number; y: number; scale?: number }) => {
       list.forEach((u, i) => {
         let v = tokens.get(u.uid);
         if (!v) {
-          v = new TokenView(u);
+          v = new TokenView(u, L.phone);
           const sp = spawn.get(u.uid) ?? defaultFrom;
-          v.position.set(sp.x, sp.y); v.scale.set(sp.scale ?? 0.4); v.alpha = instant ? 1 : 0;
+          v.position.set(sp.x, sp.y); v.scale.set(sp.scale ?? 0.4 * L.tok); v.alpha = instant ? 1 : 0;
           unitLayer.addChild(v); tokens.set(u.uid, v);
           bindToken(v);
-          gsap.to(v.scale, { x: 1, y: 1, duration: instant ? 0 : 0.42, ease: 'back.out(1.6)' });
+          gsap.to(v.scale, { x: L.tok, y: L.tok, duration: instant ? 0 : 0.42, ease: 'back.out(1.6)' });
           gsap.to(v, { alpha: 1, duration: instant ? 0 : 0.2 });
         } else {
           const dh = v.hp - u.hp;
-          if (dh > 0 && !instant) floatNumber(v.x, v.y - 40, `−${dh}`, 0xffd2b0);
-          if (dh < 0 && !instant) floatNumber(v.x, v.y - 40, `+${-dh}`, 0x9cff8a);
-          if (u.atk > v.atk && !instant) floatNumber(v.x - 60, v.y + 70, `+${u.atk - v.atk}`, 0xffc04a);
+          if (dh > 0 && !instant) floatNumber(v.x, v.y - 40 * L.tok, `−${dh}`, 0xffd2b0);
+          if (dh < 0 && !instant) floatNumber(v.x, v.y - 40 * L.tok, `+${-dh}`, 0x9cff8a);
+          if (u.atk > v.atk && !instant) floatNumber(v.x - 60 * L.tok, v.y + 70 * L.tok, `+${u.atk - v.atk}`, 0xffc04a);
         }
         v.update(u);
         v.setSpent(u.owner === state.active && (u.attacked || !u.canAct) && !state.over);
         gsap.to(v, { x: slotX(i, list.length), y, rotation: 0, duration: d, ease: 'power2.out' });
       });
     };
-    place(state.players[1].support, LINE_Y.enemy, ENEMY_HAND);
-    place(state.players[0].support, LINE_Y.mine, { x: HAND_CX, y: HAND_Y });
-    place(state.front.units, LINE_Y.front, { x: SLOT_CX, y: LINE_Y.front });
+    place(state.players[1].support, L.line.enemy, { x: L.enemyHand.x, y: L.enemyHand.y });
+    place(state.players[0].support, L.line.mine, { x: L.handCX, y: L.handY });
+    place(state.front.units, L.line.front, { x: L.laneX + L.laneW / 2, y: L.line.front });
 
     // the fallen
     const living = new Set([...state.players[0].support, ...state.players[1].support, ...state.front.units].map(u => u.uid));
     for (const [uid, v] of tokens) {
       if (living.has(uid)) continue;
       tokens.delete(uid);
-      if (!instant) { if (v.hp > 0) floatNumber(v.x, v.y - 40, '✕', 0xff8f7a); burnAway(v); } else v.destroy();
+      if (!instant) { if (v.hp > 0) floatNumber(v.x, v.y - 40 * L.tok, '✕', 0xff8f7a); burnAway(v); } else v.destroy();
     }
 
     // Durgs
@@ -219,6 +349,10 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       if (!instant && durg[i].hp && dh < 0) floatNumber(durg[i].x, durg[i].y - 10, `+${-dh}`, 0x9cff8a, 64);
       durg[i].set(p.hq.name, i === 0 ? EMPIRES[p.empire].name : p.faction, p.hq.hp, p.hq.maxHp);
     }
+    // the music turns urgent once either Durg is half down
+    if (!instant && !intense && !state.over && state.players.some(p => p.hq.hp <= p.hq.maxHp / 2)) {
+      intense = true; audio.playMusic('music_battle_intense');
+    }
 
     // yantras face-down
     for (const i of [0, 1] as PlayerIndex[]) {
@@ -227,48 +361,67 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       while (row.children.length > want) { const ch = row.children[row.children.length - 1] as Container; stopTweens(ch); ch.destroy(); }
       while (row.children.length < want) {
         const b = new HandCard('y_kavach', 0, true);
-        b.scale.set(0.22); b.eventMode = 'none';
-        b.position.set(0, (row.children.length - 0.5) * 76 + (want === 1 ? 38 : 0));
+        b.scale.set(L.yantraS); b.eventMode = 'none';
         row.addChild(b);
       }
-      row.children.forEach((c, k) => { c.y = want === 1 ? 0 : (k - 0.5) * 80; });
+      row.children.forEach((c, k) => { c.visible = true; c.y = yantraSlotY(k, want); });
     }
 
-    // front line colour
+    // lanes and the front line's colour
     frontGlow.clear(); lanes.clear();
-    for (const y of [LINE_Y.enemy, LINE_Y.mine]) {
-      lanes.roundRect(LANE_X, y - LANE_H / 2, LANE_W, LANE_H, 16).fill({ color: 0x0c0704, alpha: 0.42 }).stroke({ width: 1.5, color: INK.gold, alpha: 0.35 });
+    for (const y of [L.line.enemy, L.line.mine]) {
+      lanes.roundRect(L.laneX, y - L.laneH / 2, L.laneW, L.laneH, 16).fill({ color: 0x0c0704, alpha: 0.42 }).stroke({ width: 1.5, color: INK.gold, alpha: 0.35 });
     }
     const fo = state.front.owner;
     const fcol = fo === null ? INK.gold : fo === 0 ? 0xe7c46e : 0xe0674a;
-    frontGlow.roundRect(LANE_X, LINE_Y.front - LANE_H / 2, LANE_W, LANE_H, 16)
+    frontGlow.roundRect(L.laneX, L.line.front - L.laneH / 2, L.laneW, L.laneH, 16)
       .fill({ color: fo === null ? 0x0c0704 : fcol, alpha: fo === null ? 0.42 : 0.16 })
       .stroke({ width: fo === null ? 1.5 : 3, color: fcol, alpha: fo === null ? 0.35 : 0.9 });
 
-    // treasury
+    // treasury and decks
     const me = state.players[0], foe = state.players[1];
     myKosha.text = `${me.kosha} / ${me.maxKosha}`;
     drawDiyas(myDiyas, me.kosha, me.maxKosha);
     drawDiyas(enemyDiyas, foe.kosha, foe.maxKosha);
     enemyInfo.text = `${foe.faction} · Kosha ${foe.kosha}/${foe.maxKosha}\nDeck ${foe.deck.length}`;
+    drawDeck(me.deck.length);
 
     syncHand(state, instant);
     syncEnemyHand(state, instant);
     refreshInteractivity();
   }
 
+  const yantraSlotY = (k: number, n: number) => (n === 1 ? 0 : (k - 0.5) * L.yantraGap);
+
+  function drawDeck(n: number): void {
+    const want = Math.min(3, Math.ceil(n / 6));
+    const backs = deckPile.children.filter(c => c !== deckCount);
+    if (backs.length !== want) {
+      backs.forEach(c => c.destroy());
+      for (let i = 0; i < want; i++) {
+        const b = new HandCard('y_kavach', 0, true); b.eventMode = 'none';
+        b.scale.set(L.deck.s); b.position.set(-i * 3, -i * 4); deckPile.addChildAt(b, 0);
+      }
+    }
+    deckPile.addChild(deckCount);
+    deckCount.text = String(n);
+    deckCount.position.set(-(want - 1) * 3, -(want - 1) * 4);
+  }
+
   function syncHand(state: Snap, instant: boolean): void {
+    if (handHeld) return;
     const ids = state.players[0].hand;
     const next: HandCard[] = [];
     const pool = [...hand];
+    let fresh = 0;
     ids.forEach(id => {
       const k = pool.findIndex(h => h.cardId === id);
       if (k >= 0) { next.push(pool[k]); pool.splice(k, 1); return; }
-      const h = new HandCard(id, state.players[0].upgrades[id] || 0);
-      h.position.set(DESIGN_W - 60, HAND_Y - 40); h.rotation = 0.4;
+      const h = new HandCard(id, state.players[0].upgrades[id] || 0, !instant);
+      h.position.set(L.deck.x, L.deck.y); h.scale.set(L.deck.s);
+      if (!instant) h.drawDelay = fresh++ * 0.16;
       handLayer.addChild(h);
       bindCard(h);
-      if (!instant) audio.play('cardDraw');
       next.push(h);
     });
     pool.forEach(h => h.destroy());
@@ -278,16 +431,27 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
 
   function layoutHand(instant = false): void {
     const n = hand.length;
-    const spread = Math.min(150, 900 / Math.max(1, n));
+    const spread = Math.min(L.handMaxGap, L.handSpan / Math.max(1, n));
+    const rest = L.handScale / 0.5;
     hand.forEach((h, i) => {
       const off = i - (n - 1) / 2;
       const lifted = i === hoverIdx && !drag;
-      h.home = { x: HAND_CX + off * spread, y: HAND_Y + Math.abs(off) * 6, rot: off * 0.035 };
+      h.home = { x: L.handCX + off * spread, y: L.handY + Math.abs(off) * 6, rot: off * 0.035 };
       handLayer.setChildIndex(h, Math.min(handLayer.children.length - 1, i));
       if (drag?.kind === 'card' && drag.view === h) return;
-      const sc = lifted ? 0.95 / 0.5 * 0.5 : HAND_SCALE / 0.5;
-      gsap.to(h, { x: h.home.x, y: lifted ? HAND_Y - 150 : h.home.y, rotation: lifted ? 0 : h.home.rot, duration: instant ? 0 : 0.25, ease: 'power2.out' });
-      gsap.to(h.scale, { x: lifted ? 1.0 : sc, y: lifted ? 1.0 : sc, duration: instant ? 0 : 0.2 });
+      if (h.drawDelay !== null) {
+        // fresh from the deck: fly in face-down and turn over on the way
+        const delay = h.drawDelay;
+        h.drawDelay = null;
+        dealUntil = Math.max(dealUntil, performance.now() + (delay + 0.62) * 1000);
+        gsap.to(h, { x: h.home.x, y: h.home.y, rotation: h.home.rot, duration: 0.55, delay, ease: 'power2.out', overwrite: 'auto' });
+        gsap.to(h.scale, { x: rest, y: rest, duration: 0.55, delay, ease: 'power2.out', overwrite: 'auto' });
+        gsap.delayedCall(delay, () => { if (alive) audio.play('cardDraw'); });
+        void h.turnUp({ delay: delay + 0.1, duration: 0.42 });
+        return;
+      }
+      gsap.to(h, { x: h.home.x, y: lifted ? L.liftY : h.home.y, rotation: lifted ? 0 : h.home.rot, duration: instant ? 0 : 0.25, ease: 'power2.out', overwrite: 'auto' });
+      gsap.to(h.scale, { x: lifted ? L.liftScale : rest, y: lifted ? L.liftScale : rest, duration: instant ? 0 : 0.2, overwrite: 'auto' });
     });
     if (hoverIdx >= 0 && hand[hoverIdx]) handLayer.addChild(hand[hoverIdx]);
   }
@@ -297,13 +461,14 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     while (enemyHand.length > n) enemyHand.pop()!.destroy();
     while (enemyHand.length < n) {
       const b = new HandCard('n_padati', 0, true);
-      b.eventMode = 'none'; b.scale.set(0.24);
-      b.position.set(ENEMY_HAND.x + 200, ENEMY_HAND.y - 60);
+      b.eventMode = 'none'; b.scale.set(L.enemyHand.s);
+      b.position.set(L.enemyHand.x + 200, L.enemyHand.y - 60);
       handLayer.addChild(b); enemyHand.push(b);
     }
+    const gap = 26 * (L.enemyHand.s / 0.24);
     enemyHand.forEach((b, i) => {
       const off = i - (n - 1) / 2;
-      gsap.to(b, { x: ENEMY_HAND.x + off * 26, y: ENEMY_HAND.y + Math.abs(off) * 2, rotation: Math.PI + off * 0.06, duration: instant ? 0 : 0.3 });
+      gsap.to(b, { x: L.enemyHand.x + off * gap, y: L.enemyHand.y + Math.abs(off) * 2, rotation: Math.PI + off * 0.06, duration: instant ? 0 : 0.3 });
     });
   }
 
@@ -333,22 +498,23 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     tokens.forEach(v => v.setRing(myTurn && v.owner === 0 && unitCanDoAnything(v.uid) ? 'ready' : 'none'));
     durg[1].setRing(false);
     const anything = myTurn && (hand.some((_, i) => cardTargets(i).zone !== null || cardTargets(i).units.length > 0) || [...tokens.values()].some(v => v.owner === 0 && unitCanDoAnything(v.uid)));
-    drawEnd(!myTurn ? 'enemy' : anything ? 'mine' : 'ready');
-    hint.text = myTurn ? hintText() : st.over ? '' : 'The Nanda generals are moving…';
+    drawEnd(overlay?.kind === 'briefing' ? 'mine' : !myTurn ? 'enemy' : anything ? 'mine' : 'ready');
+    hint.text = myTurn ? hintText() : st.over || overlay || st.active === 0 ? '' : 'The Nanda generals are moving…';
     if (pick) showTargets(pick);
   }
 
   function hintText(): string {
     const me = st.players[0];
     const mine = allUnits(st, 0);
-    if (!mine.length && hand.some(h => CARDS[h.cardId].type === 'unit')) return 'Drag a unit card onto your Rajya line to deploy it.';
+    const tap = L.phone ? 'Tap' : 'Drag';
+    if (!mine.length && hand.some(h => CARDS[h.cardId].type === 'unit')) return L.phone ? 'Drag a unit card onto your Rajya line, or tap it and tap the line.' : 'Drag a unit card onto your Rajya line to deploy it.';
     const ready = mine.filter(x => unitCanDoAnything(x.unit.uid));
     if (ready.some(x => unitTargets(x.unit.uid).hq)) return 'Your units hold the Yudhbhumi. Drag one onto the enemy Durg to strike it.';
-    if (ready.some(x => unitTargets(x.unit.uid).front)) return 'Drag a glowing unit up to the Yudhbhumi to advance, or onto an enemy to attack.';
-    if (ready.length) return 'Drag a glowing unit onto a red-ringed enemy to attack it.';
-    if (mine.some(x => !x.unit.canAct)) return 'Units that just arrived must wait a turn, unless they have Vega (the double arrow).';
+    if (ready.some(x => unitTargets(x.unit.uid).front)) return L.phone ? 'Move a glowing unit up to the Yudhbhumi, or onto an enemy.' : 'Drag a glowing unit up to the Yudhbhumi to advance, or onto an enemy to attack.';
+    if (ready.length) return `${tap} a glowing unit onto a red-ringed enemy to attack it.`;
+    if (mine.some(x => !x.unit.canAct)) return L.phone ? 'New units wait a turn, unless they have Vega (the double arrow).' : 'Units that just arrived must wait a turn, unless they have Vega (the double arrow).';
     if (me.kosha === 0) return 'Your treasury is spent. Press End Turn.';
-    return 'Long-press or right-click any card to read it. Press End Turn when you are done.';
+    return L.phone ? 'Hold a card to read it. Press End Turn when you are done.' : 'Long-press or right-click any card to read it. Press End Turn when you are done.';
   }
 
   function clearTargets(): void {
@@ -356,28 +522,50 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     durg[1].setRing(false);
     lanes.alpha = 1; frontGlow.alpha = 1;
     zoneGlow.clear();
+    syncPreview();
   }
-  const zoneGlow = new Graphics();
-  s.addChildAt(zoneGlow, 2);
 
   function showTargets(p: Exclude<Pick, null>): void {
     clearTargets();
     if (p.kind === 'card') {
       const t = cardTargets(p.index);
-      if (t.zone === 'mine') glowZone(LINE_Y.mine);
-      if (t.zone === 'board') { glowZone(LINE_Y.front); }
+      if (t.zone === 'mine') glowZone(L.line.mine);
+      if (t.zone === 'board') { glowZone(L.line.front); }
       t.units.forEach(uid => tokens.get(uid)?.setRing('target'));
     } else {
       const t = unitTargets(p.uid);
-      if (t.front) glowZone(LINE_Y.front);
+      if (t.front) glowZone(L.line.front);
       t.units.forEach(uid => tokens.get(uid)?.setRing('target'));
       durg[1].setRing(t.hq);
       tokens.get(p.uid)?.setRing('selected');
     }
+    syncPreview();
   }
   function glowZone(y: number): void {
-    zoneGlow.roundRect(LANE_X - 4, y - LANE_H / 2 - 4, LANE_W + 8, LANE_H + 8, 18).stroke({ width: 5, color: 0x7dff8a, alpha: 0.9 });
-    zoneGlow.roundRect(LANE_X, y - LANE_H / 2, LANE_W, LANE_H, 16).fill({ color: 0x7dff8a, alpha: 0.08 });
+    zoneGlow.roundRect(L.laneX - 4, y - L.laneH / 2 - 4, L.laneW + 8, L.laneH + 8, 18).stroke({ width: 5, color: 0x7dff8a, alpha: 0.9 });
+    zoneGlow.roundRect(L.laneX, y - L.laneH / 2, L.laneW, L.laneH, 16).fill({ color: 0x7dff8a, alpha: 0.08 });
+  }
+
+  /** phones: while a card or unit is selected, show it large at the side so its text can be read */
+  let previewId: string | null = null;
+  function syncPreview(): void {
+    let id: string | null = null;
+    if (L.preview && pick && !drag) {
+      id = pick.kind === 'card' ? (hand[pick.index]?.cardId ?? null) : (tokens.get(pick.uid)?.cardId ?? null);
+    }
+    if (id === previewId) return;
+    previewId = id;
+    previewLayer.children.forEach(c => stopTweens(c as Container));
+    previewLayer.removeChildren().forEach(c => c.destroy());
+    if (!id || !L.preview) return;
+    const sp = new Sprite(cardFace(id, st.players[0].upgrades[id] || 0));
+    sp.anchor.set(0.5); sp.position.set(L.preview.x, L.preview.y);
+    const k = L.preview.s;
+    sp.scale.set(k);
+    const shade = new Graphics().roundRect(L.preview.x - 240 * k - 8, L.preview.y - 336 * k - 8, 480 * k + 16, 672 * k + 16, 20).fill({ color: 0x000000, alpha: 0.55 });
+    previewLayer.addChild(shade, sp);
+    previewLayer.eventMode = 'none';
+    gsap.from(sp, { alpha: 0, x: sp.x + 40, duration: 0.2 });
   }
 
   /* ---------------- input ---------------- */
@@ -387,14 +575,14 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     h.on('pointerdown', (e: FederatedPointerEvent) => {
       if (e.button === 2) { inspect(h.cardId); return; }
       audio.unlock();
-      if (busy || st.active !== 0 || st.over) { (lastPointer = toDesign(e), armLongPress(h.cardId)); return; }
+      if (busy || st.active !== 0 || st.over || h.flipping) { (lastPointer = toDesign(e), armLongPress(h.cardId)); return; }
       const index = hand.indexOf(h);
       const p = toDesign(e);
       drag = { kind: 'card', index, view: h, moved: false, sx: p.x, sy: p.y, downAt: performance.now() };
       (lastPointer = toDesign(e), armLongPress(h.cardId));
     });
-    h.on('pointerover', () => { if (!drag) { hoverIdx = hand.indexOf(h); layoutHand(); } });
-    h.on('pointerout', () => { if (!drag && hoverIdx === hand.indexOf(h)) { hoverIdx = -1; layoutHand(); } });
+    h.on('pointerover', (e: FederatedPointerEvent) => { if (e.pointerType === 'mouse' && !drag) { hoverIdx = hand.indexOf(h); layoutHand(); } });
+    h.on('pointerout', (e: FederatedPointerEvent) => { if (e.pointerType === 'mouse' && !drag && hoverIdx === hand.indexOf(h)) { hoverIdx = -1; layoutHand(); } });
   }
 
   function bindToken(v: TokenView): void {
@@ -435,51 +623,51 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     if (drag.kind === 'card') {
       const v = drag.view;
       const vx = p.x - v.x;
-      gsap.to(v, { x: p.x, y: p.y, rotation: Math.max(-0.35, Math.min(0.35, vx * 0.01)), duration: 0.08 });
-      gsap.to(v.scale, { x: 0.72, y: 0.72, duration: 0.15 });
+      gsap.to(v, { x: p.x, y: p.y, rotation: Math.max(-0.35, Math.min(0.35, vx * 0.01)), duration: 0.08, overwrite: 'auto' });
+      gsap.to(v.scale, { x: L.dragScale, y: L.dragScale, duration: 0.15, overwrite: 'auto' });
       const t = cardTargets(drag.index);
       if (t.units.length) drawArrow(v.x, v.y - 60, p.x, p.y, hitUnit(p, 1) !== null);
       else arrow.clear();
     } else {
       const v = drag.view;
-      const over = hitUnit(p, 1) !== null || hitDurg(p) || (unitTargets(drag.uid).front && inLane(p, LINE_Y.front));
-      drawArrow(v.x, v.y - TOKEN_DH / 2 + 30, p.x, p.y, over);
+      const over = hitUnit(p, 1) !== null || hitDurg(p) || (unitTargets(drag.uid).front && inLane(p, L.line.front));
+      drawArrow(v.x, v.y - (TOKEN_DH / 2 - 30) * L.tok, p.x, p.y, over);
     }
   });
   s.on('pointerup', (e: FederatedPointerEvent) => void release(e));
   s.on('pointerupoutside', (e: FederatedPointerEvent) => void release(e));
   s.on('pointerdown', (e: FederatedPointerEvent) => {
-    if (inspecting) { closeInspect(); return; }
+    if (overlay?.kind === 'inspect') { closeInspect(); return; }
     // tap-to-target: a tap on the field after selecting
     if (!pick || drag || busy) return;
     const p = toDesign(e);
     const tgt = targetAt(p, pick);
-    if (tgt) resolvePickOn(tgt); else if (p.y < HAND_Y - 140) { pick = null; clearTargets(); refreshInteractivity(); }
+    if (tgt) resolvePickOn(tgt); else if (p.y < L.handTop + 10) { pick = null; clearTargets(); refreshInteractivity(); hoverIdx = -1; layoutHand(); }
   });
 
   type DropTarget = Target | { kind: 'zone'; zone: 'mine' | 'front' | 'board' };
 
-  function inLane(p: Point, y: number): boolean { return p.x > LANE_X - 20 && p.x < LANE_X + LANE_W + 20 && Math.abs(p.y - y) < LANE_H / 2 + 20; }
+  function inLane(p: Point, y: number): boolean { return p.x > L.laneX - 20 && p.x < L.laneX + L.laneW + 20 && Math.abs(p.y - y) < L.laneH / 2 + 20; }
   function hitUnit(p: Point, owner: PlayerIndex): number | null {
-    for (const v of tokens.values()) if (v.owner === owner && Math.abs(p.x - v.x) < 95 && Math.abs(p.y - v.y) < 115) return v.uid;
+    for (const v of tokens.values()) if (v.owner === owner && Math.abs(p.x - v.x) < 95 * L.tok && Math.abs(p.y - v.y) < 115 * L.tok) return v.uid;
     return null;
   }
-  const hitDurg = (p: Point) => Math.abs(p.x - durg[1].x) < 130 && Math.abs(p.y - durg[1].y) < 130;
+  const hitDurg = (p: Point) => Math.abs(p.x - durg[1].x) < 130 * L.durgS && Math.abs(p.y - durg[1].y) < 130 * L.durgS;
 
   function targetAt(p: Point, from: Exclude<Pick, null>): DropTarget | null {
     if (from.kind === 'card') {
       const t = cardTargets(from.index);
       const u = hitUnit(p, 1);
       if (u !== null && t.units.includes(u)) return { kind: 'unit', owner: 1, uid: u };
-      if (t.zone === 'mine' && (inLane(p, LINE_Y.mine) || inLane(p, LINE_Y.front))) return { kind: 'zone', zone: 'mine' };
-      if (t.zone === 'board' && p.y < HAND_Y - 150) return { kind: 'zone', zone: 'board' };
+      if (t.zone === 'mine' && (inLane(p, L.line.mine) || inLane(p, L.line.front))) return { kind: 'zone', zone: 'mine' };
+      if (t.zone === 'board' && p.y < L.handTop) return { kind: 'zone', zone: 'board' };
       return null;
     }
     const t = unitTargets(from.uid);
     const u = hitUnit(p, 1);
     if (u !== null && t.units.includes(u)) return { kind: 'unit', owner: 1, uid: u };
     if (t.hq && hitDurg(p)) return { kind: 'hq', owner: 1 };
-    if (t.front && inLane(p, LINE_Y.front)) return { kind: 'zone', zone: 'front' };
+    if (t.front && inLane(p, L.line.front)) return { kind: 'zone', zone: 'front' };
     return null;
   }
 
@@ -495,7 +683,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       const p2: Pick = d.kind === 'card' ? { kind: 'card', index: d.index } : { kind: 'unit', uid: d.uid };
       const same = pick && pick.kind === p2.kind && (p2.kind === 'card' ? (pick as { index: number }).index === p2.index : (pick as { uid: number }).uid === p2.uid);
       clearTargets();
-      if (same) { pick = null; refreshInteractivity(); return; }
+      if (same) { pick = null; hoverIdx = -1; layoutHand(); refreshInteractivity(); return; }
       // a card with nowhere to choose (an order or yantra) is played on a second tap of the board
       pick = p2; audio.play('click');
       if (d.kind === 'card') { hoverIdx = d.index; layoutHand(); }
@@ -537,59 +725,73 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     }
     const check = applyAction(st, action);
     if (!check.ok) { flashHint(check.reason); layoutHand(); return; }
-    busy = true;
+    busy = true; animating = true;
     refreshInteractivity();
     const events = drainEvents(st);
-    const spawn = new Map<number, { x: number; y: number; scale?: number }>();
+    const spawn: Spawn = new Map();
+    const handoff: Container[] = [];
     if (cardView) {
       hand = hand.filter(h => h !== cardView);
       const dep = events.find(ev => ev.t === 'deploy');
       if (dep && dep.t === 'deploy') {
-        spawn.set(dep.uid, { x: cardView.x, y: cardView.y, scale: 0.9 });
+        spawn.set(dep.uid, { x: cardView.x, y: cardView.y, scale: 0.9 * L.tok });
         cardView.destroy();
       } else {
-        await castCard(cardView, events);
+        const left = await castCard(cardView, events);
+        if (left) handoff.push(left);
       }
     }
-    await animate(events, snapshot(st), spawn);
-    busy = false;
+    await animate(events, snapshot(st), spawn, handoff);
+    busy = false; animating = false;
     refreshInteractivity();
-    checkOver();
+    if (!checkOver()) settle();
   }
 
-  /** an order card rises to the centre, glows and dissolves; a yantra flips face-down to its slot */
-  async function castCard(v: HandCard, events: GameEvent[]): Promise<void> {
+  /** an order card rises to the centre, glows and dissolves; a yantra turns face-down on its way to its slot */
+  async function castCard(v: HandCard, events: GameEvent[]): Promise<Container | null> {
     fx.addChild(v);
     const isYantra = events.some(e => e.t === 'yantraSet');
     audio.play('cardPlay');
     if (isYantra) {
-      await gsap.to(v, { x: yantraRow[0].x, y: yantraRow[0].y, rotation: 0, duration: 0.45, ease: 'power2.inOut' });
-      await gsap.to(v.scale, { x: 0.05, y: 0.44, duration: 0.15 });
-      v.destroy();
+      const n = st.players[0].yantras.length;
+      await Promise.all([
+        gsap.to(v, { x: L.yantraX, y: L.line.mine + yantraSlotY(n - 1, n), rotation: 0, duration: 0.6, ease: 'power2.inOut', overwrite: 'auto' }),
+        gsap.to(v.scale, { x: L.yantraS, y: L.yantraS, duration: 0.6, ease: 'power2.inOut', overwrite: 'auto' }),
+        v.turnDown({ delay: 0.08, duration: 0.45 })
+      ]);
       audio.play('yantra');
-      return;
+      return v;
     }
-    await Promise.all([gsap.to(v, { x: SLOT_CX, y: LINE_Y.front, rotation: 0, duration: 0.35, ease: 'power2.out' }), gsap.to(v.scale, { x: 1.1, y: 1.1, duration: 0.35 })]);
+    await Promise.all([
+      gsap.to(v, { x: L.reveal.x, y: L.reveal.y, rotation: 0, duration: 0.35, ease: 'power2.out', overwrite: 'auto' }),
+      gsap.to(v.scale, { x: L.reveal.s, y: L.reveal.s, duration: 0.35, overwrite: 'auto' })
+    ]);
     const shakti = CARDS[v.cardId].kind === 'shakti';
     if (shakti) { audio.play('conch'); flash(0xffd27a, 0.35); }
     await gsap.to(v, { alpha: 0, duration: 0.4, delay: 0.35 });
     v.destroy();
+    return null;
   }
 
   /* ---------------- event animation ---------------- */
-  async function animate(events: GameEvent[], after: Snap, spawn = new Map<number, { x: number; y: number; scale?: number }>()): Promise<void> {
+  async function animate(events: GameEvent[], after: Snap, spawn: Spawn = new Map(), handoff: Container[] = []): Promise<void> {
     for (const e of events) {
       if (!alive) return;
       switch (e.t) {
         case 'deploy': {
-          if (!spawn.has(e.uid)) spawn.set(e.uid, e.owner === 1 ? { x: ENEMY_HAND.x, y: ENEMY_HAND.y, scale: 0.3 } : { x: HAND_CX, y: HAND_Y, scale: 0.6 });
+          if (e.owner === 1) {
+            const target = slotOf(after, e.uid);
+            const card = await enemyReveal(e.cardId, target);
+            if (card) handoff.push(card);
+            spawn.set(e.uid, { x: target.x, y: target.y, scale: 0.94 * L.tok });
+          } else if (!spawn.has(e.uid)) spawn.set(e.uid, { x: L.handCX, y: L.handY, scale: 0.6 * L.tok });
           sfxFor(e.cardId);
           break;
         }
         case 'move': {
           audio.play('march');
           const v = tokens.get(e.uid);
-          if (v) await gsap.to(v, { y: LINE_Y.front, duration: 0.35, ease: 'power2.inOut' });
+          if (v) await gsap.to(v, { y: L.line.front, duration: 0.35, ease: 'power2.inOut' });
           break;
         }
         case 'attack': {
@@ -605,15 +807,15 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
           break;
         }
         case 'order': {
-          if (e.owner === 1) await enemyCast(e.cardId);
+          if (e.owner === 1) await enemyReveal(e.cardId, null);
           if (e.cardId === 's_agni' || e.cardId === 'n_aakraman') {
             audio.play(e.cardId === 's_agni' ? 'fire' : 'clash');
-          } else if (e.cardId === 's_chakravyuha') { audio.play('drum'); shake(10); }
+          } else if (e.cardId === 's_chakravyuha' || e.cardId === 'n_visha_baan') { audio.play(e.cardId === 'n_visha_baan' ? 'bow' : 'drum'); shake(10); }
           else audio.play('coin');
           break;
         }
         case 'yantraSet':
-          if (e.owner === 1) audio.play('cardPlay');
+          if (e.owner === 1) { const b = await enemySetYantra(after); if (b) handoff.push(b); }
           break;
         case 'yantra':
           await reveal(e.cardId, e.owner);
@@ -623,7 +825,19 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       }
     }
     reconcile(after, false, spawn);
+    // cards that flew to where a token or yantra now stands melt into it
+    handoff.forEach(h => gsap.to(h, { alpha: 0, duration: 0.18, onComplete: () => destroyTree(h) }));
     await wait(events.some(ev => ev.t === 'death' || ev.t === 'attack' || ev.t === 'hq') ? 520 : 380);
+  }
+
+  /** where a unit will stand in a state (for cards flying to their slot) */
+  function slotOf(state: Snap, uid: number): { x: number; y: number } {
+    const lines: [Unit[], number][] = [[state.players[1].support, L.line.enemy], [state.players[0].support, L.line.mine], [state.front.units, L.line.front]];
+    for (const [list, y] of lines) {
+      const i = list.findIndex(u => u.uid === uid);
+      if (i >= 0) return { x: slotX(i, list.length), y };
+    }
+    return { x: L.laneX + L.laneW / 2, y: L.line.enemy };
   }
 
   function sfxFor(cardId: string): void {
@@ -638,7 +852,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     if (ranged) {
       audio.play('bow');
       const ar = new Graphics().moveTo(-22, 0).lineTo(22, 0).stroke({ width: 3, color: 0xf0d79a }).poly([22, -6, 34, 0, 22, 6]).fill(0xf0d79a);
-      ar.position.set(a.x, a.y - 40); ar.rotation = Math.atan2(ty - a.y, tx - a.x);
+      ar.position.set(a.x, a.y - 40 * L.tok); ar.rotation = Math.atan2(ty - a.y, tx - a.x);
       fx.addChild(ar);
       await gsap.to(a, { y: a.y + (ty > a.y ? -10 : 10), duration: 0.08, yoyo: true, repeat: 1 });
       await gsap.to(ar, { x: tx, y: ty, duration: 0.32, ease: 'power1.in' });
@@ -654,33 +868,86 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     await gsap.to(a, { x: ox, y: oy, rotation: 0, duration: 0.3, ease: 'power2.out' });
   }
 
-  async function enemyCast(cardId: string): Promise<void> {
-    const v = new Sprite(cardFace(cardId)); v.anchor.set(0.5); v.scale.set(0.15); v.position.set(ENEMY_HAND.x, ENEMY_HAND.y);
-    fx.addChild(v);
-    audio.play('cardPlay');
-    await Promise.all([gsap.to(v, { x: SLOT_CX, y: LINE_Y.front, duration: 0.4, ease: 'power2.out' }), gsap.to(v.scale, { x: 0.55, y: 0.55, duration: 0.4 })]);
-    if (CARDS[cardId].kind === 'shakti') { audio.play('conch'); flash(0xff8a5a, 0.3); }
-    await gsap.to(v, { alpha: 0, duration: 0.4, delay: 0.7 });
-    v.destroy();
+  /** take one card back out of the enemy's hand, returning where it was */
+  function takeEnemyCard(): { x: number; y: number; r: number } {
+    const b = enemyHand.pop();
+    const from = b ? { x: b.x, y: b.y, r: b.rotation } : { x: L.enemyHand.x, y: L.enemyHand.y, r: Math.PI };
+    b?.destroy();
+    return from;
   }
 
+  /** The enemy plays a card: it leaves their hand face-down, turns over in mid-air so you can read it,
+      then either flies to its place on the board (a unit; returned for the hand-off) or fades (an order). */
+  async function enemyReveal(cardId: string, target: { x: number; y: number } | null): Promise<HandCard | null> {
+    const from = takeEnemyCard();
+    const v = new HandCard(cardId, 0, true);
+    v.eventMode = 'none'; v.position.set(from.x, from.y); v.rotation = from.r - Math.PI * 2; v.scale.set(L.enemyHand.s);
+    fx.addChild(v);
+    audio.play('cardPlay');
+    const ry = target ? (L.line.enemy + L.line.front) / 2 : L.reveal.y;
+    await Promise.all([
+      gsap.to(v, { x: L.reveal.x, y: ry, rotation: 0, duration: 0.55, ease: 'power2.out' }),
+      gsap.to(v.scale, { x: L.reveal.s, y: L.reveal.s, duration: 0.55, ease: 'power2.out' }),
+      v.turnUp({ delay: 0.12, duration: 0.45 })
+    ]);
+    if (!alive) return null;
+    if (!target) {
+      if (CARDS[cardId].kind === 'shakti') { audio.play('conch'); flash(0xff8a5a, 0.3); }
+      await gsap.to(v, { alpha: 0, duration: 0.4, delay: 0.75 });
+      v.destroy();
+      return null;
+    }
+    // to its slot, shrinking to the size of a token
+    const k = (TOKEN_DH * L.tok) / 336;
+    await Promise.all([
+      gsap.to(v, { x: target.x, y: target.y, duration: 0.32, delay: 0.5, ease: 'power2.in' }),
+      gsap.to(v.scale, { x: k, y: k, duration: 0.32, delay: 0.5, ease: 'power2.in' })
+    ]);
+    return v;
+  }
+
+  /** the enemy sets a yantra: a card back slides from their hand to their yantra row */
+  async function enemySetYantra(after: Snap): Promise<HandCard | null> {
+    const from = takeEnemyCard();
+    const v = new HandCard('y_kavach', 0, true);
+    v.eventMode = 'none'; v.position.set(from.x, from.y); v.rotation = from.r - Math.PI * 2; v.scale.set(L.enemyHand.s);
+    fx.addChild(v);
+    audio.play('cardPlay');
+    const n = after.players[1].yantras.length;
+    await Promise.all([
+      gsap.to(v, { x: L.yantraX, y: L.line.enemy + yantraSlotY(n - 1, n), rotation: 0, duration: 0.55, ease: 'power2.inOut' }),
+      gsap.to(v.scale, { x: L.yantraS, y: L.yantraS, duration: 0.55 })
+    ]);
+    return alive ? v : null;
+  }
+
+  /** a hidden yantra springs: its card lifts out of the row and turns over in the middle of the field */
   async function reveal(cardId: string, owner: PlayerIndex): Promise<void> {
     audio.play('yantra');
     const row = yantraRow[owner];
-    const v = new Sprite(cardFace(cardId)); v.anchor.set(0.5); v.scale.set(0.05, 0.11); v.position.set(row.x, row.y);
+    const slot = row.children[row.children.length - 1] as Container | undefined;
+    const from = slot ? { x: row.x + slot.x, y: row.y + slot.y } : { x: L.yantraX, y: owner === 0 ? L.line.mine : L.line.enemy };
+    if (slot) slot.visible = false;
+    const v = new HandCard(cardId, 0, true);
+    v.eventMode = 'none'; v.position.set(from.x, from.y); v.scale.set(L.yantraS);
     fx.addChild(v);
-    const label = new Text({ text: `${CARDS[cardId].name} springs!`, style: { fontFamily: FONT_SERIF, fontSize: 52, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 7 } } });
-    label.anchor.set(0.5); label.position.set(SLOT_CX, LINE_Y.front + 230); label.alpha = 0;
+    const label = new Text({ text: `${CARDS[cardId].name} springs!`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(52 * Math.min(L.ui, 1.15)), fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 7 } } });
+    label.anchor.set(0.5); label.position.set(L.reveal.x, L.line.front + 336 * L.reveal.s * 0.5 + 34); label.alpha = 0;
     fx.addChild(label);
-    await Promise.all([gsap.to(v, { x: SLOT_CX, y: LINE_Y.front - 10, duration: 0.4 }), gsap.to(v.scale, { x: 0.6, y: 0.6, duration: 0.4, ease: 'back.out(1.4)' }), gsap.to(label, { alpha: 1, duration: 0.3 })]);
-    flash(0xa0c8ff, 0.25);
+    await Promise.all([
+      gsap.to(v, { x: L.reveal.x, y: L.reveal.y - 10, duration: 0.5, ease: 'back.out(1.2)' }),
+      gsap.to(v.scale, { x: L.reveal.s, y: L.reveal.s, duration: 0.5, ease: 'back.out(1.3)' }),
+      v.turnUp({ delay: 0.15, duration: 0.45, onHalf: () => flash(0xa0c8ff, 0.25) }),
+      gsap.to(label, { alpha: 1, duration: 0.3, delay: 0.35 })
+    ]);
+    if (!alive) return;
     await gsap.to([v, label], { alpha: 0, duration: 0.4, delay: 0.9 });
     v.destroy(); label.destroy();
   }
 
   /* ---------------- effects ---------------- */
   function floatNumber(x: number, y: number, text: string, color: number, size = 54): void {
-    const t = new Text({ text, style: { fontFamily: FONT_SERIF, fontSize: size, fontWeight: '700', fill: color, stroke: { color: 0x3a0a04, width: 7 } } });
+    const t = new Text({ text, style: { fontFamily: FONT_SERIF, fontSize: Math.round(size * (L.phone ? 1.15 : 1)), fontWeight: '700', fill: color, stroke: { color: 0x3a0a04, width: 7 } } });
     t.anchor.set(0.5); t.position.set(x, y); fx.addChild(t);
     gsap.fromTo(t.scale, { x: 0.4, y: 0.4 }, { x: 1, y: 1, duration: 0.25, ease: 'back.out(2)' });
     gsap.to(t, { y: y - 80, alpha: 0, duration: 1.1, delay: 0.3, ease: 'power1.out', onComplete: () => t.destroy() });
@@ -701,15 +968,15 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     v.eventMode = 'none';
     for (let i = 0; i < 20; i++) {
       const p = new Graphics().circle(0, 0, 2 + Math.random() * 3).fill(Math.random() < 0.5 ? 0xff8a2a : 0xffd27a);
-      p.blendMode = 'add'; p.position.set(v.x - 80 + Math.random() * 160, v.y + 100 - Math.random() * 200); fx.addChild(p);
+      p.blendMode = 'add'; p.position.set(v.x + (-80 + Math.random() * 160) * L.tok, v.y + (100 - Math.random() * 200) * L.tok); fx.addChild(p);
       gsap.to(p, { y: p.y - 60 - Math.random() * 80, alpha: 0, duration: 0.8 + Math.random() * 0.6, delay: Math.random() * 0.3, onComplete: () => p.destroy() });
     }
     gsap.to(v, { alpha: 0, duration: 0.7, ease: 'power1.in', onComplete: () => v.destroy() });
-    gsap.to(v.scale, { x: 0.85, y: 0.85, duration: 0.7 });
+    gsap.to(v.scale, { x: 0.85 * L.tok, y: 0.85 * L.tok, duration: 0.7 });
   }
   function shake(px: number): void { gsap.fromTo(s, { x: -px }, { x: 0, duration: 0.5, ease: 'elastic.out(1, 0.25)' }); }
   function flash(color: number, alpha: number): void {
-    const f = new Graphics().rect(0, 0, DESIGN_W, DESIGN_H).fill(color); f.alpha = alpha; f.blendMode = 'add'; fx.addChild(f);
+    const f = new Graphics().rect(0, 0, L.W, L.H).fill(color); f.alpha = alpha; f.blendMode = 'add'; fx.addChild(f);
     gsap.to(f, { alpha: 0, duration: 0.6, onComplete: () => f.destroy() });
   }
   function drawArrow(x0: number, y0: number, x1: number, y1: number, hot: boolean): void {
@@ -728,50 +995,49 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     arrow.poly([x1 + Math.cos(ang) * 14, y1 + Math.sin(ang) * 14, x1 + Math.cos(ang + 2.5) * 30, y1 + Math.sin(ang + 2.5) * 30, x1 + Math.cos(ang - 2.5) * 30, y1 + Math.sin(ang - 2.5) * 30]).fill(col);
   }
   function flashHint(text: string): void {
+    const hx = L.laneX + L.laneW / 2;
     hint.text = text; hint.style.fill = 0xffb09a;
-    gsap.fromTo(hint, { x: SLOT_CX - 10 }, { x: SLOT_CX, duration: 0.4, ease: 'elastic.out(1, 0.3)' });
-    setTimeout(() => { hint.style.fill = INK.cream; refreshInteractivity(); }, 1600);
+    gsap.fromTo(hint, { x: hx - 10 }, { x: hx, duration: 0.4, ease: 'elastic.out(1, 0.3)' });
+    setTimeout(() => { if (!alive) return; hint.style.fill = INK.cream; refreshInteractivity(); }, 1600);
   }
   const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 
   /* ---------------- inspect ---------------- */
   function inspect(cardId: string): void {
-    if (inspecting) closeInspect();
+    if (overlay?.kind === 'inspect') closeInspect();
+    if (overlay) return;
     hoverIdx = -1; layoutHand();
-    const c = new Container();
-    const dim = new Graphics().rect(0, 0, DESIGN_W, DESIGN_H).fill({ color: 0x000000, alpha: 0.7 });
-    const face = new Sprite(cardFace(cardId, st.players[0].upgrades[cardId] || 0)); face.anchor.set(0.5); face.position.set(DESIGN_W / 2, DESIGN_H / 2 - 20); face.scale.set(1.1);
-    const tip = new Text({ text: 'Tap anywhere to close', style: { fontFamily: FONT_SERIF, fontSize: 22, fontStyle: 'italic', fill: INK.smoke } });
-    tip.anchor.set(0.5); tip.position.set(DESIGN_W / 2, DESIGN_H - 40);
-    c.addChild(dim, face, tip);
-    c.eventMode = 'static'; c.on('pointertap', closeInspect);
-    s.addChild(c); inspecting = c;
-    gsap.from(face.scale, { x: 0.6, y: 0.6, duration: 0.25, ease: 'back.out(1.5)' });
-    gsap.from(c, { alpha: 0, duration: 0.15 });
+    const c = inspectOverlay(cardId, st.players[0].upgrades[cardId] || 0, closeInspect);
+    s.addChild(c);
+    overlay = { kind: 'inspect', view: c };
   }
-  function closeInspect(): void { if (inspecting) destroyTree(inspecting); inspecting = null; }
+  function closeInspect(): void {
+    if (overlay?.kind !== 'inspect') return;
+    destroyTree(overlay.view); overlay = null;
+  }
 
   /* ---------------- turns ---------------- */
   async function turnBanner(who: PlayerIndex): Promise<void> {
-    const band = new Graphics().rect(0, -70, DESIGN_W, 140).fill({ color: 0x000000, alpha: 0.75 });
-    band.moveTo(0, -70).lineTo(DESIGN_W, -70).moveTo(0, 70).lineTo(DESIGN_W, 70).stroke({ width: 2, color: who === 0 ? INK.gold : 0xe0674a });
+    const bh = L.phone ? 120 : 140;
+    const band = new Graphics().rect(0, -bh / 2, L.W, bh).fill({ color: 0x000000, alpha: 0.75 });
+    band.moveTo(0, -bh / 2).lineTo(L.W, -bh / 2).moveTo(0, bh / 2).lineTo(L.W, bh / 2).stroke({ width: 2, color: who === 0 ? INK.gold : 0xe0674a });
     const t = new Text({ text: who === 0 ? 'YOUR TURN' : 'THE NANDA ARMY MOVES', style: { fontFamily: FONT_SERIF, fontSize: 72, fontWeight: '700', letterSpacing: 14, fill: who === 0 ? INK.goldPale : 0xffb09a } });
-    t.anchor.set(0.5); t.x = DESIGN_W / 2;
-    const c = new Container(); c.addChild(band, t); c.y = LINE_Y.front; fx.addChild(c);
+    t.anchor.set(0.5); t.x = L.W / 2;
+    const c = new Container(); c.addChild(band, t); c.y = L.line.front; fx.addChild(c);
     audio.play(who === 0 ? 'conch' : 'drum');
     await gsap.fromTo(c, { alpha: 0 }, { alpha: 1, duration: 0.25 });
-    await gsap.fromTo(t, { x: DESIGN_W / 2 - 40 }, { x: DESIGN_W / 2 + 10, duration: 0.8, ease: 'none' });
+    await gsap.fromTo(t, { x: L.W / 2 - 40 }, { x: L.W / 2 + 10, duration: 0.8, ease: 'none' });
     await gsap.to(c, { alpha: 0, duration: 0.3 });
     destroyTree(c);
   }
 
   async function endTurn(): Promise<void> {
-    pick = null; clearTargets();
-    busy = true;
+    pick = null; clearTargets(); hoverIdx = -1;
+    busy = true; animating = true;
     applyAction(st, { type: 'end' });
     drainEvents(st);
     reconcile(snapshot(st));
-    if (st.over) { busy = false; checkOver(); return; }
+    if (st.over) { busy = false; animating = false; checkOver(); return; }
     await turnBanner(1);
     // record the computer's turn one action at a time
     const steps: { events: GameEvent[]; snap: Snap }[] = [];
@@ -784,80 +1050,122 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       if (endStep) { reconcile(step.snap); break; }
       await animate(step.events, step.snap);
     }
+    if (!alive) return;
     busy = false;
     reconcile(snapshot(st));
     if (!checkOver()) await turnBanner(0);
+    animating = false;
     refreshInteractivity();
+    settle();
+  }
+
+  /** after an animation: apply a layout change that arrived while it ran */
+  function settle(): void {
+    if (layoutPending && !animating) { layoutPending = false; relayout(); }
   }
 
   function checkOver(): boolean {
     if (!st.over) return false;
     busy = true;
     const won = st.winner === 0;
-    setTimeout(() => endScreen(won), 900);
+    setTimeout(() => { if (alive) endScreen(won, true); }, 900);
     return true;
   }
 
-  function endScreen(won: boolean): void {
-    audio.play(won ? 'victory' : 'defeat');
+  function endScreen(won: boolean, animate: boolean): void {
+    if (animate) {
+      if (audio.has(won ? 'music_victory' : 'music_defeat')) audio.play(won ? 'conch' : 'drum');
+      else audio.play(won ? 'victory' : 'defeat');
+      audio.playMusic(won ? 'music_victory' : 'music_defeat');
+    }
+    const W = L.W, H = L.H, ph = L.phone;
     const c = new Container();
-    const dim = new Graphics().rect(0, 0, DESIGN_W, DESIGN_H).fill({ color: 0x000000, alpha: 0.78 });
+    const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.78 });
     dim.eventMode = 'static';
-    const face = new Sprite(cardFace(won ? 'm_chandragupta' : 'n_gaja')); face.anchor.set(0.5); face.scale.set(0.75); face.position.set(DESIGN_W / 2, 380);
-    const title = new Text({ text: won ? 'VICTORY' : 'DEFEAT', style: { fontFamily: FONT_SERIF, fontSize: 120, fontWeight: '700', letterSpacing: 24, fill: won ? INK.goldPale : 0xffb09a, stroke: { color: 0x000000, width: 8 } } });
-    title.anchor.set(0.5); title.position.set(DESIGN_W / 2, 690);
+    const face = new Sprite(cardFace(won ? 'm_chandragupta' : 'n_gaja')); face.anchor.set(0.5); face.scale.set(ph ? 0.5 : 0.75); face.position.set(W / 2, ph ? 230 : 380);
+    const title = new Text({ text: won ? 'VICTORY' : 'DEFEAT', style: { fontFamily: FONT_SERIF, fontSize: ph ? 104 : 120, fontWeight: '700', letterSpacing: 24, fill: won ? INK.goldPale : 0xffb09a, stroke: { color: 0x000000, width: 8 } } });
+    title.anchor.set(0.5); title.position.set(W / 2, ph ? 474 : 690);
     const sub = new Text({
       text: won ? `Pataliputra opens its gates in turn ${st.turn}. The Mauryan age begins.` : 'The Nanda elephants hold the field. Chanakya is already planning the next war.',
-      style: { fontFamily: FONT_SERIF, fontSize: 30, fontStyle: 'italic', fill: INK.cream }
+      style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * L.ui), fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - 200 }
     });
-    sub.anchor.set(0.5); sub.position.set(DESIGN_W / 2, 780);
-    const again = makeButton('Fight again', () => { destroyTree(c); busy = false; start(); }, { primary: true, w: 320 });
-    again.position.set(DESIGN_W / 2 - 180, 880);
+    sub.anchor.set(0.5); sub.position.set(W / 2, ph ? 568 : 780);
+    const again = makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 320 });
+    const bx = ph ? 230 : 180;
+    again.position.set(W / 2 - bx, ph ? 690 : 880);
     const leave = makeButton('Title screen', exit, { w: 320 });
-    leave.position.set(DESIGN_W / 2 + 180, 880);
+    leave.position.set(W / 2 + bx, ph ? 690 : 880);
     c.addChild(dim, face, title, sub, again, leave);
     s.addChild(c);
-    gsap.from(face.scale, { x: 0.3, y: 0.3, duration: 0.6, ease: 'back.out(1.4)' });
-    gsap.from([title, sub, again, leave], { alpha: 0, y: '+=30', duration: 0.6, stagger: 0.12, delay: 0.3 });
+    overlay = { kind: 'end', view: c, won };
+    if (animate) {
+      gsap.from(face.scale, { x: 0.3, y: 0.3, duration: 0.6, ease: 'back.out(1.4)' });
+      gsap.from([title, sub, again, leave], { alpha: 0, y: '+=30', duration: 0.6, stagger: 0.12, delay: 0.3 });
+    }
   }
 
   function confirmLeave(): void {
+    if (overlay) return;
+    const W = L.W, H = L.H;
     const c = new Container();
-    const dim = new Graphics().rect(0, 0, DESIGN_W, DESIGN_H).fill({ color: 0x000000, alpha: 0.7 }); dim.eventMode = 'static';
+    const close = () => { overlay = null; destroyTree(c); };
+    const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.7 }); dim.eventMode = 'static';
     const t = new Text({ text: 'Leave the battle?', style: { fontFamily: FONT_SERIF, fontSize: 56, fontWeight: '700', fill: INK.goldPale } });
-    t.anchor.set(0.5); t.position.set(DESIGN_W / 2, 440);
-    const yes = makeButton('Leave', exit, { w: 280 }); yes.position.set(DESIGN_W / 2 - 160, 560);
-    const no = makeButton('Keep fighting', () => destroyTree(c), { primary: true, w: 280 }); no.position.set(DESIGN_W / 2 + 160, 560);
+    t.anchor.set(0.5); t.position.set(W / 2, H / 2 - 100);
+    const bx = L.phone ? 210 : 160;
+    const yes = makeButton('Leave', exit, { w: 280 }); yes.position.set(W / 2 - bx, H / 2 + 20);
+    const no = makeButton('Keep fighting', close, { primary: true, w: 280 }); no.position.set(W / 2 + bx, H / 2 + 20);
     c.addChild(dim, t, yes, no); s.addChild(c);
+    overlay = { kind: 'confirm', view: c };
   }
+
+  /* ---------------- switching between desktop and phone layouts ---------------- */
+  function relayout(): void {
+    if (animating || drag) { layoutPending = true; return; }
+    L = battleLayout(view);
+    pick = null; hoverIdx = -1; previewId = null;
+    previewLayer.removeChildren().forEach(c => c.destroy());
+    const open = overlay;
+    if (open) { destroyTree(open.view); overlay = null; }
+    clearBoard();
+    applyLayout();
+    reconcile(shown, true);
+    if (open?.kind === 'briefing') briefing(false);
+    else if (open?.kind === 'end') endScreen(open.won ?? false, false);
+    else if (!st.over) busy = false;
+  }
+  s.relayout = relayout;
 
   window.addEventListener('contextmenu', blockMenu);
   function blockMenu(e: Event): void { e.preventDefault(); }
 
-  // read-only hook for automated playtests (tests/e2e)
+  // read-only hook for automated playtests (tests/e2e); positions are in screen (CSS) pixels
+  const scr = (x: number, y: number) => { const g = s.toGlobal(new Point(x, y)); return { x: g.x, y: g.y }; };
   (window as unknown as { __yuddh: unknown }).__yuddh = {
-    state: () => st, busy: () => busy,
-    hand: () => hand.map(h => ({ id: h.cardId, x: h.x, y: h.y })),
-    tokens: () => [...tokens.values()].map(v => ({ uid: v.uid, owner: v.owner, x: v.x, y: v.y })),
-    durg: () => ({ x: durg[1].x, y: durg[1].y }),
-    /** every legal drag right now: from → to, in design coordinates */
+    state: () => st, busy: () => busy || dealing(), phone: () => L.phone,
+    hand: () => hand.map(h => ({ id: h.cardId, ...scr(h.x, h.y) })),
+    tokens: () => [...tokens.values()].map(v => ({ uid: v.uid, owner: v.owner, ...scr(v.x, v.y) })),
+    durg: () => scr(durg[1].x, durg[1].y),
+    endTurn: () => scr(endBtn.x, endBtn.y),
+    /** every legal drag right now: from → to */
     moves: () => {
-      if (busy || st.active !== 0 || st.over) return [];
+      if (busy || dealing() || st.active !== 0 || st.over) return [];
       const out: { what: string; from: { x: number; y: number }; to: { x: number; y: number } }[] = [];
+      const mid = L.laneX + L.laneW / 2;
       hand.forEach((h, i) => {
         const t = cardTargets(i);
-        const from = { x: h.x, y: h.y - 30 };
-        if (t.zone === 'mine') out.push({ what: `deploy ${h.cardId}`, from, to: { x: SLOT_CX, y: LINE_Y.mine } });
-        else if (t.zone === 'board') out.push({ what: `cast ${h.cardId}`, from, to: { x: SLOT_CX, y: LINE_Y.front } });
-        t.units.forEach(uid => { const v = tokens.get(uid); if (v) out.push({ what: `cast ${h.cardId} on ${v.cardId}`, from, to: { x: v.x, y: v.y } }); });
+        const from = scr(h.x, h.y - 30 * L.handScale / 0.31);
+        if (t.zone === 'mine') out.push({ what: `deploy ${h.cardId}`, from, to: scr(mid, L.line.mine) });
+        else if (t.zone === 'board') out.push({ what: `cast ${h.cardId}`, from, to: scr(mid, L.line.front) });
+        t.units.forEach(uid => { const v = tokens.get(uid); if (v) out.push({ what: `cast ${h.cardId} on ${v.cardId}`, from, to: scr(v.x, v.y) }); });
       });
       tokens.forEach(v => {
         if (v.owner !== 0) return;
         const t = unitTargets(v.uid);
-        const from = { x: v.x, y: v.y };
-        if (t.hq) out.push({ what: `${v.cardId} strikes the Durg`, from, to: { x: durg[1].x, y: durg[1].y } });
-        t.units.forEach(uid => { const e = tokens.get(uid); if (e) out.push({ what: `${v.cardId} attacks ${e.cardId}`, from, to: { x: e.x, y: e.y } }); });
-        if (t.front) out.push({ what: `${v.cardId} advances`, from, to: { x: SLOT_CX + 300, y: LINE_Y.front } });
+        const from = scr(v.x, v.y);
+        if (t.hq) out.push({ what: `${v.cardId} strikes the Durg`, from, to: scr(durg[1].x, durg[1].y) });
+        t.units.forEach(uid => { const e = tokens.get(uid); if (e) out.push({ what: `${v.cardId} attacks ${e.cardId}`, from, to: scr(e.x, e.y) }); });
+        if (t.front) out.push({ what: `${v.cardId} advances`, from, to: scr(mid + L.laneW * 0.27, L.line.front) });
       });
       return out;
     }
@@ -868,7 +1176,6 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     alive = false;
     fx.children.forEach(c => stopTweens(c as Container));
     window.removeEventListener('contextmenu', blockMenu);
-    stage.setBackdrop(null);
     tokens.forEach(t => t.destroy());
     durg.forEach(d => d.destroy());
     endPulse?.kill();
@@ -876,9 +1183,14 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   return s;
 }
 
-/** preload the battlefield so the board never appears without it */
+/** the art a battle needs: both decks, the two Durgs, the battlefield */
+export function battleArt(): string[] {
+  return [...FIRST_THRONE.playerDeck, ...FIRST_THRONE.enemyDeck, 'durg_maurya_camp', 'durg_pataliputra'];
+}
+
+/** preload the battlefield and paintings so the board never appears without them */
 export async function preloadBattle(): Promise<void> {
-  await Assets.load(`${import.meta.env.BASE_URL}assets/battlefields/${FIRST_THRONE.battlefield}.webp`);
+  await Promise.all([loadBattlefield(FIRST_THRONE.battlefield), loadArt(battleArt())]);
 }
 
 export type { Sfx };

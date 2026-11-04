@@ -6,10 +6,9 @@
    ============================================================ */
 import { Texture } from 'pixi.js';
 import { CARDS, type CardDef, type EmpireId } from '../../engine';
-import { CARD_ART } from '../../assets/manifest';
+import { artImage, hasArt } from '../../assets/manifest';
 import { EMPIRE_STYLE } from '../theme';
 
-const BASE = import.meta.env.BASE_URL;
 const SERIF = "'Cormorant Garamond', Georgia, serif";
 const DEVA = "'Tiro Devanagari Hindi', serif";
 
@@ -18,16 +17,8 @@ export const FACE_W = 480, FACE_H = 672;
 /** board token, in canvas pixels (displayed at half size: 170×210) */
 export const TOKEN_W = 340, TOKEN_H = 420;
 
-const images = new Map<string, HTMLImageElement>();
-
-export async function loadCardImages(): Promise<void> {
-  await Promise.all(CARD_ART.map(id => new Promise<void>(res => {
-    const img = new Image();
-    img.onload = () => { images.set(id, img); res(); };
-    img.onerror = () => res();
-    img.src = `${BASE}assets/cards/${id}.webp`;
-  })));
-}
+/** a painting that exists but has not loaded yet: draw a placeholder now, but do not keep it */
+const notReady = (id: string) => hasArt(id) && !artImage(id);
 
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
 function shade(n: number, f: number): string {
@@ -90,16 +81,16 @@ function archPath(g: CanvasRenderingContext2D, x: number, y: number, w: number, 
 }
 
 function drawArt(g: CanvasRenderingContext2D, id: string, x: number, y: number, w: number, h: number, focusY = 0.38): void {
-  const img = images.get(id);
+  const img = artImage(id);
   if (!img) {
-    const c = CARDS[id];
+    const glyph = CARDS[id]?.glyph ?? 'दु';
     const bg = g.createLinearGradient(0, y, 0, y + h);
     bg.addColorStop(0, '#3a2516'); bg.addColorStop(1, '#140c07');
     g.fillStyle = bg; g.fillRect(x, y, w, h);
     g.fillStyle = 'rgba(240,215,154,0.85)';
     g.font = `${Math.round(h * 0.42)}px ${DEVA}`;
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(c.glyph, x + w / 2, y + h * 0.55);
+    g.fillText(glyph, x + w / 2, y + h * 0.55);
     return;
   }
   const s = Math.max(w / img.width, h / img.height);
@@ -266,7 +257,7 @@ export function cardFace(id: string, upgrade = 0): Texture {
   }
 
   const t = Texture.from(cv);
-  faceCache.set(key, t);
+  if (!notReady(id)) faceCache.set(key, t);
   return t;
 }
 
@@ -339,7 +330,7 @@ export function tokenFace(id: string, owner: 0 | 1): Texture {
 
   coin(g, W - 36, 40, 24, String(c.op ?? 0), 'bronze');
   const t = Texture.from(cv);
-  tokenCache.set(key, t);
+  if (!notReady(id)) tokenCache.set(key, t);
   return t;
 }
 
@@ -368,6 +359,6 @@ export function durgFace(artId: string, owner: 0 | 1): Texture {
   g.restore();
   archPath(g, ax, ay, aw, ah); g.lineWidth = 4; g.strokeStyle = '#e7c46e'; g.stroke();
   const t = Texture.from(cv);
-  durgCache.set(key, t);
+  if (!notReady(artId)) durgCache.set(key, t);
   return t;
 }

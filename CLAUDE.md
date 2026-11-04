@@ -5,24 +5,28 @@ KARDS-style card game of ancient India, built for Pon (owner, non-programmer, di
 ## Ground rules
 - **Never break the golden test.** `tests/golden.test.ts` replays 154 games recorded from Sarwam's prototype engine. If a rule is changed on purpose, re-record with `npm run golden` and say so in the commit.
 - The engine (`src/engine/`) has **no DOM code**. All screen work goes in `src/game/`.
-- Before pushing: `npm test`, `npx tsc --noEmit`, `npm run build`, then a real playtest: `npm run preview` + `node tests/e2e/playtest.cjs http://localhost:4173/ <outdir> [w h]` (set `PW=/opt/npm-tools/node_modules/playwright CHROME=/usr/bin/google-chrome` in the cloud sandbox) and look at the screenshots. Test at 1600×900 and phone landscape 844×390.
+- Before pushing: `npm test`, `npx tsc --noEmit`, `npm run build`, then a real playtest: `npm run preview` + `node tests/e2e/playtest.cjs http://localhost:4173/ <outdir> [w h]` (set `PW=/opt/npm-tools/node_modules/playwright CHROME=/usr/bin/google-chrome` in the cloud sandbox) and look at the screenshots. Test at 1600×900 and phone landscape 844×390, one at a time (two at once starve the headless GPU and drags time out). The playtest visits the gallery, plays a whole battle, films an enemy turn (13-enemy-turn-*), and lists any drag that had no effect with a `fail-N.png`. One stray failure from a long-press firing under headless lag is noise; several are a bug.
+- Waiting on a background process: never `pgrep -f` a pattern that also appears in your own shell's command line (it matches itself forever).
 - Never `pkill -f "vite preview"` from a shell whose own command line contains that text (kills the shell); start servers with `setsid`.
 - GitHub Pages settings API is blocked from the sandbox; publishing is the `deploy.yml` workflow pushing `dist/` to `gh-pages`.
 - Commit as "Claude", attribution lines per session instructions.
 
 ## Stack
-TypeScript, Vite 8, PixiJS 8, GSAP 3, Vitest. Fonts bundled via @fontsource (Cormorant Garamond, Tiro Devanagari Hindi). Design space 1920×1080 scaled to fit; the battlefield fills the window behind it (`Stage.setBackdrop`).
+TypeScript, Vite 8, PixiJS 8, GSAP 3, Vitest. Fonts bundled via @fontsource (Cormorant Garamond, Tiro Devanagari Hindi). Two screen modes (`src/game/view.ts`): desktop uses a 1920×1080 design space; a phone held sideways (short side ≤ 540 CSS px) gets an 800-high design space as wide as the screen's shape, plus `view.ui` (1.3) for text and controls. Responsive scenes read `view` and implement `relayout()`; the battle keeps its numbers in one `battleLayout()` table per mode and rebuilds the board from the game state when the mode changes. A scene can pin a fixed size with `design` (the old AI-vs-AI preview does). The battlefield fills the window behind everything (`Stage.setBackdrop`).
 
 ## Map
 ```
 src/engine/        types, cards (50, generated from prototype), rules (+ actionObservers hook), ai (prototype heuristics)
 src/campaign/      missions.ts (Sarwam's 9 missions, data only) · firstThrone.ts (Phase 1 battle, painted cards only)
 src/meta/          Kirti + upgrades (localStorage key yuddh.meta.v2)
-src/game/stage.ts  app, scaling, backdrop, scene switch, destroyTree()
-src/game/cards/    paint.ts (canvas-painted card faces, tokens, Durgs, card back) · views.ts (TokenView, HandCard, DurgView, diyas)
-src/game/scenes/   title.ts · battle.ts (the game) · battlePreview.ts (AI vs AI, old placeholder look)
-src/game/audio.ts  synth stand-ins; a recording at public/assets/sfx/<name>.mp3 listed in src/assets/sfx.json replaces each
-scripts/convert-assets.mjs   art/source/{cards,battlefields,sfx} → public/assets (WebP / MP3) + card-art.json, sfx.json
+src/game/stage.ts  app, scaling (follows view.ts), backdrop, scene switch, destroyTree()
+src/game/view.ts   desktop / phone-landscape modes, fs() for sizes
+src/game/cards/    paint.ts (canvas-painted card faces, tokens, Durgs, card back) · views.ts (TokenView, HandCard with turnUp/turnDown, DurgView, diyas) · flip.ts (3D card turn on a PerspectiveMesh)
+src/game/scenes/   title.ts (title painting) · battle.ts (the game) · gallery.ts (Chitrashala: every card by empire over its battlefield) · battlePreview.ts (AI vs AI, old placeholder look, fixed 1920×1080)
+src/game/ui/       button.ts (registers buttons for the playtest: window.__yuddhButtons) · inspect.ts (card at full size)
+src/game/audio.ts  sfx: recordings replace synth stand-ins, preloaded on unlock. Music: playMusic(track) streams public/assets/sfx/music_*.mp3, cross-fades between pieces and into itself when looping; drone stands in if missing
+src/assets/manifest.ts  paintings load on demand: loadArt(ids), artImage(id), cardArt(id); battlefields via loadBattlefield(name)
+scripts/convert-assets.mjs   art/source/{cards,battlefields,sfx} → public/assets (WebP / MP3) + card-art.json, sfx.json. Sound effects are cut to one hit (onset found automatically, stops before a second hit), faded and levelled; music has silence trimmed from both ends. ALIAS maps other names (shankh → conch)
 art/               prompt sheets (PROMPTS-PHASE1.md done, PROMPTS-BATCH2.md in progress), SOUND-LIST.md
 legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 ```
@@ -33,7 +37,13 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 - `window.__yuddh` exposes read-only state and `moves()` (every legal drag) for the e2e bot.
 - Art masters arrive on GitHub (Pon uploads via the web UI) in `art/source/`; run `npm run assets` and commit the outputs.
 - Card art aspect ratios vary (1024×1536, 1060×1484…); the painter crops with a focus point, so keep the full picture.
+- **Decoration inside an interactive scene must have `eventMode = 'none'`.** The battle scene listens for taps everywhere (`static`), and Pixi then hit-tests every descendant as if interactive: a passing spark, the turn banner or a fading card silently swallowed presses on the unit beneath it. The battle's lanes, arrow, preview and fx layers opt out.
+- Faces painted before their painting has loaded are drawn with a placeholder and not cached; load a scene's art (loadArt) before building it.
+- Cards drawn from the deck are face-down and `flipping` while they fly in; the battle reports itself busy (`dealing()`) until they land.
+- Music needs a user gesture; `audio.playMusic()` before unlock just records the wish. `audio.unlock()` runs on every pointerdown and retries a blocked play.
 
-## Status (3 Nov 2026)
-- Phase 0 done. Phase 1 playable (The First Throne). **Next in Phase 1:** card flip animations (draw/reveal/enemy play), phone-landscape layout with larger text, wire in Durg/title paintings and recorded sounds as they arrive → Gate 1 (Pon approves the look).
+## Status (4 Nov 2026)
+- Phase 0 done. Phase 1 feature-complete: The First Throne with card flips (opening deal and draws from the deck pile, enemy cards turned over in mid-air, Yantras set face-down and revealed), phone-landscape layout (tap a card to see it large at the side), all batch-2 art (Durg paintings, title painting, 30 cards, 4 battlefields), 8 recorded sound effects and all 6 music pieces, and the card gallery. Each side now carries a Pratikar Yantra (player also Yudh Niti, Nanda also Visha Baan): simulated win rate ~70%, ~15 turns.
+- Still synthesised (no recording yet): cardDraw, cardPlay, march, death, coin, yantra, fire, click, victory, defeat.
+- **Waiting on Gate 1:** Pon plays on desktop and phone and approves the look.
 - Then Phase 2 (formations, promotion, elephant rampage, morale, terrain, Dharma–Kuta, heroes, ~120 cards, search AI) and Phase 3 (cinematic campaigns built from Sarwam's 9 missions + Digvijaya). Full plan: https://claude.ai/artifact/GXWYv5rFMrBzsoqt3X456s

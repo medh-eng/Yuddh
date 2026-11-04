@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { CARDS, type Unit } from '../../engine';
 import { FONT_DEVA, FONT_SERIF, INK } from '../theme';
 import { cardBack, cardFace, durgFace, statBadge, tokenFace } from './paint';
+import { flipSprite, type FlipOptions } from './flip';
 
 /* ---------- stat badge textures (cached per value and tone) ---------- */
 const badgeCache = new Map<string, Texture>();
@@ -42,14 +43,16 @@ export class TokenView extends Container {
   private ringMode: 'none' | 'ready' | 'target' | 'selected' = 'none';
   private tick = (t: Ticker) => { this.pulse += t.deltaTime * 0.06; if (this.ringMode !== 'none') this.ring.alpha = 0.65 + Math.sin(this.pulse) * 0.35; };
 
-  constructor(u: Unit) {
+  /** `big` draws larger stat badges and marks, for small (phone) screens */
+  constructor(u: Unit, readonly big = false) {
     super();
     this.uid = u.uid; this.owner = u.owner; this.cardId = u.cardId;
+    const bs = big ? 0.8 : 0.56, inset = big ? 4 : 16;
     const shadow = new Graphics().roundRect(-TOKEN_DW / 2 + 6, -TOKEN_DH / 2 + 10, TOKEN_DW, TOKEN_DH, 12).fill({ color: 0x000000, alpha: 0.5 });
     this.art = new Sprite(tokenFace(u.cardId, u.owner));
     this.art.anchor.set(0.5); this.art.scale.set(0.5);
-    this.atkB = new Sprite(); this.atkB.anchor.set(0.5); this.atkB.scale.set(0.56); this.atkB.position.set(-TOKEN_DW / 2 + 16, TOKEN_DH / 2 - 14);
-    this.hpB = new Sprite(); this.hpB.anchor.set(0.5); this.hpB.scale.set(0.56); this.hpB.position.set(TOKEN_DW / 2 - 16, TOKEN_DH / 2 - 14);
+    this.atkB = new Sprite(); this.atkB.anchor.set(0.5); this.atkB.scale.set(bs); this.atkB.position.set(-TOKEN_DW / 2 + inset, TOKEN_DH / 2 - 14);
+    this.hpB = new Sprite(); this.hpB.anchor.set(0.5); this.hpB.scale.set(bs); this.hpB.position.set(TOKEN_DW / 2 - inset, TOKEN_DH / 2 - 14);
     this.addChild(this.ring, shadow, this.art, this.icons, this.atkB, this.hpB);
     this.eventMode = 'static';
     this.update(u);
@@ -64,10 +67,12 @@ export class TokenView extends Container {
     this.hpB.texture = badge('hp', u.hp, u.hp < u.maxHp ? 'down' : u.maxHp > baseHp ? 'up' : 'base');
     // keyword marks along the left edge
     this.icons.removeChildren().forEach(ch => ch.destroy());
-    let y = -TOKEN_DH / 2 + 26;
-    if (u.kw.includes('raksha')) { this.icons.addChild(kwIcon('raksha', -TOKEN_DW / 2 + 4, y)); y += 40; }
-    if (u.kw.includes('veg')) { this.icons.addChild(kwIcon('veg', -TOKEN_DW / 2 + 4, y)); y += 40; }
-    if (u.range === 'ranged') this.icons.addChild(kwIcon('ranged', -TOKEN_DW / 2 + 4, y));
+    const k = this.big ? 1.35 : 1;
+    let y = -TOKEN_DH / 2 + 26 * k;
+    const add = (kind: 'raksha' | 'veg' | 'ranged') => { const ic = kwIcon(kind, -TOKEN_DW / 2 + 4, y); ic.scale.set(k); this.icons.addChild(ic); y += 40 * k; };
+    if (u.kw.includes('raksha')) add('raksha');
+    if (u.kw.includes('veg')) add('veg');
+    if (u.range === 'ranged') add('ranged');
   }
 
   setRing(mode: 'none' | 'ready' | 'target' | 'selected'): void {
@@ -117,10 +122,16 @@ export class HandCard extends Container {
   readonly face: Sprite;
   private glow = new Graphics();
   home = { x: 0, y: 0, rot: 0 };
+  /** seconds to wait before flying in from the deck (set for a freshly drawn card, cleared once it has) */
+  drawDelay: number | null = null;
+  faceDown: boolean;
+  /** true while the card is turning over */
+  flipping = false;
 
-  constructor(cardId: string, upgrade = 0, faceDown = false) {
+  constructor(cardId: string, readonly upgrade = 0, faceDown = false) {
     super();
     this.cardId = cardId;
+    this.faceDown = faceDown;
     this.face = new Sprite(faceDown ? cardBack() : cardFace(cardId, upgrade));
     this.face.anchor.set(0.5);
     const shadow = new Graphics().roundRect(-120 + 8, -168 + 12, 240, 336, 13).fill({ color: 0x000000, alpha: 0.5 });
@@ -135,6 +146,19 @@ export class HandCard extends Container {
   }
 
   override destroy(): void { stopTweens(this); super.destroy({ children: true }); }
+
+  /** turn the card face up (from the deck, or a yantra springing) */
+  turnUp(opts: FlipOptions = {}): Promise<void> {
+    if (!this.faceDown) return Promise.resolve();
+    this.faceDown = false; this.flipping = true;
+    return flipSprite(this.face, cardFace(this.cardId, this.upgrade), opts).then(() => { this.flipping = false; });
+  }
+  /** turn the card face down (a yantra being set) */
+  turnDown(opts: FlipOptions = {}): Promise<void> {
+    if (this.faceDown) return Promise.resolve();
+    this.faceDown = true; this.flipping = true;
+    return flipSprite(this.face, cardBack(), { dir: -1, ...opts }).then(() => { this.flipping = false; });
+  }
 
   setPlayable(on: boolean): void {
     this.glow.clear();
@@ -165,13 +189,22 @@ export class DurgView extends Container {
     this.art.anchor.set(0.5); this.art.scale.set(0.5);
     this.hpText = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 64, fontWeight: '700', fill: 0xffffff, stroke: { color: 0x000000, width: 6 } } });
     this.hpText.anchor.set(0.5); this.hpText.position.set(0, 52);
-    this.nameText = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 26, fontWeight: '700', fill: INK.goldPale, align: 'center', stroke: { color: 0x000000, width: 4 } } });
-    this.nameText.anchor.set(0.5); this.nameText.position.set(0, -86);
+    this.nameText = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 26, fontWeight: '700', fill: INK.goldPale, align: 'center', stroke: { color: 0x000000, width: 4 }, wordWrap: true, wordWrapWidth: 226, lineHeight: 28 } });
+    this.nameText.anchor.set(0.5, 1); this.nameText.position.set(0, -73);
     this.subText = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 14, fontWeight: '700', letterSpacing: 4, fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
-    this.subText.anchor.set(0.5); this.subText.position.set(0, -60);
+    this.subText.anchor.set(0.5); this.subText.position.set(0, -58);
     this.addChild(this.ring, this.art, this.plate, this.embers, this.nameText, this.subText, this.hpText);
     this.eventMode = 'static';
     Ticker.shared.add(this.tick);
+  }
+
+  /** larger lettering for small screens (k = 1 on desktop) */
+  setTextScale(k: number): void {
+    this.nameText.style.fontSize = Math.round(26 * k); this.nameText.style.lineHeight = Math.round(28 * k);
+    this.nameText.style.wordWrapWidth = 226;
+    this.subText.style.fontSize = Math.round(14 * k); this.subText.style.letterSpacing = k > 1 ? 2 : 4;
+    this.hpText.style.fontSize = Math.round(64 * Math.min(k, 1.25));
+    this.subText.y = -58 + (k - 1) * 6;
   }
 
   set(name: string, faction: string, hp: number, max: number): void {

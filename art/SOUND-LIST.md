@@ -2,6 +2,12 @@
 
 The game already plays synthesised stand-ins for every sound. **Any recording you add replaces its stand-in automatically, one sound at a time**, so add them in any order.
 
+## What has arrived (4 Nov 2026)
+
+In the game now: **conch** (your `shankh` file, accepted under either name), **drum, clash, bow, arrowHit, deploy, fortHit, elephant**, and **all six music pieces**. The converter trims each effect to one clean hit automatically, so long recordings are fine.
+
+Still synthesised, in order of how often you hear them: **cardDraw, cardPlay, click, death, march, yantra, coin, fire**, then **victory** and **defeat** (the victory and defeat music already covers the ending, so these two are least urgent).
+
 ## Where to put files
 
 Upload to `art/source/sfx/` on GitHub, named exactly as below. WAV or MP3 both work. I convert and trim them to small game files.

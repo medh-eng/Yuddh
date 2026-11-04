@@ -9,7 +9,7 @@ A tactical card game of ancient India: Maurya, Gupta, Chalukya, Chola and Rajput
 | Phase | What | Status |
 | --- | --- | --- |
 | 0 | Foundation: TypeScript engine, PixiJS renderer, automatic publishing | Done |
-| 1 | The Look: one battle (Maurya against the Nandas) at KARDS quality | Playable: The First Throne. Remaining: phone layout, recorded sounds, Durg and title paintings ([batch 2 prompts](art/PROMPTS-BATCH2.md), [sound list](art/SOUND-LIST.md)) |
+| 1 | The Look: one battle (Maurya against the Nandas) at KARDS quality | Built: The First Throne with card flips, phone layout, painted Durgs and title, recorded sounds and music, card gallery. Awaiting Pon's approval (Gate 1); 10 small sounds still to record ([sound list](art/SOUND-LIST.md)) |
 | 2 | Deeper war: formations, promotion, elephant rampage, morale, terrain, Dharma–Kuta, heroes, new AI | |
 | 3 | Itihasa campaigns, Digvijaya conquest mode, Chanakya's Puzzles | |
 | 4 | Collection, deck builder, Kirti crafting | |
@@ -19,10 +19,10 @@ A tactical card game of ancient India: Maurya, Gupta, Chalukya, Chola and Rajput
 
 ```
 src/engine/        rules engine: types, card data, rules, AI (no screen code)
-src/campaign/      the prototype's nine missions
+src/campaign/      the prototype's nine missions; The First Throne
 src/meta/          Kirti and per-card upgrades (saved in the browser)
-src/game/          PixiJS renderer: stage, theme, audio, scenes (title, battle, preview)
-src/game/cards/    card painter (frames, arch window, coins, badges) and board views
+src/game/          PixiJS renderer: stage, screen modes, theme, audio, scenes (title, battle, card gallery, preview)
+src/game/cards/    card painter (frames, arch window, coins, badges), board views, 3D card flips
 src/assets/        art manifest (which cards have paintings)
 art/               prompt sheets and sound list; masters live in art/source/
 scripts/           convert-assets.mjs: masters → small WebP game files
@@ -40,7 +40,8 @@ npm run dev        # play locally with live reload
 npm test           # rules tests + golden traces
 npm run build      # typecheck and build to dist/
 npm run assets     # convert art/source/* (cards, battlefields, sounds) into public/assets/*
-node tests/e2e/playtest.cjs http://localhost:4173/ shots   # after `npm run preview`
+node tests/e2e/playtest.cjs http://localhost:4173/ shots            # after `npm run preview` (desktop 1600×900)
+node tests/e2e/playtest.cjs http://localhost:4173/ shots 844 390    # phone held sideways
 ```
 
 ## The golden-trace test

@@ -1,11 +1,23 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import gsap from 'gsap';
 import { FONT_SERIF, INK } from '../theme';
+import { view } from '../view';
 
-/** Gold-edged lacquer button. `primary` is filled gold. */
-export function makeButton(label: string, onTap: () => void, opts: { w?: number; primary?: boolean } = {}): Container {
-  const w = opts.w ?? 340, h = 64;
-  const c = new Container();
+/** every live button, so the automated playtest can find and press them by label */
+const live = new Set<Container & { label: string }>();
+const shownOnScreen = (c: Container): boolean => {
+  for (let o: Container | null = c; o; o = o.parent) if (!o.visible || o.alpha === 0) return false;
+  return true;
+};
+(window as unknown as { __yuddhButtons: () => { label: string; x: number; y: number }[] }).__yuddhButtons = () =>
+  [...live].filter(b => !b.destroyed && b.parent && shownOnScreen(b)).map(b => { const p = b.getGlobalPosition(); return { label: b.label, x: p.x, y: p.y }; });
+
+/** Gold-edged lacquer button. `primary` is filled gold. Sized up on phones (view.ui) unless `ui` is given. */
+export function makeButton(label: string, onTap: () => void, opts: { w?: number; primary?: boolean; ui?: number } = {}): Container {
+  const k = opts.ui ?? view.ui;
+  const w = (opts.w ?? 340) * k, h = 64 * k;
+  const c = new Container() as Container & { label: string };
+  c.label = label;
   const bg = new Graphics();
   const draw = (hover: boolean) => {
     bg.clear();
@@ -17,7 +29,7 @@ export function makeButton(label: string, onTap: () => void, opts: { w?: number;
   draw(false);
   const t = new Text({
     text: label.toUpperCase(),
-    style: { fontFamily: FONT_SERIF, fontSize: 24, fontWeight: '700', letterSpacing: 5, fill: opts.primary ? 0x22150d : INK.goldPale }
+    style: { fontFamily: FONT_SERIF, fontSize: Math.round(24 * k), fontWeight: '700', letterSpacing: 5, fill: opts.primary ? 0x22150d : INK.goldPale }
   });
   t.anchor.set(0.5);
   c.addChild(bg, t);
@@ -26,5 +38,7 @@ export function makeButton(label: string, onTap: () => void, opts: { w?: number;
   c.on('pointerover', () => { draw(true); gsap.to(c.scale, { x: 1.04, y: 1.04, duration: 0.15 }); });
   c.on('pointerout', () => { draw(false); gsap.to(c.scale, { x: 1, y: 1, duration: 0.15 }); });
   c.on('pointertap', onTap);
+  live.add(c);
+  c.on('destroyed', () => live.delete(c));
   return c;
 }

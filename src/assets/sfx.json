@@ -1,1 +1,16 @@
-[]
+[
+  "arrowHit",
+  "bow",
+  "clash",
+  "conch",
+  "deploy",
+  "drum",
+  "elephant",
+  "fortHit",
+  "music_battle_calm",
+  "music_battle_intense",
+  "music_briefing",
+  "music_defeat",
+  "music_title",
+  "music_victory"
+]

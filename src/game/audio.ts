@@ -1,8 +1,14 @@
 /* ============================================================
-   Sound — synthesised stand-ins with the Web Audio API until the
-   recorded set arrives (see art/SOUND-LIST.md). Every sound has a
-   name; a recording dropped into public/assets/sfx/<name>.mp3 will
-   replace the synth version automatically.
+   Sound. Every effect has a name; a recording in
+   public/assets/sfx/<name>.mp3 (listed in src/assets/sfx.json by
+   `npm run assets`) replaces its synthesised stand-in. Recordings are
+   fetched as soon as sound is unlocked, so even the first one plays.
+
+   Music: six pieces (title, briefing, calm and intense battle,
+   victory, defeat) stream from the same folder. Looping pieces
+   cross-fade into a fresh copy of themselves near the end, so the
+   fade-out at the end of each recording never leaves a gap. Without
+   a recording, a tanpura-like drone stands in.
    ============================================================ */
 import recordedList from '../assets/sfx.json';
 
@@ -11,6 +17,19 @@ const RECORDED = new Set(recordedList as string[]);
 
 export type Sfx = 'conch' | 'drum' | 'clash' | 'bow' | 'arrowHit' | 'deploy' | 'cardDraw' | 'cardPlay'
   | 'march' | 'fortHit' | 'death' | 'coin' | 'yantra' | 'fire' | 'victory' | 'defeat' | 'click' | 'elephant';
+export type Track = 'music_title' | 'music_briefing' | 'music_battle_calm' | 'music_battle_intense' | 'music_victory' | 'music_defeat';
+
+const SFX_NAMES: Sfx[] = ['conch', 'drum', 'clash', 'bow', 'arrowHit', 'deploy', 'cardDraw', 'cardPlay', 'march', 'fortHit',
+  'death', 'coin', 'yantra', 'fire', 'victory', 'defeat', 'click', 'elephant'];
+/** level of each recording relative to the others (1 = as converted) */
+const LEVEL: Partial<Record<Sfx, number>> = { conch: 0.85, elephant: 0.8, fortHit: 0.9, drum: 1.1 };
+/** these vary their pitch a little each time, so repeated blows do not sound copied */
+const VARY = new Set<Sfx>(['clash', 'bow', 'arrowHit', 'deploy', 'cardDraw', 'cardPlay', 'death', 'march', 'click']);
+const ONE_SHOT = new Set<Track>(['music_victory', 'music_defeat']);
+const XFADE = 4;  // seconds of cross-fade when a looping piece wraps round
+
+interface Voice { el: HTMLAudioElement; g: GainNode }
+interface Playing { track: Track; loop: boolean; voices: Voice[]; cur: number; crossing: boolean; timer: number }
 
 class AudioEngine {
   ctx: AudioContext | null = null;
@@ -21,25 +40,38 @@ class AudioEngine {
   sfx = true;
   private recorded = new Map<Sfx, AudioBuffer | null>();
   private drone: { stop(): void } | null = null;
+  private wanted: { track: Track; loop: boolean } | null = null;
+  private playing: Playing | null = null;
+  private fading: Playing[] = [];
+  private blocked = false;
 
   /** must be called from a user gesture */
   unlock(): void {
-    if (this.ctx) { if (this.ctx.state === 'suspended') void this.ctx.resume(); return; }
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') void this.ctx.resume();
+      if (this.blocked) { this.blocked = false; this.playing?.voices[this.playing.cur].el.play().catch(() => { this.blocked = true; }); }
+      return;
+    }
     const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return;
     this.ctx = new Ctx();
     this.master = this.ctx.createGain(); this.master.gain.value = 0.8; this.master.connect(this.ctx.destination);
     this.sfxBus = this.ctx.createGain(); this.sfxBus.connect(this.master);
-    this.musicBus = this.ctx.createGain(); this.musicBus.gain.value = 0.32; this.musicBus.connect(this.master);
+    this.musicBus = this.ctx.createGain(); this.musicBus.gain.value = 0.5; this.musicBus.connect(this.master);
     try { this.music = localStorage.getItem('yuddh.music') !== 'off'; this.sfx = localStorage.getItem('yuddh.sfx') !== 'off'; } catch { /* private mode */ }
     this.sfxBus.gain.value = this.sfx ? 1 : 0;
-    if (this.music) this.startDrone();
+    SFX_NAMES.forEach(n => { if (RECORDED.has(n)) void this.load(n); });
+    document.addEventListener('visibilitychange', () => this.onVisibility());
+    this.applyMusic();
   }
+
+  /** a recording exists for this effect or piece of music */
+  has(name: Sfx | Track): boolean { return RECORDED.has(name); }
 
   toggleMusic(): boolean {
     this.music = !this.music;
     try { localStorage.setItem('yuddh.music', this.music ? 'on' : 'off'); } catch { /* ignore */ }
-    if (this.music) this.startDrone(); else { this.drone?.stop(); this.drone = null; }
+    this.applyMusic();
     return this.music;
   }
   toggleSfx(): boolean {
@@ -53,12 +85,19 @@ class AudioEngine {
     const ctx = this.ctx;
     if (!ctx || !this.sfx) return;
     const rec = this.recorded.get(name);
-    if (rec) { const s = ctx.createBufferSource(); s.buffer = rec; s.connect(this.sfxBus); s.start(); return; }
-    if (rec === undefined && RECORDED.has(name)) void this.tryLoad(name);
+    if (rec) {
+      const s = ctx.createBufferSource(); s.buffer = rec;
+      if (VARY.has(name)) s.playbackRate.value = 0.94 + Math.random() * 0.12;
+      const g = ctx.createGain(); g.gain.value = LEVEL[name] ?? 1;
+      s.connect(g); g.connect(this.sfxBus); s.start();
+      return;
+    }
+    if (rec === undefined && RECORDED.has(name)) void this.load(name);
     SYNTH[name](ctx, this.sfxBus);
   }
 
-  private async tryLoad(name: Sfx): Promise<void> {
+  private async load(name: Sfx): Promise<void> {
+    if (this.recorded.has(name)) return;
     this.recorded.set(name, null);
     try {
       const r = await fetch(`${BASE}assets/sfx/${name}.mp3`);
@@ -67,12 +106,92 @@ class AudioEngine {
     } catch { /* keep the synth */ }
   }
 
+  /* ---------------- music ---------------- */
+
+  /** Ask for a piece of music (null for silence). Asking for the piece already playing does nothing,
+      so scenes can call this freely. Before sound is unlocked the request waits. */
+  playMusic(track: Track | null): void {
+    if (track && this.wanted?.track === track) return;
+    this.wanted = track ? { track, loop: !ONE_SHOT.has(track) } : null;
+    if (this.ctx) this.applyMusic();
+  }
+  get track(): Track | null { return this.wanted?.track ?? null; }
+
+  private applyMusic(): void {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const w = this.music ? this.wanted : null;
+    if (this.playing && this.playing.track !== w?.track) { this.fadeOut(this.playing, 1.4); this.playing = null; }
+    if (!w) { this.drone?.stop(); this.drone = null; return; }
+    if (RECORDED.has(w.track)) {
+      this.drone?.stop(); this.drone = null;
+      if (!this.playing) this.playing = this.startTrack(w.track, w.loop);
+    } else if (w.loop) this.startDrone();
+    else { this.drone?.stop(); this.drone = null; }
+  }
+
+  private voice(track: Track): Voice {
+    const ctx = this.ctx!;
+    const el = new Audio(`${BASE}assets/sfx/${track}.mp3`);
+    el.preload = 'auto';
+    const src = ctx.createMediaElementSource(el);
+    const g = ctx.createGain(); g.gain.value = 0;
+    src.connect(g); g.connect(this.musicBus);
+    return { el, g };
+  }
+
+  private startTrack(track: Track, loop: boolean): Playing {
+    const ctx = this.ctx!;
+    const v = this.voice(track);
+    const p: Playing = { track, loop, voices: [v], cur: 0, crossing: false, timer: 0 };
+    v.el.play().catch(() => { this.blocked = true; });
+    v.g.gain.setValueAtTime(0, ctx.currentTime);
+    v.g.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.5);
+    if (loop) {
+      p.timer = window.setInterval(() => {
+        const a = p.voices[p.cur];
+        if (p.crossing || !a.el.duration || !isFinite(a.el.duration) || a.el.paused) return;
+        if (a.el.currentTime < a.el.duration - XFADE) return;
+        p.crossing = true;
+        const nextIdx = 1 - p.cur;
+        const b = p.voices[nextIdx] ?? (p.voices[nextIdx] = this.voice(track));
+        b.el.currentTime = 0;
+        b.el.play().catch(() => { this.blocked = true; });
+        const t = ctx.currentTime;
+        b.g.gain.cancelScheduledValues(t); b.g.gain.setValueAtTime(0, t); b.g.gain.linearRampToValueAtTime(1, t + XFADE);
+        a.g.gain.cancelScheduledValues(t); a.g.gain.setValueAtTime(a.g.gain.value, t); a.g.gain.linearRampToValueAtTime(0, t + XFADE);
+        setTimeout(() => { a.el.pause(); p.cur = nextIdx; p.crossing = false; }, XFADE * 1000 + 150);
+      }, 250);
+    }
+    return p;
+  }
+
+  private fadeOut(p: Playing, secs: number): void {
+    const ctx = this.ctx!;
+    clearInterval(p.timer);
+    const t = ctx.currentTime;
+    p.voices.forEach(v => { v.g.gain.cancelScheduledValues(t); v.g.gain.setValueAtTime(v.g.gain.value, t); v.g.gain.linearRampToValueAtTime(0, t + secs); });
+    this.fading.push(p);
+    setTimeout(() => {
+      p.voices.forEach(v => { v.el.pause(); v.el.removeAttribute('src'); v.el.load(); v.g.disconnect(); });
+      this.fading = this.fading.filter(f => f !== p);
+    }, secs * 1000 + 100);
+  }
+
+  /** stop the music while the game is in the background (phones), and pick it up again on return */
+  private onVisibility(): void {
+    if (!this.ctx) return;
+    const v = this.playing?.voices[this.playing.cur];
+    if (document.hidden) { v?.el.pause(); void this.ctx.suspend(); }
+    else { void this.ctx.resume(); if (v && this.music) v.el.play().catch(() => { this.blocked = true; }); }
+  }
+
   /** tanpura-like drone on Sa and Pa, breathing slowly */
   private startDrone(): void {
     const ctx = this.ctx;
     if (!ctx || this.drone) return;
     const out = ctx.createGain(); out.gain.value = 0; out.connect(this.musicBus);
-    out.gain.linearRampToValueAtTime(1, ctx.currentTime + 4);
+    out.gain.linearRampToValueAtTime(0.64, ctx.currentTime + 4);
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.connect(out);
     const nodes: OscillatorNode[] = [];
     const sa = 110;

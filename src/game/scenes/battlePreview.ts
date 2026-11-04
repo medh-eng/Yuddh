@@ -22,6 +22,7 @@ const slotX = (i: number, n: number) => 900 + (i - (n - 1) / 2) * 172;
 
 export function battlePreviewScene(back: () => void): Scene {
   const s: Scene = new Container();
+  s.design = { w: DESIGN_W, h: DESIGN_H };   // the old fixed board, letterboxed on phones
   let st: GameState;
   let busy = false, auto = false, alive = true;
   const views = new Map<number, CardView>();

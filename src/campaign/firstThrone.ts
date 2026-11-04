@@ -1,7 +1,9 @@
 /* ============================================================
    Phase 1 battle — "The First Throne": Chandragupta and Chanakya
    against the Nanda army before Pataliputra, c. 321 BCE.
-   Both decks use only cards that have their painting.
+   Both decks use only cards that have their painting. Each side
+   carries a Pratikar Yantra so hidden traps spring in most battles
+   (simulated: the player side wins about 70%, ~15 turns).
    ============================================================ */
 import { newGame } from '../engine/rules';
 import type { AiLevel, GameState } from '../engine/types';
@@ -19,13 +21,13 @@ export const FIRST_THRONE = {
     ...rep('n_padati', 3), ...rep('m_padati', 3), ...rep('n_dhanurdhar', 2), ...rep('n_ashvarohi', 2),
     ...rep('n_rakshak', 2), ...rep('n_rathi', 2), 'n_maharathi', 'n_atirathi', 'n_gaja', 'm_hasti',
     'n_senapati', ...rep('m_gudhchar', 2), 'm_chanakya', 'm_chandragupta', 'm_arthashastra',
-    ...rep('n_aakraman', 2), 'n_sena_bhojan', 'y_kavach', 's_agni', 's_chakravyuha'
+    ...rep('n_aakraman', 2), 'n_sena_bhojan', 'n_yudh_niti', 'y_kavach', 'y_pratikar', 's_agni', 's_chakravyuha'
   ],
   // the Nanda host: famous for its elephants and chariots, thin on good infantry
   enemyDeck: [
     ...rep('n_padati', 3), ...rep('n_dhanurdhar', 3), ...rep('n_rakshak', 3), ...rep('n_ashvarohi', 2),
     ...rep('n_rathi', 2), ...rep('n_gaja', 2), ...rep('n_maharathi', 2), 'n_senapati', 'n_atirathi',
-    ...rep('n_aakraman', 2), 'n_sena_bhojan', 'y_kavach', 's_agni', 's_chakravyuha'
+    ...rep('n_aakraman', 2), 'n_sena_bhojan', 'n_visha_baan', 'y_kavach', 'y_pratikar', 's_agni', 's_chakravyuha'
   ],
   enemyHq: 24,
   enemyStartKosha: 1

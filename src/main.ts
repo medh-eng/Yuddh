@@ -9,10 +9,19 @@ import { Stage } from './game/stage';
 import { titleScene } from './game/scenes/title';
 import { battlePreviewScene } from './game/scenes/battlePreview';
 import { battleScene, preloadBattle } from './game/scenes/battle';
-import { loadCardImages } from './game/cards/paint';
+import { galleryScene } from './game/scenes/gallery';
 import { audio } from './game/audio';
-import { loadCardArt } from './assets/manifest';
+import { CARD_ART, loadArt, loadBattlefield } from './assets/manifest';
 import { FONT_DEVA, FONT_SERIF } from './game/theme';
+
+/** a quiet "loading" line over the screen while something is fetched */
+async function loading<T>(p: Promise<T>): Promise<T> {
+  const el = document.createElement('div');
+  el.textContent = 'Unrolling the paintings…';
+  el.style.cssText = 'position:fixed;inset:auto 0 6%;text-align:center;color:#f0d79a;font:italic 500 22px "Cormorant Garamond",Georgia,serif;text-shadow:0 1px 4px #000;pointer-events:none;opacity:0;transition:opacity .3s';
+  const t = setTimeout(() => { document.body.appendChild(el); requestAnimationFrame(() => { el.style.opacity = '1'; }); }, 250);
+  try { return await p; } finally { clearTimeout(t); el.remove(); }
+}
 
 async function boot(): Promise<void> {
   // Pixi draws text onto canvas, so the web fonts must be ready first.
@@ -31,13 +40,16 @@ async function boot(): Promise<void> {
 
   const stage = new Stage();
   await stage.init();
-  await Promise.all([loadCardArt(), loadCardImages(), preloadBattle()]);
+  await loadBattlefield('title');
   document.getElementById('boot')?.remove();
+  // the first battle's paintings load while the title is on screen
+  const battleReady = preloadBattle();
 
-  window.addEventListener('pointerdown', () => audio.unlock(), { once: true });
-  const title = () => stage.show(titleScene({
-    battle: () => { audio.unlock(); stage.show(battleScene(stage, title)); },
-    preview: () => stage.show(battlePreviewScene(title)),
+  window.addEventListener('pointerdown', () => audio.unlock());
+  const title = (): void => stage.show(titleScene(stage, {
+    battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title))); },
+    gallery: () => { audio.unlock(); stage.show(galleryScene(stage, title)); },
+    preview: () => { void loading(loadArt(CARD_ART)).then(() => { stage.setBackdrop(null); stage.show(battlePreviewScene(title)); }); },
     prototype: () => { window.location.href = `${import.meta.env.BASE_URL}prototype/`; }
   }));
   title();
