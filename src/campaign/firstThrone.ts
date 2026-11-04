@@ -3,7 +3,7 @@
    against the Nanda army before Pataliputra, c. 321 BCE.
    Both decks use only cards that have their painting. Each side
    carries a Pratikar Yantra so hidden traps spring in most battles
-   (Yuddh rules; simulated: the player side wins about 68%, ~18 turns).
+   (Yuddh rules with promotion; simulated: the player side wins about 60%, ~17 turns).
    ============================================================ */
 import { newGame } from '../engine/rules';
 import type { AiLevel, GameState } from '../engine/types';

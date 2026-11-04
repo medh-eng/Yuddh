@@ -284,6 +284,10 @@ function fireYantra(st: GameState, owner: PlayerIndex, trigger: YantraTrigger): 
 /* ---------------- legality ---------------- */
 const hasGuard = (list: Unit[]) => list.some(u => u.kw.includes('raksha'));
 
+/** promotion: ranks a unit can earn by destroying enemies (Yuddh rules) */
+export const MAX_RANK = 2;
+export const RANK_NAMES = ['', 'Veer', 'Mahaveer'];
+
 /** unit classes fast enough to advance and strike in the same turn (Yuddh rules) */
 const CHARGE_CLASSES = new Set(['Cavalry', 'Chariot', 'Elite Chariot', 'Legendary Warrior']);
 export const canCharge = (u: { cardId: string }): boolean => CHARGE_CLASSES.has(CARDS[u.cardId]?.sub ?? '');
@@ -491,6 +495,12 @@ function applyActionCore(st: GameState, action: Action): Check {
     if (dmgBack > 0) a.hp -= dmgBack;
     if (d.hp <= 0) { pushEvent(st, { t: 'death', owner: tgt.owner, uid: d.uid }); destroyUnit(st, tgt.owner, d.uid); }
     if (a.hp <= 0) { pushEvent(st, { t: 'death', owner: pIdx, uid: a.uid }); destroyUnit(st, pIdx, a.uid); }
+    // Yuddh rules: a unit that destroys an enemy and lives is promoted: Veer +1 health, Mahaveer +1 attack more
+    else if (st.rules === 'yuddh' && d.hp <= 0 && (a.rank ?? 0) < MAX_RANK) {
+      a.rank = (a.rank ?? 0) + 1; a.hp += 1; a.maxHp += 1; if (a.rank === 2) a.atk += 1;
+      log(st, `${a.name} is honoured for valour (${RANK_NAMES[a.rank]}).`, pIdx);
+      pushEvent(st, { t: 'promote', owner: pIdx, uid: a.uid, rank: a.rank });
+    }
     // a Pratikar Yantra punishes the attacker
     const reprisal = fireYantra(st, tgt.owner, 'onUnitAttack');
     if (reprisal) damageUnit(st, pIdx, a.uid, reprisal.power);

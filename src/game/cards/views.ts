@@ -73,6 +73,15 @@ export class TokenView extends Container {
     if (u.kw.includes('raksha')) add('raksha');
     if (u.kw.includes('veg')) add('veg');
     if (u.range === 'ranged') add('ranged');
+    // battle honours: a gold star per rank along the top edge
+    for (let r = 0; r < (u.rank ?? 0); r++) {
+      const st = new Graphics();
+      const pts: number[] = [];
+      for (let i = 0; i < 10; i++) { const rr = i % 2 ? 6 : 14; const a = -Math.PI / 2 + (i * Math.PI) / 5; pts.push(Math.cos(a) * rr, Math.sin(a) * rr); }
+      st.poly(pts).fill(0xffd76a).stroke({ width: 2, color: 0x3a2008 });
+      st.scale.set(k); st.position.set((r - ((u.rank ?? 1) - 1) / 2) * 30 * k, -TOKEN_DH / 2 + 4);
+      this.icons.addChild(st);
+    }
   }
 
   setRing(mode: 'none' | 'ready' | 'target' | 'selected'): void {

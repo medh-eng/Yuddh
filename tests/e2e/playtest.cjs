@@ -69,6 +69,11 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
       if (y.over) break;
     }
     if (turn === 4) await shot('12-midgame');
+    if (turn === 4 || turn === 8) {
+      // read an enemy card: tap it, photograph the reading panel, tap to close
+      const foe = (await p.evaluate(() => window.__yuddh.tokens())).find(t => t.owner === 1);
+      if (foe) { await p.mouse.click(foe.x, foe.y); await p.waitForTimeout(700); await shot(`12-read-enemy-t${turn}`); await p.mouse.click(5, +H / 2); await p.waitForTimeout(400); }
+    }
     y = await info(); if (y.over) break;
     const before = y.yantras.join();
     const end = await p.evaluate(() => window.__yuddh.endTurn());

@@ -15,7 +15,7 @@
 import { Container, FederatedPointerEvent, Graphics, Point, Sprite, Text, Texture } from 'pixi.js';
 import gsap from 'gsap';
 import {
-  CARDS, EMPIRES, actionObservers, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
+  CARDS, EMPIRES, RANK_NAMES, actionObservers, findUnit, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
   drainEvents, type Action, type GameEvent, type GameState, type PlayerIndex, type Target, type Unit
 } from '../../engine';
 import { FIRST_THRONE, firstThroneGame } from '../../campaign/firstThrone';
@@ -25,7 +25,7 @@ import { audio, type Sfx } from '../audio';
 import { cardFace } from '../cards/paint';
 import { DurgView, HandCard, TOKEN_DH, TokenView, drawDiyas, stopTweens } from '../cards/views';
 import { makeButton } from '../ui/button';
-import { inspectOverlay } from '../ui/inspect';
+import { inspectOverlay, type InspectExtra } from '../ui/inspect';
 import { battlefieldUrl, loadArt, loadBattlefield } from '../../assets/manifest';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
@@ -196,12 +196,13 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   const unitLayer = new Container();
   const handLayer = new Container();
   const fx = new Container();
+  const combatFx = new Container();   // while aiming: damage shields on attacker and target
   const arrow = new Graphics();
   const previewLayer = new Container();
-  s.addChild(unitLayer, handLayer, arrow, previewLayer, fx);
+  s.addChild(unitLayer, handLayer, arrow, combatFx, previewLayer, fx);
   // The scene itself listens for taps, which makes everything inside it hit-testable; pure decoration
   // must opt out, or a passing spark or the turn banner swallows a press on the unit beneath it.
-  for (const deco of [lanes, frontGlow, zoneGlow, arrow, previewLayer, fx]) deco.eventMode = 'none';
+  for (const deco of [lanes, frontGlow, zoneGlow, arrow, previewLayer, fx, combatFx]) deco.eventMode = 'none';
 
   // small round buttons: menu, music, sound
   const rounds = [
@@ -323,7 +324,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
           gsap.to(v, { alpha: 1, duration: instant ? 0 : 0.2 });
         } else {
           const dh = v.hp - u.hp;
-          if (dh > 0 && !instant) floatNumber(v.x, v.y - 40 * L.tok, `−${dh}`, 0xffd2b0);
+          if (dh > 0 && !instant) damageShield(v.x, v.y - 10 * L.tok, dh, 1);
           if (dh < 0 && !instant) floatNumber(v.x, v.y - 40 * L.tok, `+${-dh}`, 0x9cff8a);
           if (u.atk > v.atk && !instant) floatNumber(v.x - 60 * L.tok, v.y + 70 * L.tok, `+${u.atk - v.atk}`, 0xffc04a);
         }
@@ -341,14 +342,14 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     for (const [uid, v] of tokens) {
       if (living.has(uid)) continue;
       tokens.delete(uid);
-      if (!instant) { if (v.hp > 0) floatNumber(v.x, v.y - 40 * L.tok, '✕', 0xff8f7a); burnAway(v); } else v.destroy();
+      if (!instant) { if (v.hp > 0) damageShield(v.x, v.y - 10 * L.tok, v.hp, 1); burnAway(v); } else v.destroy();
     }
 
     // Durgs
     for (const i of [0, 1] as PlayerIndex[]) {
       const p = state.players[i];
       const dh = durg[i].hp - p.hq.hp;
-      if (!instant && durg[i].hp && dh > 0) floatNumber(durg[i].x, durg[i].y - 10, `−${dh}`, 0xffd2b0, 72);
+      if (!instant && durg[i].hp && dh > 0) damageShield(durg[i].x, durg[i].y - 10, dh, 1.35);
       if (!instant && durg[i].hp && dh < 0) floatNumber(durg[i].x, durg[i].y - 10, `+${-dh}`, 0x9cff8a, 64);
       durg[i].set(p.hq.name, i === 0 ? EMPIRES[p.empire].name : p.faction, p.hq.hp, p.hq.maxHp);
     }
@@ -584,13 +585,13 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
 
   function bindCard(h: HandCard): void {
     h.on('pointerdown', (e: FederatedPointerEvent) => {
-      if (e.button === 2) { inspect(h.cardId); return; }
+      if (e.button === 2) { inspect(h.cardId, { cost: h.cost }); return; }
       audio.unlock();
-      if (busy || st.active !== 0 || st.over || h.flipping) { (lastPointer = toDesign(e), armLongPress(h.cardId)); return; }
+      if (busy || st.active !== 0 || st.over || h.flipping) { (lastPointer = toDesign(e), armLongPress(h.cardId, { cost: h.cost })); return; }
       const index = hand.indexOf(h);
       const p = toDesign(e);
       drag = { kind: 'card', index, view: h, moved: false, sx: p.x, sy: p.y, downAt: performance.now() };
-      (lastPointer = toDesign(e), armLongPress(h.cardId));
+      (lastPointer = toDesign(e), armLongPress(h.cardId, { cost: h.cost }));
     });
     h.on('pointerover', (e: FederatedPointerEvent) => { if (e.pointerType === 'mouse' && !drag) { hoverIdx = hand.indexOf(h); layoutHand(); } });
     h.on('pointerout', (e: FederatedPointerEvent) => { if (e.pointerType === 'mouse' && !drag && hoverIdx === hand.indexOf(h)) { hoverIdx = -1; layoutHand(); } });
@@ -601,12 +602,12 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     if (v.owner === 1) v.on('pointertap', () => {
       if (performance.now() - targetTapAt < 700 || overlay || drag) return;
       if (longPressFired && performance.now() - longPressFired < 700) return;
-      inspect(v.cardId);
+      inspect(v.cardId, unitExtra(v));
     });
     v.on('pointerdown', (e: FederatedPointerEvent) => {
-      if (e.button === 2) { inspect(v.cardId); return; }
+      if (e.button === 2) { inspect(v.cardId, unitExtra(v)); return; }
       audio.unlock();
-      lastPointer = toDesign(e); armLongPress(v.cardId);
+      lastPointer = toDesign(e); armLongPress(v.cardId, unitExtra(v));
       if (busy || st.active !== 0 || st.over) return;
       if (v.owner !== 0) return;
       const p = toDesign(e);
@@ -614,10 +615,11 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     });
   }
 
-  function armLongPress(cardId: string): void {
+  const unitExtra = (v: TokenView): InspectExtra => ({ unit: findUnit(st, v.owner, v.uid)?.unit });
+  function armLongPress(cardId: string, extra: InspectExtra = {}): void {
     if (longPress) clearTimeout(longPress);
     pressAt = lastPointer ? { x: lastPointer.x, y: lastPointer.y } : null;
-    longPress = setTimeout(() => { longPress = null; if (drag && drag.moved) return; cancelDrag(); longPressFired = performance.now(); inspect(cardId); }, 480);
+    longPress = setTimeout(() => { longPress = null; if (drag && drag.moved) return; cancelDrag(); longPressFired = performance.now(); inspect(cardId, extra); }, 480);
   }
 
   s.eventMode = 'static';
@@ -647,8 +649,10 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       else arrow.clear();
     } else {
       const v = drag.view;
-      const over = hitUnit(p, 1) !== null || hitDurg(p) || (unitTargets(drag.uid).front && inLane(p, L.line.front));
+      const tgt = targetAt(p, { kind: 'unit', uid: drag.uid });
+      const over = tgt !== null;
       drawArrow(v.x, v.y - (TOKEN_DH / 2 - 30) * L.tok, p.x, p.y, over);
+      showCombatPreview(drag.uid, tgt && tgt.kind !== 'zone' ? tgt : null);
     }
   });
   s.on('pointerup', (e: FederatedPointerEvent) => void release(e));
@@ -694,7 +698,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     if (!drag) return;
     const d = drag;
     drag = null;
-    arrow.clear();
+    arrow.clear(); clearCombatPreview();
     const p = toDesign(e);
     if (!d.moved) {
       // a tap: select, so the next tap picks the target
@@ -735,7 +739,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
 
   function cancelDrag(d?: Drag): void {
     const dd = d ?? drag;
-    drag = null; arrow.clear();
+    drag = null; arrow.clear(); clearCombatPreview();
     if (dd?.kind === 'card') layoutHand();
     clearTargets();
   }
@@ -845,6 +849,11 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
         case 'yantra':
           await reveal(e.cardId, e.owner);
           break;
+        case 'promote': {
+          const v = tokens.get(e.uid);
+          if (v) await promoteFx(v, e.rank);
+          break;
+        }
         case 'death':
           break;
       }
@@ -874,6 +883,10 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
 
   async function strike(a: TokenView, tx: number, ty: number, ranged: boolean): Promise<void> {
     unitLayer.addChild(a);
+    // the attacker lights up for a moment as it commits
+    a.tint = 0xffffff;
+    gsap.fromTo(a, { tint: 0xfff2c0 }, { tint: 0xffffff, duration: 0.5 });
+    gsap.fromTo(a.scale, { x: L.tok * 1.08, y: L.tok * 1.08 }, { x: L.tok, y: L.tok, duration: 0.35, ease: 'power2.out' });
     if (ranged) {
       audio.play('bow');
       const ar = new Graphics().moveTo(-22, 0).lineTo(22, 0).stroke({ width: 3, color: 0xf0d79a }).poly([22, -6, 34, 0, 22, 6]).fill(0xf0d79a);
@@ -884,12 +897,15 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       ar.destroy();
       audio.play('arrowHit');
       sparks(tx, ty, 0xffd27a);
+      hitFlash(tx, ty);
       return;
     }
     const ox = a.x, oy = a.y;
     await gsap.to(a, { x: ox + (tx - ox) * 0.72, y: oy + (ty - oy) * 0.72, rotation: (tx - ox) * 0.0004, duration: 0.2, ease: 'power3.in' });
     audio.play('clash');
     sparks(tx, ty, 0xffa040);
+    dust(tx, ty);
+    hitFlash(tx, ty);
     await gsap.to(a, { x: ox, y: oy, rotation: 0, duration: 0.3, ease: 'power2.out' });
   }
 
@@ -971,6 +987,79 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   }
 
   /* ---------------- effects ---------------- */
+  /** KARDS-style damage: a red shield with the number, popped onto whoever was hurt */
+  function shieldGraphic(n: number, k: number, color = 0xb3261e): Container {
+    const c = new Container();
+    const w = 54, h = 62;
+    const g = new Graphics().poly([-w / 2, -h / 2, w / 2, -h / 2, w / 2, h * 0.1, 0, h / 2, -w / 2, h * 0.1])
+      .fill(color).stroke({ width: 4, color: 0x1a0503 });
+    g.poly([-w / 2 + 6, -h / 2 + 6, w / 2 - 6, -h / 2 + 6, w / 2 - 6, h * 0.07, 0, h / 2 - 8, -w / 2 + 6, h * 0.07]).stroke({ width: 2, color: 0xffb0a0, alpha: 0.6 });
+    const t = new Text({ text: String(n), style: { fontFamily: FONT_SERIF, fontSize: 44, fontWeight: '700', fill: 0xffffff, stroke: { color: 0x3a0a04, width: 4 } } });
+    t.anchor.set(0.5, 0.55);
+    c.addChild(g, t);
+    c.scale.set(k * (L.phone ? 1.2 : 1));
+    return c;
+  }
+  function damageShield(x: number, y: number, n: number, k: number): void {
+    const c = shieldGraphic(n, k);
+    c.position.set(x, y); fx.addChild(c);
+    const s0 = c.scale.x;
+    gsap.fromTo(c.scale, { x: s0 * 0.3, y: s0 * 0.3 }, { x: s0, y: s0, duration: 0.25, ease: 'back.out(2.4)' });
+    gsap.to(c, { y: y - 26, alpha: 0, duration: 0.45, delay: 0.85, ease: 'power1.in', onComplete: () => destroyTree(c) });
+  }
+  /** while aiming: the damage each side would take, as shields on both */
+  function clearCombatPreview(): void { combatFx.removeChildren().forEach(c => destroyTree(c as Container)); }
+  let previewKey = '';
+  function showCombatPreview(uid: number, tgt: Target | null): void {
+    const key = tgt ? `${uid}>${tgt.kind}:${tgt.kind === 'unit' ? tgt.uid : 'hq'}` : '';
+    if (key === previewKey && combatFx.children.length) return;
+    previewKey = key; clearCombatPreview();
+    if (!tgt) return;
+    const a = findUnit(st, 0, uid)?.unit; if (!a) return;
+    const put = (x: number, y: number, n: number) => { const c = shieldGraphic(n, 0.9); c.position.set(x, y); combatFx.addChild(c); gsap.from(c.scale, { x: 0.2, y: 0.2, duration: 0.18, ease: 'back.out(2)' }); };
+    if (tgt.kind === 'hq') { put(durg[1].x + 80 * L.durgS, durg[1].y - 60 * L.durgS, a.atk); return; }
+    const d = findUnit(st, 1, tgt.uid)?.unit, dv = tokens.get(tgt.uid), av = tokens.get(uid);
+    if (!d || !dv || !av) return;
+    put(dv.x + 52 * L.tok, dv.y - 70 * L.tok, a.atk);
+    if (a.range === 'melee' && d.range === 'melee' && d.atk > 0) put(av.x + 52 * L.tok, av.y - 70 * L.tok, d.atk);
+  }
+  /** a soft cloud of dust where two lines meet */
+  function dust(x: number, y: number): void {
+    for (let i = 0; i < 9; i++) {
+      const p = new Graphics().circle(0, 0, 18 + Math.random() * 16).fill({ color: 0xe8dcc0, alpha: 0.5 });
+      p.position.set(x + (Math.random() - 0.5) * 50, y + (Math.random() - 0.5) * 40); fx.addChild(p);
+      const a = Math.random() * Math.PI * 2;
+      gsap.fromTo(p.scale, { x: 0.4, y: 0.4 }, { x: 1.8, y: 1.8, duration: 0.9, ease: 'power2.out' });
+      gsap.to(p, { x: p.x + Math.cos(a) * 50, y: p.y + Math.sin(a) * 30 - 20, alpha: 0, duration: 0.9, ease: 'power2.out', onComplete: () => p.destroy() });
+    }
+  }
+  /** the struck unit flinches and flashes red */
+  function hitFlash(x: number, y: number): void {
+    let hit: TokenView | null = null;
+    for (const v of tokens.values()) if (Math.abs(v.x - x) < 5 && Math.abs(v.y - y) < 5) hit = v;
+    if (hit) {
+      const v = hit;
+      gsap.fromTo(v, { tint: 0xff7060 }, { tint: 0xffffff, duration: 0.45 });
+      gsap.fromTo(v, { x: x + 8 }, { x, duration: 0.35, ease: 'elastic.out(1, 0.3)' });
+    } else if (Math.abs(durg[1].x - x) < 5 || Math.abs(durg[0].x - x) < 5) {
+      const d = Math.abs(durg[1].y - y) < 5 ? durg[1] : durg[0];
+      gsap.fromTo(d, { tint: 0xff7060 }, { tint: 0xffffff, duration: 0.5 });
+    }
+  }
+  /** a unit honoured for valour: a burst of gold and its new rank */
+  async function promoteFx(v: TokenView, rank: number): Promise<void> {
+    audio.play('conch');
+    const ring = new Graphics().circle(0, 0, 70).stroke({ width: 8, color: 0xffd76a }); ring.blendMode = 'add';
+    ring.position.set(v.x, v.y); fx.addChild(ring);
+    gsap.fromTo(ring.scale, { x: 0.4, y: 0.4 }, { x: 2, y: 2, duration: 0.7, ease: 'power2.out' });
+    gsap.to(ring, { alpha: 0, duration: 0.7, onComplete: () => ring.destroy() });
+    sparks(v.x, v.y - 30 * L.tok, 0xffd76a);
+    const t = new Text({ text: `${RANK_NAMES[rank].toUpperCase()}!`, style: { fontFamily: FONT_SERIF, fontSize: L.phone ? 50 : 44, fontWeight: '700', letterSpacing: 4, fill: 0xffe39a, stroke: { color: 0x2a1404, width: 7 } } });
+    t.anchor.set(0.5); t.position.set(v.x, v.y - 110 * L.tok); fx.addChild(t);
+    gsap.fromTo(t.scale, { x: 0.3, y: 0.3 }, { x: 1, y: 1, duration: 0.3, ease: 'back.out(2)' });
+    await gsap.to(t, { y: t.y - 30, alpha: 0, duration: 0.5, delay: 0.7 });
+    t.destroy();
+  }
   function floatNumber(x: number, y: number, text: string, color: number, size = 54): void {
     const t = new Text({ text, style: { fontFamily: FONT_SERIF, fontSize: Math.round(size * (L.phone ? 1.15 : 1)), fontWeight: '700', fill: color, stroke: { color: 0x3a0a04, width: 7 } } });
     t.anchor.set(0.5); t.position.set(x, y); fx.addChild(t);
@@ -1028,11 +1117,11 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 
   /* ---------------- inspect ---------------- */
-  function inspect(cardId: string): void {
+  function inspect(cardId: string, extra: InspectExtra = {}): void {
     if (overlay?.kind === 'inspect') closeInspect();
     if (overlay) return;
-    hoverIdx = -1; layoutHand();
-    const c = inspectOverlay(cardId, st.players[0].upgrades[cardId] || 0, closeInspect);
+    hoverIdx = -1; layoutHand(); clearCombatPreview();
+    const c = inspectOverlay(cardId, extra.unit ? 0 : st.players[0].upgrades[cardId] || 0, closeInspect, extra);
     s.addChild(c);
     overlay = { kind: 'inspect', view: c };
   }

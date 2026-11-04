@@ -120,4 +120,14 @@ describe('Yuddh rules (The First Throne onward)', () => {
     st.front = { owner: null, units: [] };
     expect(canMove(st, 0, 7300).ok).toBe(false);
   });
+  it('a unit that destroys an enemy and survives is promoted, twice at most', () => {
+    const st = mkY();
+    st.players[0].kosha = 10;
+    st.front.owner = 0; st.front.units = [unit(7400, 'n_padati', 0, 3, 9)];
+    st.players[1].support = [unit(7401, 'n_padati', 1, 1, 1)];
+    expect(applyAction(st, { type: 'attack', uid: 7400, target: { kind: 'unit', owner: 1, uid: 7401 } }).ok).toBe(true);
+    const u = findUnit(st, 0, 7400)!.unit;
+    expect([u.rank, u.atk, u.maxHp]).toEqual([1, 3, 10]);
+    expect(drainEvents(st).some(e => e.t === 'promote')).toBe(true);
+  });
 });

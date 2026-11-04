@@ -66,6 +66,8 @@ export interface Unit {
   attacked: boolean;
   smokeBroken: boolean;
   upgraded?: number;
+  /** Yuddh rules: battle honours won by destroying enemy units (0–2): Veer +1 health, Mahaveer also +1 attack */
+  rank?: number;
 }
 
 export interface SetYantra { cardId: string; uid: number }
@@ -106,7 +108,8 @@ export type GameEvent =
   | { t: 'hq'; owner: PlayerIndex; dmg: number; attacker: PlayerIndex; uid: number }
   | { t: 'order'; owner: PlayerIndex; cardId: string }
   | { t: 'yantra'; owner: PlayerIndex; cardId: string }
-  | { t: 'yantraSet'; owner: PlayerIndex };
+  | { t: 'yantraSet'; owner: PlayerIndex }
+  | { t: 'promote'; owner: PlayerIndex; uid: number; rank: number };
 
 export interface GameState {
   seed: number;
