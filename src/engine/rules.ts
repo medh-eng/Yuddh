@@ -192,6 +192,7 @@ export function newGame(opts: NewGameOptions): GameState {
     objective: opts.objective || { type: 'destroy' },
     scenarioId: opts.scenarioId || null,
     scenarioName: opts.scenarioName || null,
+    rules: opts.rules || 'classic',
     rng: () => 0
   } as GameState;
   st.rng = rngFactory(st.seed);
@@ -283,6 +284,10 @@ function fireYantra(st: GameState, owner: PlayerIndex, trigger: YantraTrigger): 
 /* ---------------- legality ---------------- */
 const hasGuard = (list: Unit[]) => list.some(u => u.kw.includes('raksha'));
 
+/** unit classes fast enough to advance and strike in the same turn (Yuddh rules) */
+const CHARGE_CLASSES = new Set(['Cavalry', 'Chariot', 'Elite Chariot', 'Legendary Warrior']);
+export const canCharge = (u: { cardId: string }): boolean => CHARGE_CLASSES.has(CARDS[u.cardId]?.sub ?? '');
+
 export function canAttack(st: GameState, pIdx: PlayerIndex, attackerUid: number, target: Target): Check {
   if (st.over) return { ok: false, reason: 'Game over' };
   if (pIdx !== st.active) return { ok: false, reason: 'Not your turn' };
@@ -291,6 +296,8 @@ export function canAttack(st: GameState, pIdx: PlayerIndex, attackerUid: number,
   if (!found) return { ok: false, reason: 'No such unit' };
   const a = found.unit;
   if (!a.canAct || a.attacked) return { ok: false, reason: 'Already acted' };
+  const yuddh = st.rules === 'yuddh';
+  if (yuddh && a.moved && !canCharge(a)) return { ok: false, reason: 'It advanced this turn; only cavalry and chariots can charge straight in' };
   if (p.kosha < a.op) return { ok: false, reason: 'Not enough Kosha' };
   const fromSupport = found.line === 'support';
 
@@ -298,7 +305,9 @@ export function canAttack(st: GameState, pIdx: PlayerIndex, attackerUid: number,
     if (target.owner === pIdx) return { ok: false, reason: 'Own capital' };
     if (fromSupport) return { ok: false, reason: 'Only from the Yudhbhumi' };
     if (st.front.owner !== pIdx) return { ok: false, reason: 'You do not hold the Yudhbhumi' };
-    // Raksha guards protect units, not the capital: only the Yudhbhumi gates a Durg assault.
+    // classic rules: Raksha guards protect units only. Yuddh rules: a Raksha on the defender's
+    // Rajya line stands before the Durg and must fall first.
+    if (yuddh && hasGuard(st.players[target.owner].support)) return { ok: false, reason: 'A Raksha unit guards the Durg; strike it first' };
     return { ok: true };
   }
 
@@ -321,6 +330,7 @@ export function canMove(st: GameState, pIdx: PlayerIndex, uid: number): Check {
   if (!found || found.line !== 'support') return { ok: false, reason: 'Only from the Rajya line' };
   const u = found.unit;
   if (!u.canAct || u.moved) return { ok: false, reason: 'Already acted' };
+  if (st.rules === 'yuddh' && u.attacked) return { ok: false, reason: 'It has already attacked this turn' };
   if (p.kosha < u.op) return { ok: false, reason: 'Not enough Kosha' };
   if (st.front.owner !== null && st.front.owner !== pIdx) return { ok: false, reason: 'The enemy holds the Yudhbhumi' };
   if (st.front.units.length >= 4) return { ok: false, reason: 'The Yudhbhumi is full' };

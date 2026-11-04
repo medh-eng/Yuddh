@@ -124,6 +124,7 @@ export interface GameState {
   objective: Objective;
   scenarioId: string | null;
   scenarioName: string | null;
+  rules?: Ruleset;
   rng: () => number;
 }
 
@@ -169,4 +170,8 @@ export interface NewGameOptions {
   objective?: Objective;
   scenarioId?: string | null;
   scenarioName?: string | null;
+  /** 'classic' = the prototype's rules (golden traces); 'yuddh' = Raksha guards the Durg,
+      and a unit either moves or attacks in a turn unless it is mounted (see canCharge) */
+  rules?: Ruleset;
 }
+export type Ruleset = 'classic' | 'yuddh';

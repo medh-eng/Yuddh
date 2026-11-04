@@ -50,7 +50,7 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
       on one page, otherwise two rows of the standard size, page by page. */
   function geometry(n: number) {
     const W = view.w, H = view.h, ph = view.phone;
-    const top = ph ? 172 : 210, bottom = ph ? 110 : 150;
+    const top = ph ? 172 : 210, bottom = ph ? 100 : 150;
     const gap = ph ? 22 : 26, room = W - 200;
     const make = (rows: number, k: number) => {
       const ch = FACE_H * k, cw = FACE_W * k;
@@ -108,7 +108,7 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
     name.text = t.id === 'neutral' ? 'Neutral cards' : `${emp.name} · ${emp.capital}`;
     name.style.fontSize = ph ? 54 : 72; name.position.set(ph ? 56 : 96, ph ? 38 : 70);
     line.text = t.id === 'neutral' ? 'Soldiers, orders and hidden Yantras that any empire may take to war.' : `${st.material} frame. ${emp.passive}`;
-    line.style.fontSize = ph ? 26 : 24; line.style.wordWrapWidth = W - (ph ? 200 : 500);
+    line.style.fontSize = ph ? 26 : 24; line.style.wordWrapWidth = W - (ph ? 120 : 500);
     line.position.set(ph ? 60 : 100, ph ? 100 : 156);
     shade.clear().rect(0, 0, W, ph ? 168 : 205).fill({ color: 0x0a0604, alpha: 0.55 });
   }
@@ -116,16 +116,17 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
   function drawTabs(): void {
     tabs.removeChildren().forEach(c => destroyTree(c as Container));
     const ph = view.phone, W = view.w, H = view.h;
-    const w = ph ? 170 : 210, gap = ph ? 14 : 16;
+    const gap = ph ? 12 : 16;
+    const w = ph ? Math.min(170, (W - 80 - gap * 5) / TABS.length / view.ui) : 210;
     const total = TABS.length * (w * view.ui) + (TABS.length - 1) * gap;
     TABS.forEach((t, i) => {
       const b = makeButton(t.name, () => { audio.play('click'); void show(i, 0); }, { w, primary: i === tab });
-      b.position.set(W / 2 - total / 2 + (w * view.ui) / 2 + i * (w * view.ui + gap) - (ph ? 90 : 0), H - (ph ? 52 : 70));
+      b.position.set(W / 2 - total / 2 + (w * view.ui) / 2 + i * (w * view.ui + gap), H - (ph ? 48 : 70));
       tabs.addChild(b);
     });
     const bk = makeButton('Back', back, { w: ph ? 150 : 170 });
     bk.position.set(W - (ph ? 112 : 120), ph ? 60 : 70);
-    if (ph) bk.position.set(W - 112, H - 52);
+    if (ph) bk.position.set(W - 104, 52);
     tabs.addChild(bk);
   }
 

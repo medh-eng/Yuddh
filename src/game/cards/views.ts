@@ -147,11 +147,19 @@ export class HandCard extends Container {
 
   override destroy(): void { stopTweens(this); super.destroy({ children: true }); }
 
+  /** what the card costs right now, painted on its coin (undefined = printed cost) */
+  cost: number | undefined = undefined;
+  setCost(n: number): void {
+    if (n === this.cost) return;
+    this.cost = n;
+    if (!this.faceDown && !this.flipping) this.face.texture = cardFace(this.cardId, this.upgrade, n);
+  }
+
   /** turn the card face up (from the deck, or a yantra springing) */
   turnUp(opts: FlipOptions = {}): Promise<void> {
     if (!this.faceDown) return Promise.resolve();
     this.faceDown = false; this.flipping = true;
-    return flipSprite(this.face, cardFace(this.cardId, this.upgrade), opts).then(() => { this.flipping = false; });
+    return flipSprite(this.face, cardFace(this.cardId, this.upgrade, this.cost), opts).then(() => { this.flipping = false; });
   }
   /** turn the card face down (a yantra being set) */
   turnDown(opts: FlipOptions = {}): Promise<void> {

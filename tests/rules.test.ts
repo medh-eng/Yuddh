@@ -1,6 +1,6 @@
 /* Card-mechanics checks, ported from the prototype's yantra-test.js. */
 import { describe, expect, it } from 'vitest';
-import { allUnits, applyAction, buildDeck, drainEvents, findUnit, newGame, type Unit } from '../src/engine';
+import { allUnits, applyAction, buildDeck, canAttack, canMove, drainEvents, findUnit, newGame, type Unit } from '../src/engine';
 import { Meta, type Store } from '../src/meta/progress';
 
 const mk = () => newGame({
@@ -77,5 +77,47 @@ describe('meta progression', () => {
     expect(meta.upgrade('n_gaja').ok).toBe(true);
     expect(meta.kirti()).toBe(40);
     expect(new Meta(store).level('n_gaja')).toBe(1);
+  });
+});
+
+describe('Yuddh rules (The First Throne onward)', () => {
+  const mkY = () => newGame({
+    player: { empire: 'maurya', ally: 'neutral', deck: buildDeck('maurya', 'neutral') },
+    enemy: { empire: 'rajput', ally: 'neutral', deck: buildDeck('rajput', 'neutral') },
+    seed: 12, rules: 'yuddh'
+  });
+  it('a Raksha on the enemy Rajya line guards the Durg until it falls', () => {
+    const st = mkY();
+    st.front.owner = 0; st.front.units = [unit(7000, 'n_padati', 0, 3, 3)];
+    st.players[1].support = [{ ...unit(7001, 'n_rakshak', 1, 1, 4), kw: ['raksha'] }];
+    st.players[0].kosha = 10;
+    expect(canAttack(st, 0, 7000, { kind: 'hq', owner: 1 }).ok).toBe(false);
+    st.players[1].support = [];
+    expect(canAttack(st, 0, 7000, { kind: 'hq', owner: 1 }).ok).toBe(true);
+  });
+  it('classic rules still let a unit pass the Raksha (golden traces)', () => {
+    const st = mk();
+    st.front.owner = 0; st.front.units = [unit(7100, 'n_padati', 0, 3, 3)];
+    st.players[1].support = [{ ...unit(7101, 'n_rakshak', 1, 1, 4), kw: ['raksha'] }];
+    st.players[0].kosha = 10;
+    expect(canAttack(st, 0, 7100, { kind: 'hq', owner: 1 }).ok).toBe(true);
+  });
+  it('foot units either advance or attack in a turn; cavalry and chariots can do both', () => {
+    const st = mkY();
+    st.players[0].kosha = 10;
+    st.players[0].support = [unit(7200, 'n_padati', 0, 2, 2), unit(7201, 'n_ashvarohi', 0, 2, 2)];
+    expect(applyAction(st, { type: 'move', uid: 7200 }).ok).toBe(true);
+    expect(applyAction(st, { type: 'move', uid: 7201 }).ok).toBe(true);
+    expect(canAttack(st, 0, 7200, { kind: 'hq', owner: 1 }).ok).toBe(false);
+    expect(canAttack(st, 0, 7201, { kind: 'hq', owner: 1 }).ok).toBe(true);
+  });
+  it('a unit that attacked cannot then advance', () => {
+    const st = mkY();
+    st.players[0].kosha = 10;
+    st.players[0].support = [{ ...unit(7300, 'n_dhanurdhar', 0, 1, 2), range: 'ranged' }];
+    st.front.owner = 1; st.front.units = [unit(7301, 'n_padati', 1, 1, 9)];
+    expect(applyAction(st, { type: 'attack', uid: 7300, target: { kind: 'unit', owner: 1, uid: 7301 } }).ok).toBe(true);
+    st.front = { owner: null, units: [] };
+    expect(canMove(st, 0, 7300).ok).toBe(false);
   });
 });

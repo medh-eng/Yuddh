@@ -15,7 +15,7 @@
 import { Container, FederatedPointerEvent, Graphics, Point, Sprite, Text, Texture } from 'pixi.js';
 import gsap from 'gsap';
 import {
-  CARDS, EMPIRES, actionObservers, aiTurn, allUnits, applyAction, canAttack, canMove, canPlay,
+  CARDS, EMPIRES, actionObservers, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
   drainEvents, type Action, type GameEvent, type GameState, type PlayerIndex, type Target, type Unit
 } from '../../engine';
 import { FIRST_THRONE, firstThroneGame } from '../../campaign/firstThrone';
@@ -69,25 +69,26 @@ function battleLayout(v: View): Layout {
       reveal: { x: 860, y: 448, s: 1.15 }, preview: null
     };
   }
+  // phones (720 high, 1280–1800 wide): narrow side columns so the lanes, units and cards get the room
   const W = v.w, H = v.h, ui = v.ui;
-  const laneX = 236, laneH = 176, rightX = W - 170;
-  const laneW = W - laneX - 120 - 340;
-  const line = { enemy: 132, front: 316, mine: 500 };
-  const handScale = 0.4;
+  const laneX = 176, laneH = 168, rightX = W - 125;
+  const laneW = W - laneX - 80 - 250;
+  const line = { enemy: 118, front: 292, mine: 466 };
+  const tok = 0.8, handScale = 0.46;
   return {
     W, H, phone: true, ui,
-    laneX, laneW, laneH, line, slotGap: 160, tok: 0.82,
-    durgX: 118, durgS: 0.72, durgText: 1.5,
-    handY: H - 60, handCX: laneX + laneW / 2, handScale, handSpan: laneW * 0.92, handMaxGap: 165, handTop: H - 200,
-    liftY: H - 186, liftScale: 1.05, dragScale: 0.6,
-    enemyHand: { x: rightX, y: 34, s: 0.17 },
-    rightX, enemyInfoY: 118, enemyDiyas: { x: rightX - 78, y: 176, s: 0.8 },
-    endY: line.front, endS: 0.95, koshaLabelY: 432, koshaY: 472, myDiyas: { x: rightX - 102, y: 520, s: 1 },
-    deck: { x: W - 58, y: 655, s: 0.2 },
-    yantraX: laneX + laneW + 52, yantraS: 0.17, yantraGap: 62,
-    roundY: H - 40, roundX: [rightX - 125, rightX - 50, rightX + 25], roundR: 30, hintY: 26,
-    reveal: { x: laneX + laneW / 2, y: line.front, s: 1.35 },
-    preview: { x: W - 250, y: H / 2 - 4, s: (H * 0.8) / 672 }
+    laneX, laneW, laneH, line, slotGap: Math.min(170, (laneW - 140) / 3), tok,
+    durgX: 92, durgS: 0.62, durgText: 1.6,
+    handY: 552 + 336 * handScale, handCX: laneX + laneW / 2, handScale, handSpan: laneW * 0.95, handMaxGap: 175, handTop: H - 200,
+    liftY: H - 172, liftScale: 1, dragScale: 0.6,
+    enemyHand: { x: rightX, y: 30, s: 0.15 },
+    rightX, enemyInfoY: 100, enemyDiyas: { x: rightX - 76, y: 150, s: 0.75 },
+    endY: line.front, endS: 0.8, koshaLabelY: 400, koshaY: 438, myDiyas: { x: rightX - 100, y: 482, s: 1 },
+    deck: { x: W - 48, y: 600, s: 0.18 },
+    yantraX: laneX + laneW + 40, yantraS: 0.15, yantraGap: 58,
+    roundY: H - 36, roundX: [rightX - 110, rightX - 40, rightX + 30], roundR: 28, hintY: 18,
+    reveal: { x: laneX + laneW / 2, y: line.front, s: 1.45 },
+    preview: { x: W - 250, y: H / 2, s: (H * 0.94) / 672 }
   };
 }
 
@@ -123,6 +124,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   let overlay: Overlay = null;
   let hoverIdx = -1;
   let pressAt: { x: number; y: number } | null = null;
+  let targetTapAt = 0, longPressFired = 0;
 
   const tokens = new Map<number, TokenView>();
   let hand: HandCard[] = [];
@@ -270,13 +272,14 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.72 });
     dim.eventMode = 'static';
     const art = new Sprite(cardFace('m_chandragupta')); art.anchor.set(0.5); art.rotation = -0.05;
-    const tx = L.phone ? 700 : 860, wrap = L.phone ? W - tx - 70 : 820;
-    art.scale.set(L.phone ? 0.95 : 0.8); art.position.set(L.phone ? 380 : 560, L.phone ? 400 : 520);
+    const as = L.phone ? (H * 0.82) / 672 : 0.8;
+    art.scale.set(as); art.position.set(L.phone ? 40 + 240 * as : 560, L.phone ? H / 2 : 520);
+    const tx = L.phone ? 40 + 480 * as + 60 : 860, wrap = L.phone ? W - tx - 50 : 820;
     const t1 = new Text({ text: `${FIRST_THRONE.place.toUpperCase()} · ${FIRST_THRONE.year.toUpperCase()}`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(22 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold } });
     const t2 = new Text({ text: FIRST_THRONE.title, style: { fontFamily: FONT_SERIF, fontSize: 86, fontWeight: '700', fill: INK.goldPale } });
     const t3 = new Text({ text: FIRST_THRONE.briefing, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * k), fill: INK.cream, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(42 * k) } });
     const t4 = new Text({ text: 'Destroy the Nanda Durg before they destroy yours.', style: { fontFamily: FONT_SERIF, fontSize: Math.round(26 * k), fontStyle: 'italic', fill: INK.gold, wordWrap: true, wordWrapWidth: wrap } });
-    if (L.phone) { t1.position.set(tx, 70); t2.position.set(tx - 4, 104); t3.position.set(tx, 222); t4.position.set(tx, t3.y + t3.height + 26); }
+    if (L.phone) { t2.style.fontSize = 76; t1.position.set(tx, 40); t2.position.set(tx - 4, 72); t3.position.set(tx, 180); t4.position.set(tx, t3.y + t3.height + 20); }
     else { t1.position.set(tx, 300); t2.position.set(tx - 4, 336); t3.position.set(tx, 460); t4.position.set(tx, 680); }
     const go = makeButton('To battle', () => {
       audio.unlock(); audio.play('conch');
@@ -290,7 +293,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
         }
       });
     }, { primary: true, w: 340 });
-    go.position.set(L.phone ? tx + 230 : 1030, L.phone ? Math.min(H - 70, t4.y + t4.height + 80) : 800);
+    go.position.set(L.phone ? tx + 215 : 1030, L.phone ? Math.min(H - 56, t4.y + t4.height + 70) : 800);
     panel.addChild(dim, art, t1, t2, t3, t4, go);
     s.addChild(panel);
     overlay = { kind: 'briefing', view: panel };
@@ -418,6 +421,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       const k = pool.findIndex(h => h.cardId === id);
       if (k >= 0) { next.push(pool[k]); pool.splice(k, 1); return; }
       const h = new HandCard(id, state.players[0].upgrades[id] || 0, !instant);
+      h.setCost(koshaCost(st, 0, CARDS[id]));
       h.position.set(L.deck.x, L.deck.y); h.scale.set(L.deck.s);
       if (!instant) h.drawDelay = fresh++ * 0.16;
       handLayer.addChild(h);
@@ -494,7 +498,10 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   function refreshInteractivity(): void {
     if (!st) return;
     const myTurn = !busy && st.active === 0 && !st.over;
-    hand.forEach((h, i) => h.setPlayable(myTurn && (cardTargets(i).zone !== null || cardTargets(i).units.length > 0)));
+    hand.forEach((h, i) => {
+      h.setCost(koshaCost(st, 0, CARDS[h.cardId]));
+      h.setPlayable(myTurn && (cardTargets(i).zone !== null || cardTargets(i).units.length > 0));
+    });
     tokens.forEach(v => v.setRing(myTurn && v.owner === 0 && unitCanDoAnything(v.uid) ? 'ready' : 'none'));
     durg[1].setRing(false);
     const anything = myTurn && (hand.some((_, i) => cardTargets(i).zone !== null || cardTargets(i).units.length > 0) || [...tokens.values()].some(v => v.owner === 0 && unitCanDoAnything(v.uid)));
@@ -510,11 +517,14 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     if (!mine.length && hand.some(h => CARDS[h.cardId].type === 'unit')) return L.phone ? 'Drag a unit card onto your Rajya line, or tap it and tap the line.' : 'Drag a unit card onto your Rajya line to deploy it.';
     const ready = mine.filter(x => unitCanDoAnything(x.unit.uid));
     if (ready.some(x => unitTargets(x.unit.uid).hq)) return 'Your units hold the Yudhbhumi. Drag one onto the enemy Durg to strike it.';
+    const guarded = st.front.owner === 0 && st.players[1].support.some(u => u.kw.includes('raksha'));
+    if (guarded && ready.length) return 'A Raksha guards the Nanda Durg. Cut it down before you strike the walls.';
     if (ready.some(x => unitTargets(x.unit.uid).front)) return L.phone ? 'Move a glowing unit up to the Yudhbhumi, or onto an enemy.' : 'Drag a glowing unit up to the Yudhbhumi to advance, or onto an enemy to attack.';
     if (ready.length) return `${tap} a glowing unit onto a red-ringed enemy to attack it.`;
+    if (mine.some(x => x.unit.moved && !x.unit.attacked && !canCharge(x.unit))) return L.phone ? 'Units that advanced strike next turn. Cavalry and chariots can charge at once.' : 'Foot soldiers and elephants that advanced this turn strike next turn. Cavalry and chariots can charge at once.';
     if (mine.some(x => !x.unit.canAct)) return L.phone ? 'New units wait a turn, unless they have Vega (the double arrow).' : 'Units that just arrived must wait a turn, unless they have Vega (the double arrow).';
     if (me.kosha === 0) return 'Your treasury is spent. Press End Turn.';
-    return L.phone ? 'Hold a card to read it. Press End Turn when you are done.' : 'Long-press or right-click any card to read it. Press End Turn when you are done.';
+    return L.phone ? 'Tap any enemy, or hold a card, to read it. Press End Turn when done.' : 'Click an enemy, or right-click any card, to read it. Press End Turn when you are done.';
   }
 
   function clearTargets(): void {
@@ -558,7 +568,8 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     previewLayer.children.forEach(c => stopTweens(c as Container));
     previewLayer.removeChildren().forEach(c => c.destroy());
     if (!id || !L.preview) return;
-    const sp = new Sprite(cardFace(id, st.players[0].upgrades[id] || 0));
+    const fromHand = pick?.kind === 'card' ? hand[pick.index] : undefined;
+    const sp = new Sprite(cardFace(id, st.players[0].upgrades[id] || 0, fromHand?.cost));
     sp.anchor.set(0.5); sp.position.set(L.preview.x, L.preview.y);
     const k = L.preview.s;
     sp.scale.set(k);
@@ -586,6 +597,12 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   }
 
   function bindToken(v: TokenView): void {
+    // tapping an enemy reads its card (unless the tap was choosing a target for a selected card or unit)
+    if (v.owner === 1) v.on('pointertap', () => {
+      if (performance.now() - targetTapAt < 700 || overlay || drag) return;
+      if (longPressFired && performance.now() - longPressFired < 700) return;
+      inspect(v.cardId);
+    });
     v.on('pointerdown', (e: FederatedPointerEvent) => {
       if (e.button === 2) { inspect(v.cardId); return; }
       audio.unlock();
@@ -600,7 +617,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   function armLongPress(cardId: string): void {
     if (longPress) clearTimeout(longPress);
     pressAt = lastPointer ? { x: lastPointer.x, y: lastPointer.y } : null;
-    longPress = setTimeout(() => { longPress = null; if (drag && drag.moved) return; cancelDrag(); inspect(cardId); }, 480);
+    longPress = setTimeout(() => { longPress = null; if (drag && drag.moved) return; cancelDrag(); longPressFired = performance.now(); inspect(cardId); }, 480);
   }
 
   s.eventMode = 'static';
@@ -642,7 +659,8 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     if (!pick || drag || busy) return;
     const p = toDesign(e);
     const tgt = targetAt(p, pick);
-    if (tgt) resolvePickOn(tgt); else if (p.y < L.handTop + 10) { pick = null; clearTargets(); refreshInteractivity(); hoverIdx = -1; layoutHand(); }
+    if (tgt) { targetTapAt = performance.now(); resolvePickOn(tgt); }
+    else if (pick.kind === 'unit' && hitDurg(p)) { targetTapAt = performance.now(); explainDurg(pick.uid); } else if (p.y < L.handTop + 10) { pick = null; clearTargets(); refreshInteractivity(); hoverIdx = -1; layoutHand(); }
   });
 
   type DropTarget = Target | { kind: 'zone'; zone: 'mine' | 'front' | 'board' };
@@ -693,6 +711,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     const from: Exclude<Pick, null> = d.kind === 'card' ? { kind: 'card', index: d.index } : { kind: 'unit', uid: d.uid };
     const tgt = targetAt(p, from);
     clearTargets();
+    if (!tgt && from.kind === 'unit' && hitDurg(p)) { cancelDrag(d); explainDurg(from.uid); return; }
     if (!tgt) { cancelDrag(d); refreshInteractivity(); return; }
     await commit(from, tgt, d.kind === 'card' ? d.view : null);
   }
@@ -706,6 +725,12 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       if (tgt.kind === 'zone' && t.zone === 'board') tgt = { kind: 'zone', zone: 'board' };
       void commit(p, tgt, hand[p.index]);
     } else void commit(p, tgt, null);
+  }
+
+  /** a unit dropped on the enemy Durg when it may not strike it: say why */
+  function explainDurg(uid: number): void {
+    const why = canAttack(st, 0, uid, { kind: 'hq', owner: 1 });
+    if (!why.ok) { flashHint(why.reason); if (/Raksha/.test(why.reason)) tokens.forEach(v => { if (v.owner === 1 && st.players[1].support.some(u => u.uid === v.uid && u.kw.includes('raksha'))) v.setRing('target'); }); }
   }
 
   function cancelDrag(d?: Drag): void {
@@ -1082,19 +1107,20 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     const c = new Container();
     const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.78 });
     dim.eventMode = 'static';
-    const face = new Sprite(cardFace(won ? 'm_chandragupta' : 'n_gaja')); face.anchor.set(0.5); face.scale.set(ph ? 0.5 : 0.75); face.position.set(W / 2, ph ? 230 : 380);
+    const face = new Sprite(cardFace(won ? 'm_chandragupta' : 'n_gaja')); face.anchor.set(0.5); face.scale.set(ph ? 0.46 : 0.75); face.position.set(W / 2, ph ? H * 0.29 : 380);
     const title = new Text({ text: won ? 'VICTORY' : 'DEFEAT', style: { fontFamily: FONT_SERIF, fontSize: ph ? 104 : 120, fontWeight: '700', letterSpacing: 24, fill: won ? INK.goldPale : 0xffb09a, stroke: { color: 0x000000, width: 8 } } });
-    title.anchor.set(0.5); title.position.set(W / 2, ph ? 474 : 690);
+    title.anchor.set(0.5); title.position.set(W / 2, ph ? H * 0.6 : 690);
+    if (ph) title.style.fontSize = 92;
     const sub = new Text({
       text: won ? `Pataliputra opens its gates in turn ${st.turn}. The Mauryan age begins.` : 'The Nanda elephants hold the field. Chanakya is already planning the next war.',
       style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * L.ui), fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - 200 }
     });
-    sub.anchor.set(0.5); sub.position.set(W / 2, ph ? 568 : 780);
+    sub.anchor.set(0.5); sub.position.set(W / 2, ph ? H * 0.72 : 780);
     const again = makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 320 });
     const bx = ph ? 230 : 180;
-    again.position.set(W / 2 - bx, ph ? 690 : 880);
+    again.position.set(W / 2 - bx, ph ? H * 0.87 : 880);
     const leave = makeButton('Title screen', exit, { w: 320 });
-    leave.position.set(W / 2 + bx, ph ? 690 : 880);
+    leave.position.set(W / 2 + bx, ph ? H * 0.87 : 880);
     c.addChild(dim, face, title, sub, again, leave);
     s.addChild(c);
     overlay = { kind: 'end', view: c, won };
@@ -1152,9 +1178,12 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       if (busy || dealing() || st.active !== 0 || st.over) return [];
       const out: { what: string; from: { x: number; y: number }; to: { x: number; y: number } }[] = [];
       const mid = L.laneX + L.laneW / 2;
+      const gap = Math.min(L.handMaxGap, L.handSpan / Math.max(1, hand.length)), cw = 480 * L.handScale;
       hand.forEach((h, i) => {
         const t = cardTargets(i);
-        const from = scr(h.x, h.y - 30 * L.handScale / 0.31);
+        // press the part of the card that is not covered by its right-hand neighbour
+        const dx = i < hand.length - 1 && gap < cw ? -cw / 2 + gap / 2 : 0;
+        const from = scr(h.x + dx, h.y - 30 * L.handScale / 0.31);
         if (t.zone === 'mine') out.push({ what: `deploy ${h.cardId}`, from, to: scr(mid, L.line.mine) });
         else if (t.zone === 'board') out.push({ what: `cast ${h.cardId}`, from, to: scr(mid, L.line.front) });
         t.units.forEach(uid => { const v = tokens.get(uid); if (v) out.push({ what: `cast ${h.cardId} on ${v.cardId}`, from, to: scr(v.x, v.y) }); });

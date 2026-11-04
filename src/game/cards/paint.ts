@@ -100,16 +100,17 @@ function drawArt(g: CanvasRenderingContext2D, id: string, x: number, y: number, 
   g.drawImage(img, dx, dy, dw, dh);
 }
 
-function coin(g: CanvasRenderingContext2D, x: number, y: number, r: number, label: string, kind: 'gold' | 'bronze'): void {
+function coin(g: CanvasRenderingContext2D, x: number, y: number, r: number, label: string, kind: 'gold' | 'bronze' | 'cheaper'): void {
   const rad = g.createRadialGradient(x - r * 0.3, y - r * 0.35, r * 0.1, x, y, r);
-  if (kind === 'gold') { rad.addColorStop(0, '#fff2c4'); rad.addColorStop(0.45, '#e2b14e'); rad.addColorStop(1, '#8a5a17'); }
+  if (kind === 'cheaper') { rad.addColorStop(0, '#eaffd0'); rad.addColorStop(0.45, '#7fc65a'); rad.addColorStop(1, '#2f6a1c'); }
+  else if (kind === 'gold') { rad.addColorStop(0, '#fff2c4'); rad.addColorStop(0.45, '#e2b14e'); rad.addColorStop(1, '#8a5a17'); }
   else { rad.addColorStop(0, '#d9a77a'); rad.addColorStop(0.5, '#7a4a28'); rad.addColorStop(1, '#3a1f0f'); }
   g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2);
   g.fillStyle = rad; g.fill();
   g.lineWidth = 3; g.strokeStyle = 'rgba(40,20,5,0.8)'; g.stroke();
   g.beginPath(); g.arc(x, y, r - 7, 0, Math.PI * 2);
   g.lineWidth = 1.5; g.strokeStyle = kind === 'gold' ? 'rgba(120,70,10,0.6)' : 'rgba(255,220,180,0.35)'; g.stroke();
-  g.fillStyle = kind === 'gold' ? '#2a1606' : '#fbe8c8';
+  g.fillStyle = kind === 'bronze' ? '#fbe8c8' : '#2a1606';
   g.font = `700 ${Math.round(r * 1.25)}px ${SERIF}`;
   g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillText(label, x, y + r * 0.06);
@@ -168,14 +169,17 @@ function wrapText(g: CanvasRenderingContext2D, text: string, x: number, y: numbe
   shown.forEach((l, i) => g.fillText(l, x, y0 + i * lineH));
 }
 
+/** unit classes that may advance and attack in one turn (engine: canCharge) */
+const CHARGES = new Set(['Cavalry', 'Chariot', 'Elite Chariot', 'Legendary Warrior']);
 const typeLabel = (c: CardDef) =>
-  c.type === 'unit' ? c.sub.toUpperCase() : c.kind === 'shakti' ? 'SHAKTI' : c.type === 'yantra' ? 'YANTRA' : 'MANTRA';
+  c.type === 'unit' ? c.sub.toUpperCase() + (CHARGES.has(c.sub) ? ' · CHARGES' : '') : c.kind === 'shakti' ? 'SHAKTI' : c.type === 'yantra' ? 'YANTRA' : 'MANTRA';
 
 /* ============================================================ card face */
 const faceCache = new Map<string, Texture>();
 
-export function cardFace(id: string, upgrade = 0): Texture {
-  const key = `${id}:${upgrade}`;
+/** `cost`: what the card costs right now (a discount shows as a green coin); defaults to the printed cost */
+export function cardFace(id: string, upgrade = 0, cost?: number): Texture {
+  const key = `${id}:${upgrade}:${cost ?? ''}`;
   const hit = faceCache.get(key);
   if (hit) return hit;
   const c = CARDS[id];
@@ -242,7 +246,9 @@ export function cardFace(id: string, upgrade = 0): Texture {
   wrapText(g, c.text, W / 2, py + ph / 2 + 14, W - 104, 29, 3);
 
   // cost coin, operation cost, rarity gem
-  coin(g, 58, 58, 40, String(Math.max(1, c.type !== 'unit' ? c.cost - upgrade : c.cost)), 'gold');
+  const printed = Math.max(1, c.type !== 'unit' ? c.cost - upgrade : c.cost);
+  const now = cost ?? printed;
+  coin(g, 58, 58, 40, String(now), now < printed ? 'cheaper' : 'gold');
   if (c.type === 'unit') coin(g, W - 54, 56, 30, String(c.op ?? 0), 'bronze');
   gem(g, W / 2, 26, 15, c.rarity);
 

@@ -32,6 +32,8 @@ export function makeButton(label: string, onTap: () => void, opts: { w?: number;
     style: { fontFamily: FONT_SERIF, fontSize: Math.round(24 * k), fontWeight: '700', letterSpacing: 5, fill: opts.primary ? 0x22150d : INK.goldPale }
   });
   t.anchor.set(0.5);
+  // long labels on narrow buttons shrink to fit
+  if (t.width > w - 20 * k) t.scale.set((w - 20 * k) / t.width);
   c.addChild(bg, t);
   c.eventMode = 'static';
   c.cursor = 'pointer';
