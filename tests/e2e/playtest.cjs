@@ -16,8 +16,8 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   const shot = n => p.screenshot({ path: `${out}/${n}.png` });
   const press = async (label, nth = 0) => {
     let bs = [];
-    // buttons fade in one after another; wait up to 4 s for this one to appear
-    for (let i = 0; i < 16; i++) { bs = (await p.evaluate(() => window.__yuddhButtons())).filter(x => x.label === label); if (bs[nth]) break; await p.waitForTimeout(250); }
+    // buttons fade in one after another; wait up to 10 s for this one to appear
+    for (let i = 0; i < 40; i++) { bs = (await p.evaluate(() => window.__yuddhButtons())).filter(x => x.label === label); if (bs[nth]) break; await p.waitForTimeout(250); }
     if (!bs[nth]) throw new Error(`no button "${label}" (have: ${(await p.evaluate(() => window.__yuddhButtons())).map(x => x.label).join(', ')})`);
     await p.mouse.click(bs[nth].x, bs[nth].y);
   };
@@ -39,12 +39,19 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   await p.mouse.click(+W * 0.44, +H * 0.42); await p.waitForTimeout(700); await shot('04-gallery-inspect');
   await p.mouse.click(10, 10); await p.waitForTimeout(400);
   await press('Neutral'); await p.waitForTimeout(2000); await shot('05-gallery-neutral');
-  await press('Back'); await p.waitForTimeout(1500);
+  // at a few frames a second a tap can land while the gallery is still drawing; press Back until the title is back
+  for (let k = 0; k < 8; k++) {
+    const bs = await p.evaluate(() => window.__yuddhButtons());
+    if (bs.some(x => x.label === 'To battle')) break;
+    const back = bs.find(x => x.label === 'Back');
+    if (back) await p.mouse.click(back.x, back.y);
+    await p.waitForTimeout(1500);
+  }
 
   // the battle
   await press('To battle');
   // the title stays up while the battle's paintings load; wait for the battle itself
-  await p.waitForFunction(() => !!window.__yuddh, null, { timeout: 60000 }); await p.waitForTimeout(1500); await shot('06-briefing');
+  await p.waitForFunction(() => !!window.__yuddh && !window.__yuddhButtons().some(b => b.label === 'Card gallery'), null, { timeout: 60000 }); await p.waitForTimeout(1500); await shot('06-briefing');
   await press('To battle'); await p.waitForTimeout(640); await shot('07-deal-flip');
   await p.waitForTimeout(2600);
   const hand = await p.evaluate(() => window.__yuddh.hand());

@@ -11,7 +11,7 @@ export type CardType = 'unit' | 'order' | 'yantra';
 export type Range = 'melee' | 'ranged';
 export type AiLevel = 'easy' | 'normal' | 'hard';
 export type Line = 'support' | 'front';
-export type DeployEffect = 'draw1' | 'drawKosha' | 'kosha1' | 'buffLine' | 'buffAll';
+export type DeployEffect = 'draw1' | 'drawKosha' | 'kosha1' | 'buffLine' | 'buffAll' | 'kosha2' | 'setYantra' | 'hillVolley' | 'elephantBuff';
 export type YantraTrigger = 'onEnemyDeploy' | 'onHQAttack' | 'onUnitAttack';
 export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
 
@@ -66,6 +66,8 @@ export interface Unit {
   attacked: boolean;
   smokeBroken: boolean;
   upgraded?: number;
+  /** Yuddh rules: the turn a Garuda Vyuha let this unit charge */
+  surge?: number;
   /** Yuddh rules: battle honours won by destroying enemy units (0–2): Veer +1 health, Mahaveer also +1 attack */
   rank?: number;
 }
@@ -110,7 +112,8 @@ export type GameEvent =
   | { t: 'yantra'; owner: PlayerIndex; cardId: string }
   | { t: 'yantraSet'; owner: PlayerIndex }
   | { t: 'promote'; owner: PlayerIndex; uid: number; rank: number }
-  | { t: 'trample'; owner: PlayerIndex; uid: number; dmg: number };
+  | { t: 'trample'; owner: PlayerIndex; uid: number; dmg: number }
+  | { t: 'heal'; owner: PlayerIndex; uid: number; amount: number; by: number };
 
 export interface GameState {
   seed: number;

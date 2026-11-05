@@ -118,6 +118,10 @@ function orderValue(st: GameState, pIdx: PlayerIndex, entry: PlayOption): number
   if (id === 'n_visha_baan') return allUnits(st, enemy).length >= 3 ? 9 : (allUnits(st, enemy).length === 2 ? 3 : 0);
   if (id === 'r_kshatra') return (st.front.owner === pIdx && st.front.units.length >= 2) ? 8 : 0;
   if (id === 'ch_vyapari') return 5.5;
+  if (id === 'nd_nanda_kosha') return p.hand.some(h => CARDS[h].cost > p.kosha && CARDS[h].cost <= p.kosha + 2) ? 6 : 0;
+  if (id === 'nd_kashtha_prakara') return p.yantras.length >= 2 ? 0 : 3.5;
+  if (id === 'm_garuda_vyuha') return allUnits(st, pIdx).filter(x => x.unit.canAct && !x.unit.attacked).length >= 2 ? 7 : 0;
+  if (id === 'm_makara_vyuha') return st.front.owner === pIdx && st.front.units.length >= 2 ? 6 : 0;
   return 3;
 }
 

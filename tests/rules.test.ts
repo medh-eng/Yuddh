@@ -174,3 +174,51 @@ describe('seasons (Yuddh rules)', () => {
     expect(st.players[0].kosha).toBe(st.players[0].maxKosha + 1);
   });
 });
+
+describe('batch 3 cards (Yuddh rules)', () => {
+  const mkB = () => newGame({
+    player: { empire: 'maurya', ally: 'neutral', deck: buildDeck('maurya', 'neutral') },
+    enemy: { empire: 'rajput', ally: 'neutral', deck: buildDeck('rajput', 'neutral') },
+    seed: 44, rules: 'yuddh'
+  });
+  it('the new cards never enter buildDeck (golden traces untouched)', () => {
+    const d = [...buildDeck('maurya', 'neutral'), ...buildDeck('neutral', 'maurya')];
+    expect(d.some(id => id.startsWith('nd_') || ['m_parvataka', 'm_garuda_vyuha', 'm_makara_vyuha', 'm_raja_dhwaja', 'm_shalya_vaidya', 'm_hastipaka'].includes(id))).toBe(false);
+  });
+  it('a standard-bearer gives comrades on the Yudhbhumi +1 damage', () => {
+    const st = mkB();
+    st.players[0].kosha = 10;
+    st.players[0].support = [unit(8000, 'm_raja_dhwaja', 0, 1, 3)];
+    st.front.owner = 0; st.front.units = [unit(8001, 'n_padati', 0, 1, 9)];
+    st.players[1].support = [unit(8002, 'n_padati', 1, 0, 9)];
+    expect(applyAction(st, { type: 'attack', uid: 8001, target: { kind: 'unit', owner: 1, uid: 8002 } }).ok).toBe(true);
+    expect(findUnit(st, 1, 8002)!.unit.hp).toBe(7);
+  });
+  it('Garuda Vyuha lets foot soldiers advance and attack in one turn', () => {
+    const st = mkB();
+    st.players[0].kosha = 10;
+    st.players[0].support = [unit(8100, 'n_padati', 0, 2, 2)];
+    st.players[0].hand = ['m_garuda_vyuha'];
+    expect(applyAction(st, { type: 'play', handIndex: 0, target: null }).ok).toBe(true);
+    expect(applyAction(st, { type: 'move', uid: 8100 }).ok).toBe(true);
+    expect(canAttack(st, 0, 8100, { kind: 'hq', owner: 1 }).ok).toBe(true);
+  });
+  it('the timber walls blunt a Durg strike and shoot back', () => {
+    const st = mkB();
+    st.players[0].kosha = 10;
+    st.front.owner = 0; st.front.units = [unit(8200, 'n_padati', 0, 5, 9)];
+    st.players[1].yantras = [{ cardId: 'nd_kashtha_prakara', uid: 8201 }];
+    const hq = st.players[1].hq.hp;
+    expect(applyAction(st, { type: 'attack', uid: 8200, target: { kind: 'hq', owner: 1 } }).ok).toBe(true);
+    expect(st.players[1].hq.hp).toBe(hq - 2);
+    expect(findUnit(st, 0, 8200)!.unit.hp).toBe(7);
+  });
+  it('an army surgeon heals the most wounded unit at the start of the turn', () => {
+    const st = mkB();
+    st.players[0].support = [unit(8300, 'm_shalya_vaidya', 0, 0, 3), { ...unit(8301, 'n_padati', 0, 1, 1), maxHp: 5 }];
+    applyAction(st, { type: 'end' });
+    st.players[1].support = []; st.front = { owner: null, units: [] };
+    applyAction(st, { type: 'end' });
+    expect(findUnit(st, 0, 8301)!.unit.hp).toBe(3);
+  });
+});

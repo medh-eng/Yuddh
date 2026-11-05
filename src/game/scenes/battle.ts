@@ -663,7 +663,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     previewLayer.children.forEach(c => stopTweens(c as Container));
     previewLayer.removeChildren().forEach(c => destroyTree(c as Container));
     if (!id) return;
-    const glosses = glossFor(id, unit, cost, st.season);
+    const glosses = glossFor(id, unit, cost, st.season, st.turn);
     const pw = L.phone ? 470 : 440;
     const maxH = L.phone ? L.handTop - 14 : L.handTop - 60;
     const panel = glossPanel(glosses, pw, maxH, L.phone ? 1.2 : 1);
@@ -972,6 +972,23 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
           }
           break;
         }
+        case 'heal': {
+          const v = tokens.get(e.uid), by = tokens.get(e.by);
+          if (v) {
+            audio.play('coin');
+            if (by) {
+              const b = new Graphics().circle(0, 0, 10).fill({ color: 0x9cff8a, alpha: 0.9 }); b.blendMode = 'add';
+              b.position.set(by.x, by.y); fx.addChild(b);
+              await gsap.to(b, { x: v.x, y: v.y, duration: 0.4, ease: 'power1.inOut' });
+              b.destroy();
+            }
+            const c = new Graphics().circle(0, 0, 60).stroke({ width: 6, color: 0x9cff8a }); c.blendMode = 'add'; c.position.set(v.x, v.y); fx.addChild(c);
+            gsap.fromTo(c.scale, { x: 0.4, y: 0.4 }, { x: 1.6, y: 1.6, duration: 0.6 });
+            gsap.to(c, { alpha: 0, duration: 0.6, onComplete: () => c.destroy() });
+            await wait(250);
+          }
+          break;
+        }
         case 'promote': {
           const v = tokens.get(e.uid);
           if (v) await promoteFx(v, e.rank);
@@ -1245,7 +1262,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     if (overlay?.kind === 'inspect') closeInspect();
     if (overlay) return;
     hoverIdx = -1; layoutHand(); clearCombatPreview();
-    const c = inspectOverlay(cardId, extra.unit ? 0 : st.players[0].upgrades[cardId] || 0, closeInspect, { ...extra, season: st.season });
+    const c = inspectOverlay(cardId, extra.unit ? 0 : st.players[0].upgrades[cardId] || 0, closeInspect, { ...extra, season: st.season, turn: st.turn });
     s.addChild(c);
     overlay = { kind: 'inspect', view: c };
     syncPreview();

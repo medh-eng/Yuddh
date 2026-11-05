@@ -1,3 +1,4 @@
+import { YUDDH_CARD_LIST } from './yuddhCards';
 /* ============================================================
    YUDDH — card and empire data.
    Generated once from the prototype engine (legacy/src/engine.js)
@@ -111,6 +112,7 @@ export const CARD_LIST: CardDef[] = [
   {"id":"r_kshatra","name":"Kshatra Dharma","sub":"Code of War","empire":"rajput","type":"order","cost":2,"glyph":"क्ष","text":"Your units in the Yudhbhumi get +2 attack.","rarity":"common"}
 ] as CardDef[];
 
-export const CARDS: Record<string, CardDef> = Object.fromEntries(CARD_LIST.map(c => [c.id, c]));
+/** every card: the prototype's 50 and the YUDDH cards (which buildDeck never sees) */
+export const CARDS: Record<string, CardDef> = Object.fromEntries([...CARD_LIST, ...YUDDH_CARD_LIST].map(c => [c.id, c]));
 
 export const KW_LABEL: Record<Keyword, string> = { veg: "Vega", raksha: "Raksha", dhuan: "Dhuan" };

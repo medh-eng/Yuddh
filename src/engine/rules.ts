@@ -244,6 +244,17 @@ function startTurn(st: GameState, idx: PlayerIndex, first?: boolean): void {
   p.kosha = p.maxKosha;
   // Hemanta: the harvest is in, and every treasury holds one more
   if (st.rules === 'yuddh' && st.season === 'hemanta') p.kosha += 1;
+  // army surgeons tend the most wounded
+  if (st.rules === 'yuddh') {
+    allUnits(st, idx).filter(x => x.unit.cardId === 'm_shalya_vaidya').forEach(sv => {
+      const hurt = allUnits(st, idx).map(x => x.unit).filter(u => u.hp < u.maxHp).sort((a, b) => (b.maxHp - b.hp) - (a.maxHp - a.hp))[0];
+      if (!hurt) return;
+      const amount = Math.min(2, hurt.maxHp - hurt.hp);
+      hurt.hp += amount;
+      log(st, `${sv.unit.name} tends ${hurt.name} (+${amount}).`, idx);
+      pushEvent(st, { t: 'heal', owner: idx, uid: hurt.uid, amount, by: sv.unit.uid });
+    });
+  }
   p.counters.unitsThisTurn = 0;
   p.counters.mantraThisTurn = false;
   allUnits(st, idx).forEach(x => {
@@ -293,8 +304,13 @@ export const MAX_RANK = 2;
 /** the four seasons a Yuddh battle can be fought in, and what each changes */
 /** the damage a unit deals when it strikes (Grishma haze blunts archers) */
 export function strikeDamage(st: GameState, a: Unit): number {
-  if (st.rules === 'yuddh' && st.season === 'grishma' && a.range === 'ranged') return Math.max(Math.min(1, a.atk), a.atk - 1);
-  return a.atk;
+  if (st.rules !== 'yuddh') return a.atk;
+  let d = a.atk;
+  // a standard-bearer's morale: +1 for his comrades on the Yudhbhumi
+  if (a.cardId !== 'm_raja_dhwaja' && st.front.units.includes(a)
+    && allUnits(st, a.owner).some(x => x.unit.cardId === 'm_raja_dhwaja')) d += 1;
+  if (st.season === 'grishma' && a.range === 'ranged') d = Math.max(Math.min(1, d), d - 1);
+  return d;
 }
 
 export const SEASONS: Record<import('./types').Season, { name: string; english: string; rule: string }> = {
@@ -308,6 +324,7 @@ export const RANK_NAMES = ['', 'Veer', 'Mahaveer'];
 /** unit classes fast enough to advance and strike in the same turn (Yuddh rules) */
 const CHARGE_CLASSES = new Set(['Cavalry', 'Chariot', 'Elite Chariot', 'Legendary Warrior']);
 export const canCharge = (u: { cardId: string }): boolean => CHARGE_CLASSES.has(CARDS[u.cardId]?.sub ?? '');
+export const isElephant = (u: { cardId: string }): boolean => /Elephant/.test(CARDS[u.cardId]?.sub ?? '');
 
 export function canAttack(st: GameState, pIdx: PlayerIndex, attackerUid: number, target: Target): Check {
   if (st.over) return { ok: false, reason: 'Game over' };
@@ -318,7 +335,7 @@ export function canAttack(st: GameState, pIdx: PlayerIndex, attackerUid: number,
   const a = found.unit;
   if (!a.canAct || a.attacked) return { ok: false, reason: 'Already acted' };
   const yuddh = st.rules === 'yuddh';
-  if (yuddh && a.moved && !canCharge(a)) return { ok: false, reason: 'It advanced this turn; only cavalry and chariots can charge straight in' };
+  if (yuddh && a.moved && !canCharge(a) && a.surge !== st.turn) return { ok: false, reason: 'It advanced this turn; only cavalry and chariots can charge straight in' };
   if (yuddh && a.moved && st.season === 'varsha') return { ok: false, reason: 'Monsoon mud: no unit can advance and charge in the same turn' };
   if (p.kosha < a.op) return { ok: false, reason: 'Not enough Kosha' };
   const fromSupport = found.line === 'support';
@@ -392,6 +409,18 @@ function applyDeploy(st: GameState, pIdx: PlayerIndex, unit: Unit, line: Line): 
       break;
     }
     case 'buffAll': allUnits(st, pIdx).forEach(x => { x.unit.atk += 1; }); break;
+    case 'kosha2': p.kosha = Math.min(p.maxKosha + 2, p.kosha + 2); break;
+    case 'setYantra':
+      p.yantras.push({ cardId: 'y_pratikar', uid: st.nextUid++ });
+      log(st, `${unit.name} sets a hidden Pratikar Yantra.`, pIdx);
+      pushEvent(st, { t: 'yantraSet', owner: pIdx });
+      break;
+    case 'hillVolley':
+      if (st.front.owner === other(pIdx)) [...st.front.units].forEach(u => damageUnit(st, other(pIdx), u.uid, 1));
+      break;
+    case 'elephantBuff':
+      allUnits(st, pIdx).forEach(x => { if (isElephant(x.unit)) { x.unit.atk += 1; x.unit.hp += 1; x.unit.maxHp += 1; } });
+      break;
   }
 }
 
@@ -410,6 +439,12 @@ function applyOrder(st: GameState, pIdx: PlayerIndex, cardId: string, target?: T
     case 'r_kshatra': if (st.front.owner === pIdx) st.front.units.forEach(u => { u.atk += 2; }); break;
     case 's_agni': damageUnit(st, t.owner, t.uid, 5); break;
     case 's_chakravyuha': damageAll(st, other(pIdx), 2); break;
+    case 'nd_nanda_kosha': p.kosha = Math.min(p.maxKosha + 2, p.kosha + 3); break;
+    case 'm_garuda_vyuha': allUnits(st, pIdx).forEach(x => { x.unit.atk += 1; x.unit.surge = st.turn; }); break;
+    case 'm_makara_vyuha':
+      if (st.front.owner === pIdx && st.front.units.length) st.front.units.forEach(u => { u.hp += 2; u.maxHp += 2; });
+      else p.support.forEach(u => { u.hp += 1; u.maxHp += 1; });
+      break;
     case 's_ashwamedha':
       allUnits(st, pIdx).forEach(x => { x.unit.atk += 2; x.unit.hp += 2; x.unit.maxHp += 2; });
       break;
@@ -497,6 +532,8 @@ function applyActionCore(st: GameState, action: Action): Check {
       let dmg = strikeDamage(st, a);
       const ward = fireYantra(st, action.target.owner, 'onHQAttack');
       if (ward) dmg = Math.max(0, dmg - ward.power);
+      // the timber walls also shoot back
+      if (ward && ward.card.id === 'nd_kashtha_prakara') damageUnit(st, pIdx, a.uid, 2);
       log(st, dmg > 0
         ? `${a.name} strikes the enemy Durg for ${dmg}.`
         : `${a.name}'s blow is turned aside by the ward.`, pIdx);
@@ -514,7 +551,7 @@ function applyActionCore(st: GameState, action: Action): Check {
     if (dmgBack > 0) a.hp -= dmgBack;
     if (d.hp <= 0) { pushEvent(st, { t: 'death', owner: tgt.owner, uid: d.uid }); destroyUnit(st, tgt.owner, d.uid); }
     // Yuddh rules: a war elephant that crushes a unit tramples on; the blow it did not need falls on the enemy Durg
-    if (st.rules === 'yuddh' && d.hp < 0 && a.range === 'melee' && CARDS[a.cardId]?.sub === 'War Elephant') {
+    if (st.rules === 'yuddh' && d.hp < 0 && a.range === 'melee' && isElephant(a)) {
       const over = -d.hp;
       log(st, `${a.name} tramples on and strikes the Durg for ${over}.`, pIdx);
       pushEvent(st, { t: 'trample', owner: tgt.owner, uid: a.uid, dmg: over });

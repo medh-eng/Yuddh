@@ -59,6 +59,7 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
   }
 
   let drift: gsap.core.Tween | null = null;
+  let chosen = false;
   function layout(): void {
     const W = view.w, H = view.h, ph = view.phone, k = view.ui;
     const cover = Math.max(W / painting.width, H / painting.height) * 1.04;
@@ -81,7 +82,8 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
       ? [['Learn to play', go.tutorial, true], ['To battle', go.battle, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]]
       : [['To battle', go.battle, true], ['Learn to play', go.tutorial, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]];
     list.forEach(([label, fn, primary], i) => {
-      const b = makeButton(label, fn, { primary, w: ph ? 380 : 400 });
+      // one choice per visit: a second tap while a battle's paintings load would start a second scene
+      const b = makeButton(label, () => { if (chosen) return; chosen = true; fn(); }, { primary, w: ph ? 380 : 400 });
       if (ph) b.position.set(W / 2 + (i % 2 ? 1 : -1) * 270, 462 + Math.floor(i / 2) * 112);
       else b.position.set(W / 2, 640 + i * 88);
       buttons.addChild(b);

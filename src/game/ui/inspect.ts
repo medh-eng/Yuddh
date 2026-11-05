@@ -37,7 +37,7 @@ function icon(kind: GlossIcon, r: number): Graphics {
   return g;
 }
 
-export interface InspectExtra { unit?: Unit; cost?: number; season?: Season }
+export interface InspectExtra { unit?: Unit; cost?: number; season?: Season; turn?: number }
 
 /** The bold rules panel: one entry per rule (icon, heading, plain words), `pw` wide,
     stepping its type down only if it would be taller than `maxH`. */
@@ -74,7 +74,7 @@ export function inspectOverlay(cardId: string, upgrade: number, onClose: () => v
   c.addChild(dim);
   const k = Math.min(1.1, (H * (ph ? 0.94 : 0.86)) / FACE_H);
   const cw = FACE_W * k;
-  const glosses = CARDS[cardId] ? glossFor(cardId, extra.unit, extra.cost, extra.season) : [];
+  const glosses = CARDS[cardId] ? glossFor(cardId, extra.unit, extra.cost, extra.season, extra.turn) : [];
 
   // the panel: as wide as the room beside the card allows
   const gap = ph ? 28 : 40;
