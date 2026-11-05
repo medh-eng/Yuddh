@@ -12,11 +12,11 @@
    sideways, where the board is drawn larger and text bigger. When the
    window switches between them the board is rebuilt from the state.
    ============================================================ */
-import { Container, FederatedPointerEvent, Graphics, Point, Sprite, Text, Texture } from 'pixi.js';
+import { Container, FederatedPointerEvent, Graphics, Point, Sprite, Text, Texture, Ticker } from 'pixi.js';
 import gsap from 'gsap';
 import {
-  CARDS, EMPIRES, RANK_NAMES, actionObservers, findUnit, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
-  drainEvents, type Action, type GameEvent, type GameState, type PlayerIndex, type Target, type Unit
+  CARDS, EMPIRES, RANK_NAMES, SEASONS, strikeDamage, actionObservers, findUnit, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
+  drainEvents, type Action, type GameEvent, type Season, type GameState, type PlayerIndex, type Target, type Unit
 } from '../../engine';
 import { FIRST_THRONE_SCENARIO } from '../../campaign/firstThrone';
 import type { Scenario } from '../../campaign/scenario';
@@ -97,6 +97,8 @@ function battleLayout(v: View): Layout {
 }
 
 type Snap = GameState;
+/** each season's colour, for its label and its weather */
+const SEASON_TINT: Record<Season, number> = { sharad: 0xf0d79a, varsha: 0x9cc8ff, grishma: 0xffb070, hemanta: 0xc8e08a };
 /** hold this long to read a card; the headless playtest (a few frames a second) raises it via window.__yuddhLongPressMs */
 const LONG_PRESS_MS = (): number => (window as unknown as { __yuddhLongPressMs?: number }).__yuddhLongPressMs ?? 480;
 type Spawn = Map<number, { x: number; y: number; scale?: number }>;
@@ -249,6 +251,63 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     });
   }
 
+  /* ---------------- the season: a label you can tap, and its weather ---------------- */
+  const seasonChip = new Container();
+  const weather = new Container(); weather.eventMode = 'none';
+  s.addChildAt(weather, s.getChildIndex(unitLayer));
+  s.addChild(seasonChip);
+  let seasonTip: Container | null = null;
+  const drops: { g: Graphics; vx: number; vy: number; spin: number }[] = [];
+  const weatherTick = (t: Ticker) => {
+    for (const d of drops) {
+      d.g.x += d.vx * t.deltaTime; d.g.y += d.vy * t.deltaTime; d.g.rotation += d.spin * t.deltaTime;
+      if (d.g.y > L.H + 20) { d.g.y = -20; d.g.x = Math.random() * L.W; }
+      if (d.g.x > L.W + 20) d.g.x = -20;
+      if (d.g.x < -20) d.g.x = L.W + 20;
+    }
+  };
+  Ticker.shared.add(weatherTick);
+  function buildSeason(): void {
+    const season = st?.season ?? 'sharad';
+    const ss = SEASONS[season], tint = SEASON_TINT[season];
+    seasonChip.removeChildren().forEach(c => destroyTree(c as Container));
+    const t = new Text({ text: `${ss.name.toUpperCase()} · ${ss.english}`, style: { fontFamily: FONT_SERIF, fontSize: fsz(19), fontWeight: '700', letterSpacing: 2, fill: tint } });
+    t.anchor.set(0.5);
+    const w = t.width + 34, h = t.height + 14;
+    seasonChip.addChild(new Graphics().roundRect(-w / 2, -h / 2, w, h, h / 2).fill({ color: 0x140c07, alpha: 0.85 }).stroke({ width: 2, color: tint, alpha: 0.9 }), t);
+    seasonChip.position.set(Math.min(L.rightX, L.W - w / 2 - 10), L.phone ? 196 : 300);
+    seasonChip.eventMode = 'static'; seasonChip.cursor = 'pointer';
+    seasonChip.removeAllListeners();
+    seasonChip.on('pointertap', () => toggleSeasonTip());
+    // weather: monsoon rain, summer dust, harvest leaves; autumn is clear
+    drops.forEach(d => d.g.destroy()); drops.length = 0;
+    weather.removeChildren();
+    const n = season === 'varsha' ? 110 : season === 'sharad' ? 0 : 34;
+    for (let i = 0; i < n; i++) {
+      const g = new Graphics();
+      if (season === 'varsha') g.moveTo(0, 0).lineTo(-6, 26).stroke({ width: 2, color: 0xbcd8ff, alpha: 0.35 });
+      else if (season === 'grishma') { g.circle(0, 0, 1.5 + Math.random() * 2.5).fill({ color: 0xffd9a0, alpha: 0.35 }); g.blendMode = 'add'; }
+      else g.ellipse(0, 0, 7, 3.5).fill({ color: Math.random() < 0.5 ? 0xd9a441 : 0xb8642a, alpha: 0.75 });
+      g.position.set(Math.random() * L.W, Math.random() * L.H);
+      weather.addChild(g);
+      drops.push(season === 'varsha' ? { g, vx: -1.6, vy: 14 + Math.random() * 6, spin: 0 }
+        : season === 'grishma' ? { g, vx: 0.6 + Math.random() * 0.8, vy: -0.25 - Math.random() * 0.4, spin: 0 }
+          : { g, vx: 0.5 + Math.random() * 0.9, vy: 0.8 + Math.random() * 0.8, spin: (Math.random() - 0.5) * 0.06 });
+    }
+    // grishma's dust rises: wrap it from the bottom instead
+    if (season === 'grishma') drops.forEach(d => { d.vy = -Math.abs(d.vy); });
+  }
+  function toggleSeasonTip(): void {
+    if (seasonTip) { destroyTree(seasonTip); seasonTip = null; return; }
+    const season = st.season ?? 'sharad', ss = SEASONS[season];
+    audio.play('click');
+    const p = glossPanel([{ icon: 'empire', title: `${ss.name.toUpperCase()} · ${ss.english.toUpperCase()}`, body: ss.rule }], L.phone ? 520 : 440, L.H, L.phone ? 1.2 : 1);
+    p.position.set(L.W - p.width - 10, seasonChip.y + 30);
+    p.eventMode = 'static'; p.on('pointertap', () => toggleSeasonTip());
+    s.addChild(p); seasonTip = p;
+    setTimeout(() => { if (seasonTip === p) toggleSeasonTip(); }, 5000);
+  }
+
   /* ---------------- start ---------------- */
   function start(): void {
     st = sc.game(Math.floor(Math.random() * 1e9));
@@ -258,6 +317,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     clearBoard();
     handHeld = true;
     applyLayout();
+    buildSeason();
     reconcile(shown, true);
     coachStep = 0; Object.assign(coachFlags, { ended: 0, attacks: 0, acted: 0, selected: false });
     briefing(true);
@@ -287,8 +347,17 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const t2 = new Text({ text: sc.title, style: { fontFamily: FONT_SERIF, fontSize: 86, fontWeight: '700', fill: INK.goldPale } });
     const t3 = new Text({ text: sc.briefing, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * k), fill: INK.cream, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(42 * k) } });
     const t4 = new Text({ text: sc.objective, style: { fontFamily: FONT_SERIF, fontSize: Math.round(26 * k), fontStyle: 'italic', fill: INK.gold, wordWrap: true, wordWrapWidth: wrap } });
-    if (L.phone) { t2.style.fontSize = 76; t1.position.set(tx, 40); t2.position.set(tx - 4, 72); t3.position.set(tx, 180); t4.position.set(tx, t3.y + t3.height + 20); }
-    else { t1.position.set(tx, 300); t2.position.set(tx - 4, 336); t3.position.set(tx, 460); t4.position.set(tx, 680); }
+    const ss = SEASONS[st.season ?? 'sharad'];
+    const t5 = new Text({ text: `${ss.name.toUpperCase()} · ${ss.english.toUpperCase()}\n${ss.rule}`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(24 * k), fontWeight: '700', fill: SEASON_TINT[st.season ?? 'sharad'], wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(32 * k) } });
+    if (L.phone) {
+      t2.style.fontSize = 76; t1.position.set(tx, 34); t2.position.set(tx - 4, 64);
+      // long briefings step their type down so the season and the button still fit
+      for (let f = 30; f >= 22; f -= 2) {
+        t3.style.fontSize = Math.round(f * k); t3.style.lineHeight = Math.round(f * k * 1.36);
+        t3.position.set(tx, 166); t4.position.set(tx, t3.y + t3.height + 14); t5.position.set(tx, t4.y + t4.height + 14);
+        if (t5.y + t5.height + 110 <= H) break;
+      }
+    } else { t1.position.set(tx, 260); t2.position.set(tx - 4, 296); t3.position.set(tx, 420); t4.position.set(tx, t3.y + t3.height + 24); t5.position.set(tx, t4.y + t4.height + 22); }
     const go = makeButton(sc.goLabel, () => {
       audio.unlock(); audio.play('conch');
       audio.playMusic('music_battle_calm');
@@ -301,12 +370,12 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
         }
       });
     }, { primary: true, w: 340 });
-    go.position.set(L.phone ? tx + 215 : 1030, L.phone ? Math.min(H - 56, t4.y + t4.height + 70) : 800);
-    panel.addChild(dim, art, t1, t2, t3, t4, go);
+    go.position.set(L.phone ? tx + 215 : 1030, Math.min(H - (L.phone ? 56 : 90), t5.y + t5.height + (L.phone ? 70 : 80)));
+    panel.addChild(dim, art, t1, t2, t3, t4, t5, go);
     s.addChild(panel);
     overlay = { kind: 'briefing', view: panel };
     if (animate) {
-      gsap.from([t1, t2, t3, t4, go], { alpha: 0, y: '+=24', duration: 0.8, stagger: 0.1, ease: 'power2.out' });
+      gsap.from([t1, t2, t3, t4, t5, go], { alpha: 0, y: '+=24', duration: 0.8, stagger: 0.1, ease: 'power2.out' });
       gsap.from(art, { alpha: 0, x: '-=60', duration: 0.9, ease: 'power2.out' });
     }
   }
@@ -531,6 +600,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     if (guarded && ready.length) return 'A Raksha guards the enemy Durg. Cut it down before you strike the walls.';
     if (ready.some(x => unitTargets(x.unit.uid).front)) return L.phone ? 'Move a glowing unit up to the Yudhbhumi, or onto an enemy.' : 'Drag a glowing unit up to the Yudhbhumi to advance, or onto an enemy to attack.';
     if (ready.length) return `${tap} a glowing unit onto a red-ringed enemy to attack it.`;
+    if (st.season === 'varsha' && mine.some(x => x.unit.moved && !x.unit.attacked)) return 'Monsoon mud: units that advanced this turn strike next turn.';
     if (mine.some(x => x.unit.moved && !x.unit.attacked && !canCharge(x.unit))) return L.phone ? 'Units that advanced strike next turn. Cavalry and chariots can charge at once.' : 'Foot soldiers and elephants that advanced this turn strike next turn. Cavalry and chariots can charge at once.';
     if (mine.some(x => !x.unit.canAct)) return L.phone ? 'New units wait a turn, unless they have Vega (the double arrow).' : 'Units that just arrived must wait a turn, unless they have Vega (the double arrow).';
     if (me.kosha === 0) return 'Your treasury is spent. Press End Turn.';
@@ -575,7 +645,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
       (or dragging over it) does not build a panel for every card it passes */
   function syncPreview(): void {
     if (previewTimer) { clearTimeout(previewTimer); previewTimer = null; }
-    if (!pick && hoverIdx >= 0 && !drag) { previewTimer = setTimeout(() => { previewTimer = null; if (alive) buildPreview(); }, 220); return; }
+    if (!pick && hoverIdx >= 0 && !drag) { previewTimer = setTimeout(() => { previewTimer = null; if (alive && !drag && !pointerIsDown) buildPreview(); }, 400); return; }
     buildPreview();
   }
   function buildPreview(): void {
@@ -593,7 +663,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     previewLayer.children.forEach(c => stopTweens(c as Container));
     previewLayer.removeChildren().forEach(c => destroyTree(c as Container));
     if (!id) return;
-    const glosses = glossFor(id, unit, cost);
+    const glosses = glossFor(id, unit, cost, st.season);
     const pw = L.phone ? 470 : 440;
     const maxH = L.phone ? L.handTop - 14 : L.handTop - 60;
     const panel = glossPanel(glosses, pw, maxH, L.phone ? 1.2 : 1);
@@ -656,6 +726,11 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   s.eventMode = 'static';
   s.hitArea = { contains: () => true };
   let lastPointer: Point | null = null;
+  // a pressed button cancels a hover panel that is about to be built (it would only get in the way of a drag)
+  let pointerIsDown = false;
+  window.addEventListener('pointerdown', onWinDown, true); window.addEventListener('pointerup', onWinUp, true);
+  function onWinDown(): void { pointerIsDown = true; if (previewTimer) { clearTimeout(previewTimer); previewTimer = null; } }
+  function onWinUp(): void { pointerIsDown = false; }
   s.on('pointerdown', (e: FederatedPointerEvent) => { lastPointer = toDesign(e); }, undefined);
   s.on('globalpointermove', (e: FederatedPointerEvent) => {
     const p = toDesign(e);
@@ -1065,10 +1140,11 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     if (!tgt) return;
     const a = findUnit(st, 0, uid)?.unit; if (!a) return;
     const put = (x: number, y: number, n: number) => { const c = shieldGraphic(n, 0.9); c.position.set(x, y); combatFx.addChild(c); gsap.from(c.scale, { x: 0.2, y: 0.2, duration: 0.18, ease: 'back.out(2)' }); };
-    if (tgt.kind === 'hq') { put(durg[1].x + 80 * L.durgS, durg[1].y - 60 * L.durgS, a.atk); return; }
+    const hitDmg = strikeDamage(st, a);
+    if (tgt.kind === 'hq') { put(durg[1].x + 80 * L.durgS, durg[1].y - 60 * L.durgS, hitDmg); return; }
     const d = findUnit(st, 1, tgt.uid)?.unit, dv = tokens.get(tgt.uid), av = tokens.get(uid);
     if (!d || !dv || !av) return;
-    put(dv.x + 52 * L.tok, dv.y - 70 * L.tok, a.atk);
+    put(dv.x + 52 * L.tok, dv.y - 70 * L.tok, hitDmg);
     if (a.range === 'melee' && d.range === 'melee' && d.atk > 0) put(av.x + 52 * L.tok, av.y - 70 * L.tok, d.atk);
   }
   /** a soft cloud of dust where two lines meet */
@@ -1169,7 +1245,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     if (overlay?.kind === 'inspect') closeInspect();
     if (overlay) return;
     hoverIdx = -1; layoutHand(); clearCombatPreview();
-    const c = inspectOverlay(cardId, extra.unit ? 0 : st.players[0].upgrades[cardId] || 0, closeInspect, extra);
+    const c = inspectOverlay(cardId, extra.unit ? 0 : st.players[0].upgrades[cardId] || 0, closeInspect, { ...extra, season: st.season });
     s.addChild(c);
     overlay = { kind: 'inspect', view: c };
     syncPreview();
@@ -1403,6 +1479,8 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     if (open) { destroyTree(open.view); overlay = null; }
     clearBoard();
     applyLayout();
+    if (seasonTip) { destroyTree(seasonTip); seasonTip = null; }
+    buildSeason();
     reconcile(shown, true);
     if (open?.kind === 'briefing') briefing(false);
     else if (open?.kind === 'end') endScreen(open.won ?? false, false);
@@ -1431,7 +1509,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
         const t = cardTargets(i);
         // press the part of the card that is not covered by its right-hand neighbour
         const dx = i < hand.length - 1 && gap < cw ? -cw / 2 + gap / 2 : 0;
-        const from = scr(h.x + dx, h.y - 30 * L.handScale / 0.31);
+        const from = scr(h.home.x + dx, h.home.y - 30 * L.handScale / 0.31);  // where the card is going, not where its tween has got to
         if (t.zone === 'mine') out.push({ what: `deploy ${h.cardId}`, from, to: scr(mid, L.line.mine) });
         else if (t.zone === 'board') out.push({ what: `cast ${h.cardId}`, from, to: scr(mid, L.line.front) });
         t.units.forEach(uid => { const v = tokens.get(uid); if (v) out.push({ what: `cast ${h.cardId} on ${v.cardId}`, from, to: scr(v.x, v.y) }); });
@@ -1450,6 +1528,8 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
 
   s.enter = () => start();
   s.leave = () => {
+    window.removeEventListener('pointerdown', onWinDown, true); window.removeEventListener('pointerup', onWinUp, true);
+    Ticker.shared.remove(weatherTick);
     coachLayer.children.forEach(c => stopTweens(c as Container));
     alive = false;
     fx.children.forEach(c => stopTweens(c as Container));

@@ -129,6 +129,7 @@ export interface GameState {
   scenarioId: string | null;
   scenarioName: string | null;
   rules?: Ruleset;
+  season?: Season;
   rng: () => number;
 }
 
@@ -177,5 +178,8 @@ export interface NewGameOptions {
   /** 'classic' = the prototype's rules (golden traces); 'yuddh' = Raksha guards the Durg,
       and a unit either moves or attacks in a turn unless it is mounted (see canCharge) */
   rules?: Ruleset;
+  season?: Season;
 }
 export type Ruleset = 'classic' | 'yuddh';
+/** Ritu, the season a battle is fought in (Yuddh rules) */
+export type Season = 'sharad' | 'varsha' | 'grishma' | 'hemanta';

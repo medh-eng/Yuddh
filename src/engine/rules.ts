@@ -193,6 +193,7 @@ export function newGame(opts: NewGameOptions): GameState {
     scenarioId: opts.scenarioId || null,
     scenarioName: opts.scenarioName || null,
     rules: opts.rules || 'classic',
+    season: opts.rules === 'yuddh' ? opts.season || 'sharad' : undefined,
     rng: () => 0
   } as GameState;
   st.rng = rngFactory(st.seed);
@@ -241,6 +242,8 @@ function startTurn(st: GameState, idx: PlayerIndex, first?: boolean): void {
   st.active = idx;
   p.maxKosha = Math.min(12, p.maxKosha + 1);
   p.kosha = p.maxKosha;
+  // Hemanta: the harvest is in, and every treasury holds one more
+  if (st.rules === 'yuddh' && st.season === 'hemanta') p.kosha += 1;
   p.counters.unitsThisTurn = 0;
   p.counters.mantraThisTurn = false;
   allUnits(st, idx).forEach(x => {
@@ -286,6 +289,20 @@ const hasGuard = (list: Unit[]) => list.some(u => u.kw.includes('raksha'));
 
 /** promotion: ranks a unit can earn by destroying enemies (Yuddh rules) */
 export const MAX_RANK = 2;
+
+/** the four seasons a Yuddh battle can be fought in, and what each changes */
+/** the damage a unit deals when it strikes (Grishma haze blunts archers) */
+export function strikeDamage(st: GameState, a: Unit): number {
+  if (st.rules === 'yuddh' && st.season === 'grishma' && a.range === 'ranged') return Math.max(Math.min(1, a.atk), a.atk - 1);
+  return a.atk;
+}
+
+export const SEASONS: Record<import('./types').Season, { name: string; english: string; rule: string }> = {
+  sharad: { name: 'Sharad', english: 'Autumn', rule: 'The campaigning season: clear skies, firm ground. No special rule.' },
+  varsha: { name: 'Varsha', english: 'Monsoon', rule: 'Mud: cavalry and chariots cannot charge. Every unit advances or attacks, not both.' },
+  grishma: { name: 'Grishma', english: 'Summer', rule: 'Heat haze: ranged units deal 1 less damage (never less than 1).' },
+  hemanta: { name: 'Hemanta', english: 'Harvest', rule: 'Full granaries: every turn, both treasuries hold 1 extra Kosha.' }
+};
 export const RANK_NAMES = ['', 'Veer', 'Mahaveer'];
 
 /** unit classes fast enough to advance and strike in the same turn (Yuddh rules) */
@@ -302,6 +319,7 @@ export function canAttack(st: GameState, pIdx: PlayerIndex, attackerUid: number,
   if (!a.canAct || a.attacked) return { ok: false, reason: 'Already acted' };
   const yuddh = st.rules === 'yuddh';
   if (yuddh && a.moved && !canCharge(a)) return { ok: false, reason: 'It advanced this turn; only cavalry and chariots can charge straight in' };
+  if (yuddh && a.moved && st.season === 'varsha') return { ok: false, reason: 'Monsoon mud: no unit can advance and charge in the same turn' };
   if (p.kosha < a.op) return { ok: false, reason: 'Not enough Kosha' };
   const fromSupport = found.line === 'support';
 
@@ -476,7 +494,7 @@ function applyActionCore(st: GameState, action: Action): Check {
     if (a.kw.includes('dhuan')) a.smokeBroken = true;
 
     if (action.target.kind === 'hq') {
-      let dmg = a.atk;
+      let dmg = strikeDamage(st, a);
       const ward = fireYantra(st, action.target.owner, 'onHQAttack');
       if (ward) dmg = Math.max(0, dmg - ward.power);
       log(st, dmg > 0
@@ -489,8 +507,9 @@ function applyActionCore(st: GameState, action: Action): Check {
     const tgt = action.target;
     const d = findUnit(st, tgt.owner, tgt.uid)!.unit;
     log(st, `${a.name} attacks ${d.name}.`, pIdx);
-    pushEvent(st, { t: 'attack', owner: pIdx, uid: a.uid, target: { owner: tgt.owner, uid: d.uid }, dmg: a.atk });
-    d.hp -= a.atk;
+    const hit = strikeDamage(st, a);
+    pushEvent(st, { t: 'attack', owner: pIdx, uid: a.uid, target: { owner: tgt.owner, uid: d.uid }, dmg: hit });
+    d.hp -= hit;
     const dmgBack = (a.range === 'melee' && d.range === 'melee') ? d.atk : 0;
     if (dmgBack > 0) a.hp -= dmgBack;
     if (d.hp <= 0) { pushEvent(st, { t: 'death', owner: tgt.owner, uid: d.uid }); destroyUnit(st, tgt.owner, d.uid); }

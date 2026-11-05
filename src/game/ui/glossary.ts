@@ -4,7 +4,7 @@
    Each entry is a bold heading, a short plain-language line, and
    an icon. Wording follows the Yuddh rules (src/engine/rules.ts).
    ============================================================ */
-import { CARDS, EMPIRES, RANK_NAMES, type Unit } from '../../engine';
+import { CARDS, EMPIRES, RANK_NAMES, type Season, type Unit } from '../../engine';
 
 export type GlossIcon = 'charge' | 'foot' | 'ranged' | 'melee' | 'raksha' | 'veg' | 'rank' | 'deploy' | 'yantra'
   | 'shakti' | 'mantra' | 'kosha' | 'op' | 'empire' | 'wound';
@@ -13,7 +13,7 @@ export interface Gloss { icon: GlossIcon; title: string; body: string }
 const CHARGES = new Set(['Cavalry', 'Chariot', 'Elite Chariot', 'Legendary Warrior']);
 
 /** everything worth explaining about a card, most important first; `unit` adds its state on the board */
-export function glossFor(cardId: string, unit?: Unit, cost?: number): Gloss[] {
+export function glossFor(cardId: string, unit?: Unit, cost?: number, season?: Season): Gloss[] {
   const c = CARDS[cardId];
   if (!c) return [];
   const out: Gloss[] = [];
@@ -21,10 +21,10 @@ export function glossFor(cardId: string, unit?: Unit, cost?: number): Gloss[] {
     if (unit && unit.hp < unit.maxHp) out.push({ icon: 'wound', title: `WOUNDED ${unit.hp} / ${unit.maxHp}`, body: 'Lost health does not come back.' });
     if (unit?.rank) out.push({ icon: 'rank', title: RANK_NAMES[unit.rank].toUpperCase(), body: unit.rank >= 2 ? 'Honoured twice for valour: +1 attack and +2 health.' : 'Honoured for valour: +1 health. One more kill makes it Mahaveer (+1 attack).' });
     out.push(CHARGES.has(c.sub)
-      ? { icon: 'charge', title: c.sub.toUpperCase(), body: 'Charges: can advance to the Yudhbhumi and attack in the same turn.' }
+      ? { icon: 'charge', title: c.sub.toUpperCase(), body: season === 'varsha' ? 'Charges in dry weather; in the monsoon mud it must advance or attack, not both.' : 'Charges: can advance to the Yudhbhumi and attack in the same turn.' }
       : { icon: 'foot', title: c.sub.toUpperCase(), body: 'Each turn it advances or attacks, not both.' });
     out.push(c.range === 'ranged'
-      ? { icon: 'ranged', title: 'RANGED', body: 'Shoots from either line and takes no counter-blow.' }
+      ? { icon: 'ranged', title: 'RANGED', body: season === 'grishma' ? 'Shoots from either line and takes no counter-blow. Summer heat haze: deals 1 less damage.' : 'Shoots from either line and takes no counter-blow.' }
       : { icon: 'melee', title: 'MELEE', body: 'Trades blows with other melee units: both deal damage.' });
     if (c.sub === 'War Elephant') out.push({ icon: 'charge', title: 'TRAMPLE', body: 'When it crushes a unit, the damage it did not need falls on the enemy Durg.' });
     if (c.kw?.includes('raksha')) out.push({ icon: 'raksha', title: 'RAKSHA', body: 'Guard: must be struck first in its line, and on the Rajya line it shields the Durg.' });

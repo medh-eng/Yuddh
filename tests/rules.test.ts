@@ -147,3 +147,30 @@ describe('war elephants (Yuddh rules)', () => {
     expect(st.players[1].hq.hp).toBe(hq - 3);
   });
 });
+
+describe('seasons (Yuddh rules)', () => {
+  const mkS = (season: 'sharad' | 'varsha' | 'grishma' | 'hemanta') => newGame({
+    player: { empire: 'maurya', ally: 'neutral', deck: buildDeck('maurya', 'neutral') },
+    enemy: { empire: 'rajput', ally: 'neutral', deck: buildDeck('rajput', 'neutral') },
+    seed: 33, rules: 'yuddh', season
+  });
+  it('Varsha mud stops cavalry charging', () => {
+    const st = mkS('varsha');
+    st.players[0].kosha = 10;
+    st.players[0].support = [unit(7600, 'n_ashvarohi', 0, 2, 2)];
+    expect(applyAction(st, { type: 'move', uid: 7600 }).ok).toBe(true);
+    expect(canAttack(st, 0, 7600, { kind: 'hq', owner: 1 }).ok).toBe(false);
+  });
+  it('Grishma heat haze blunts archers by 1', () => {
+    const st = mkS('grishma');
+    st.players[0].kosha = 10;
+    st.players[0].support = [{ ...unit(7700, 'n_dhanurdhar', 0, 3, 2), range: 'ranged' }];
+    st.front.owner = 1; st.front.units = [unit(7701, 'n_padati', 1, 1, 9)];
+    expect(applyAction(st, { type: 'attack', uid: 7700, target: { kind: 'unit', owner: 1, uid: 7701 } }).ok).toBe(true);
+    expect(findUnit(st, 1, 7701)!.unit.hp).toBe(7);
+  });
+  it('Hemanta fills each treasury with one extra Kosha', () => {
+    const st = mkS('hemanta');
+    expect(st.players[0].kosha).toBe(st.players[0].maxKosha + 1);
+  });
+});

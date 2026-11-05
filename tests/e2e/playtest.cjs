@@ -24,7 +24,10 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   const info = () => p.evaluate(() => { const y = window.__yuddh; const st = y.state(); return { active: st.active, over: st.over, winner: st.winner, turn: st.turn, busy: y.busy(), hq: st.players.map(q => q.hq.hp), kosha: st.players[0].kosha, yantras: st.players.map(q => q.yantras.length) }; });
   const idle = async () => { for (let i = 0; i < 200; i++) { const y = await info(); if (!y.busy && (y.active === 0 || y.over)) return y; await p.waitForTimeout(250); } return info(); };
   const drag = async (f, t) => {
-    await p.mouse.move(f.x, f.y); await p.mouse.down();
+    // with a mouse, the hand card under the pointer lifts and grows over its neighbours; step off the hand
+    // first so the card the bot wants is not hidden under one lifted earlier
+    if (f.y > +H * 0.7) { await p.mouse.move(f.x, +H * 0.45); await p.waitForTimeout(450); }
+    await p.mouse.move(f.x, f.y); await p.waitForTimeout(350); await p.mouse.down();
     for (let i = 1; i <= 10; i++) await p.mouse.move(f.x + (t.x - f.x) * i / 10, f.y + (t.y - f.y) * i / 10);
     await p.waitForTimeout(80); await p.mouse.up();
   };
@@ -39,7 +42,9 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   await press('Back'); await p.waitForTimeout(1500);
 
   // the battle
-  await press('To battle'); await p.waitForTimeout(2200); await shot('06-briefing');
+  await press('To battle');
+  // the title stays up while the battle's paintings load; wait for the battle itself
+  await p.waitForFunction(() => !!window.__yuddh, null, { timeout: 60000 }); await p.waitForTimeout(1500); await shot('06-briefing');
   await press('To battle'); await p.waitForTimeout(640); await shot('07-deal-flip');
   await p.waitForTimeout(2600);
   const hand = await p.evaluate(() => window.__yuddh.hand());

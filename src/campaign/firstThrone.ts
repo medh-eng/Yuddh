@@ -6,7 +6,7 @@
    (Yuddh rules with promotion; simulated: the player side wins about 60%, ~17 turns).
    ============================================================ */
 import { newGame } from '../engine/rules';
-import type { AiLevel, GameState } from '../engine/types';
+import type { AiLevel, GameState, Season } from '../engine/types';
 import type { Scenario } from './scenario';
 
 const rep = (id: string, n: number) => Array.from({ length: n }, () => id);
@@ -34,7 +34,10 @@ export const FIRST_THRONE = {
   enemyStartKosha: 1
 };
 
-export function firstThroneGame(seed: number, level: AiLevel = 'normal', upgrades: Record<string, number> = {}): GameState {
+/** every battle of The First Throne falls in one of the four seasons, chosen by its seed */
+export const seasonFor = (seed: number): Season => (['sharad', 'varsha', 'grishma', 'hemanta'] as const)[Math.abs(Math.floor(seed)) % 4];
+
+export function firstThroneGame(seed: number, level: AiLevel = 'normal', upgrades: Record<string, number> = {}, season: Season = seasonFor(seed)): GameState {
   return newGame({
     seed,
     player: { empire: 'maurya', ally: 'neutral', deck: FIRST_THRONE.playerDeck, hq: 24, faction: 'Maurya', capital: 'Chandragupta\'s Camp', upgrades },
@@ -43,7 +46,8 @@ export function firstThroneGame(seed: number, level: AiLevel = 'normal', upgrade
     objective: { type: 'destroy' },
     scenarioId: FIRST_THRONE.id,
     scenarioName: FIRST_THRONE.title,
-    rules: 'yuddh'
+    rules: 'yuddh',
+    season
   });
 }
 
