@@ -7,7 +7,7 @@ import { CARDS, type Unit } from '../../engine';
 import { FACE_H, FACE_W, cardFace } from '../cards/paint';
 import { FONT_SERIF, INK } from '../theme';
 import { view } from '../view';
-import { glossFor, type GlossIcon } from './glossary';
+import { glossFor, type Gloss, type GlossIcon } from './glossary';
 
 /** small gold icons drawn with lines, so no font has to carry the symbols */
 function icon(kind: GlossIcon, r: number): Graphics {
@@ -39,25 +39,10 @@ function icon(kind: GlossIcon, r: number): Graphics {
 
 export interface InspectExtra { unit?: Unit; cost?: number }
 
-export function inspectOverlay(cardId: string, upgrade: number, onClose: () => void, extra: InspectExtra = {}): Container {
-  const W = view.w, H = view.h, ph = view.phone;
-  const c = new Container();
-  const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.8 });
-  c.addChild(dim);
-  const k = Math.min(1.1, (H * (ph ? 0.94 : 0.86)) / FACE_H);
-  const cw = FACE_W * k;
-  const glosses = CARDS[cardId] ? glossFor(cardId, extra.unit, extra.cost) : [];
-
-  // the panel: as wide as the room beside the card allows
-  const gap = ph ? 28 : 40;
-  const pw = Math.min(ph ? 720 : 640, W - cw - gap - (ph ? 40 : 160));
-  const total = cw + gap + pw;
-  const left = (W - total) / 2;
-  const face = new Sprite(cardFace(cardId, upgrade, extra.cost)); face.anchor.set(0.5); face.scale.set(k);
-  face.position.set(left + pw + gap + cw / 2, H / 2 - (ph ? 0 : 20));
-
+/** The bold rules panel: one entry per rule (icon, heading, plain words), `pw` wide,
+    stepping its type down only if it would be taller than `maxH`. */
+export function glossPanel(glosses: Gloss[], pw: number, maxH: number, ui: number): Container {
   const panel = new Container();
-  const ui = ph ? 1.25 : 1;
   let head = Math.round(28 * ui), body = Math.round(25 * ui);
   const build = (): number => {
     panel.removeChildren().forEach(ch => ch.destroy());
@@ -76,12 +61,32 @@ export function inspectOverlay(cardId: string, upgrade: number, onClose: () => v
     return y;
   };
   let h = build();
-  const maxH = H * (ph ? 0.94 : 0.86);
-  // too many entries for the screen: step the type down until it fits
-  while (h > maxH && body > 18) { head -= 1; body -= 1; h = build(); }
+  while (h > maxH && body > 16) { head -= 1; body -= 1; h = build(); }
   const bg = new Graphics().roundRect(0, 0, pw, h, 10).fill({ color: 0x1b1612, alpha: 0.96 }).stroke({ width: 2, color: INK.gold, alpha: 0.8 });
   panel.addChildAt(bg, 0);
-  panel.position.set(left, Math.max(8, face.y - h / 2));
+  return panel;
+}
+
+export function inspectOverlay(cardId: string, upgrade: number, onClose: () => void, extra: InspectExtra = {}): Container {
+  const W = view.w, H = view.h, ph = view.phone;
+  const c = new Container();
+  const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.8 });
+  c.addChild(dim);
+  const k = Math.min(1.1, (H * (ph ? 0.94 : 0.86)) / FACE_H);
+  const cw = FACE_W * k;
+  const glosses = CARDS[cardId] ? glossFor(cardId, extra.unit, extra.cost) : [];
+
+  // the panel: as wide as the room beside the card allows
+  const gap = ph ? 28 : 40;
+  const pw = Math.min(ph ? 720 : 640, W - cw - gap - (ph ? 40 : 160));
+  const total = cw + gap + pw;
+  const left = (W - total) / 2;
+  const face = new Sprite(cardFace(cardId, upgrade, extra.cost)); face.anchor.set(0.5); face.scale.set(k);
+  face.position.set(left + pw + gap + cw / 2, H / 2 - (ph ? 0 : 20));
+
+  const ui = ph ? 1.25 : 1;
+  const panel = glossPanel(glosses, pw, H * (ph ? 0.94 : 0.86), ui);
+  panel.position.set(left, Math.max(8, face.y - panel.height / 2));
   if (!glosses.length) panel.visible = false;
   c.addChild(panel, face);
 

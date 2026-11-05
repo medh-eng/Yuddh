@@ -131,3 +131,19 @@ describe('Yuddh rules (The First Throne onward)', () => {
     expect(drainEvents(st).some(e => e.t === 'promote')).toBe(true);
   });
 });
+
+describe('war elephants (Yuddh rules)', () => {
+  it('a war elephant that crushes a unit tramples the leftover damage into the Durg', () => {
+    const st = newGame({
+      player: { empire: 'maurya', ally: 'neutral', deck: buildDeck('maurya', 'neutral') },
+      enemy: { empire: 'rajput', ally: 'neutral', deck: buildDeck('rajput', 'neutral') },
+      seed: 21, rules: 'yuddh'
+    });
+    st.players[0].kosha = 10;
+    st.front.owner = 0; st.front.units = [unit(7500, 'n_gaja', 0, 4, 5)];
+    st.players[1].support = [unit(7501, 'n_padati', 1, 1, 1)];
+    const hq = st.players[1].hq.hp;
+    expect(applyAction(st, { type: 'attack', uid: 7500, target: { kind: 'unit', owner: 1, uid: 7501 } }).ok).toBe(true);
+    expect(st.players[1].hq.hp).toBe(hq - 3);
+  });
+});

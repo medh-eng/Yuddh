@@ -7,6 +7,7 @@
    ============================================================ */
 import { newGame } from '../engine/rules';
 import type { AiLevel, GameState } from '../engine/types';
+import type { Scenario } from './scenario';
 
 const rep = (id: string, n: number) => Array.from({ length: n }, () => id);
 
@@ -45,3 +46,16 @@ export function firstThroneGame(seed: number, level: AiLevel = 'normal', upgrade
     rules: 'yuddh'
   });
 }
+
+export const FIRST_THRONE_SCENARIO: Scenario = {
+  ...FIRST_THRONE,
+  objective: 'Destroy the Nanda Durg before they destroy yours.',
+  heroCard: 'm_chandragupta',
+  defeatCard: 'n_gaja',
+  enemyName: 'Nanda army',
+  durgArt: ['durg_maurya_camp', 'durg_pataliputra'],
+  winText: turn => `Pataliputra opens its gates in turn ${turn}. The Mauryan age begins.`,
+  loseText: 'The Nanda elephants hold the field. Chanakya is already planning the next war.',
+  goLabel: 'To battle',
+  game: seed => firstThroneGame(seed, 'normal')
+};

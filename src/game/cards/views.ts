@@ -13,14 +13,16 @@ function badge(kind: 'atk' | 'hp', value: number, tone: 'base' | 'up' | 'down'):
   const hit = badgeCache.get(key);
   if (hit) return hit;
   const cv = document.createElement('canvas');
-  cv.width = 112; cv.height = 112;
+  // drawn larger than before (140 px, numerals 74 px) so stats read on a 5.5-inch phone
+  cv.width = 140; cv.height = 140;
   const g = cv.getContext('2d')!;
-  statBadge(g, 56, 56, 40, kind);
-  g.fillStyle = tone === 'up' ? '#9cff8a' : tone === 'down' ? '#ff8f7a' : '#ffffff';
-  g.font = `700 52px ${FONT_SERIF}`;
+  statBadge(g, 70, 70, 52, kind);
+  g.font = `700 76px ${FONT_SERIF}`;
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.shadowColor = 'rgba(0,0,0,0.95)'; g.shadowBlur = 8;
-  g.fillText(String(value), 56, 59);
+  g.lineJoin = 'round'; g.lineWidth = 9; g.strokeStyle = 'rgba(10,4,0,0.95)';
+  g.strokeText(String(value), 70, 74);
+  g.fillStyle = tone === 'up' ? '#9cff8a' : tone === 'down' ? '#ff9c88' : '#ffffff';
+  g.fillText(String(value), 70, 74);
   const t = Texture.from(cv);
   badgeCache.set(key, t);
   return t;
@@ -47,7 +49,7 @@ export class TokenView extends Container {
   constructor(u: Unit, readonly big = false) {
     super();
     this.uid = u.uid; this.owner = u.owner; this.cardId = u.cardId;
-    const bs = big ? 0.8 : 0.56, inset = big ? 4 : 16;
+    const bs = big ? 0.72 : 0.5, inset = big ? 6 : 18;
     const shadow = new Graphics().roundRect(-TOKEN_DW / 2 + 6, -TOKEN_DH / 2 + 10, TOKEN_DW, TOKEN_DH, 12).fill({ color: 0x000000, alpha: 0.5 });
     this.art = new Sprite(tokenFace(u.cardId, u.owner));
     this.art.anchor.set(0.5); this.art.scale.set(0.5);

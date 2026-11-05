@@ -11,6 +11,7 @@ import { battlePreviewScene } from './game/scenes/battlePreview';
 import { battleScene, preloadBattle } from './game/scenes/battle';
 import { galleryScene } from './game/scenes/gallery';
 import { audio } from './game/audio';
+import { TUTORIAL } from './campaign/tutorial';
 import { CARD_ART, loadArt, loadBattlefield } from './assets/manifest';
 import { FONT_DEVA, FONT_SERIF } from './game/theme';
 
@@ -48,6 +49,11 @@ async function boot(): Promise<void> {
   window.addEventListener('pointerdown', () => audio.unlock());
   const title = (): void => stage.show(titleScene(stage, {
     battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title))); },
+    tutorial: () => {
+      audio.unlock();
+      void loading(Promise.all([battleReady, preloadBattle(TUTORIAL)])).then(() =>
+        stage.show(battleScene(stage, title, TUTORIAL, () => void loading(battleReady).then(() => stage.show(battleScene(stage, title))))));
+    },
     gallery: () => { audio.unlock(); stage.show(galleryScene(stage, title)); },
     preview: () => { void loading(loadArt(CARD_ART)).then(() => { stage.setBackdrop(null); stage.show(battlePreviewScene(title)); }); },
     prototype: () => { window.location.href = `${import.meta.env.BASE_URL}prototype/`; }

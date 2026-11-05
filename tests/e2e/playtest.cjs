@@ -8,11 +8,16 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME, args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
   const p = await b.newPage({ viewport: { width: +W, height: +H } });
+  // the sandbox's software GPU draws a few frames a second at desktop size; a drag can take longer
+  // than the 0.48 s hold that opens a card, so the bot holds that off (real devices are unaffected)
+  await p.addInitScript(() => { window.__yuddhLongPressMs = 4000; });
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   await p.goto(url); await p.waitForTimeout(2500);
   const shot = n => p.screenshot({ path: `${out}/${n}.png` });
   const press = async (label, nth = 0) => {
-    const bs = (await p.evaluate(() => window.__yuddhButtons())).filter(x => x.label === label);
+    let bs = [];
+    // buttons fade in one after another; wait up to 4 s for this one to appear
+    for (let i = 0; i < 16; i++) { bs = (await p.evaluate(() => window.__yuddhButtons())).filter(x => x.label === label); if (bs[nth]) break; await p.waitForTimeout(250); }
     if (!bs[nth]) throw new Error(`no button "${label}" (have: ${(await p.evaluate(() => window.__yuddhButtons())).map(x => x.label).join(', ')})`);
     await p.mouse.click(bs[nth].x, bs[nth].y);
   };

@@ -109,7 +109,8 @@ export type GameEvent =
   | { t: 'order'; owner: PlayerIndex; cardId: string }
   | { t: 'yantra'; owner: PlayerIndex; cardId: string }
   | { t: 'yantraSet'; owner: PlayerIndex }
-  | { t: 'promote'; owner: PlayerIndex; uid: number; rank: number };
+  | { t: 'promote'; owner: PlayerIndex; uid: number; rank: number }
+  | { t: 'trample'; owner: PlayerIndex; uid: number; dmg: number };
 
 export interface GameState {
   seed: number;

@@ -18,14 +18,17 @@ import {
   CARDS, EMPIRES, RANK_NAMES, actionObservers, findUnit, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
   drainEvents, type Action, type GameEvent, type GameState, type PlayerIndex, type Target, type Unit
 } from '../../engine';
-import { FIRST_THRONE, firstThroneGame } from '../../campaign/firstThrone';
+import { FIRST_THRONE_SCENARIO } from '../../campaign/firstThrone';
+import type { Scenario } from '../../campaign/scenario';
+import { markTutorialDone } from '../../campaign/tutorial';
 import { FONT_SERIF, INK } from '../theme';
 import { view, type View } from '../view';
 import { audio, type Sfx } from '../audio';
 import { cardFace } from '../cards/paint';
 import { DurgView, HandCard, TOKEN_DH, TokenView, drawDiyas, stopTweens } from '../cards/views';
 import { makeButton } from '../ui/button';
-import { inspectOverlay, type InspectExtra } from '../ui/inspect';
+import { glossPanel, inspectOverlay, type InspectExtra } from '../ui/inspect';
+import { glossFor } from '../ui/glossary';
 import { battlefieldUrl, loadArt, loadBattlefield } from '../../assets/manifest';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
@@ -52,6 +55,7 @@ interface Layout {
   preview: { x: number; y: number; s: number } | null;
 }
 
+const L_HANDTOP = (H: number) => H - 200;
 function battleLayout(v: View): Layout {
   if (!v.phone) {
     return {
@@ -88,11 +92,13 @@ function battleLayout(v: View): Layout {
     yantraX: laneX + laneW + 40, yantraS: 0.15, yantraGap: 58,
     roundY: H - 36, roundX: [rightX - 110, rightX - 40, rightX + 30], roundR: 28, hintY: 18,
     reveal: { x: laneX + laneW / 2, y: line.front, s: 1.45 },
-    preview: { x: W - 250, y: H / 2, s: (H * 0.94) / 672 }
+    preview: { x: W - 8 - 240 * ((H * 0.7) / 672), y: (L_HANDTOP(H)) / 2 + 4, s: (H * 0.7) / 672 }
   };
 }
 
 type Snap = GameState;
+/** hold this long to read a card; the headless playtest (a few frames a second) raises it via window.__yuddhLongPressMs */
+const LONG_PRESS_MS = (): number => (window as unknown as { __yuddhLongPressMs?: number }).__yuddhLongPressMs ?? 480;
 type Spawn = Map<number, { x: number; y: number; scale?: number }>;
 type Drag =
   | { kind: 'card'; index: number; view: HandCard; moved: boolean; sx: number; sy: number; downAt: number }
@@ -107,7 +113,7 @@ function snapshot(st: GameState): Snap {
   return copy;
 }
 
-export function battleScene(stage: Stage, exit: () => void): Scene {
+export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST_THRONE_SCENARIO, next?: () => void): Scene {
   const s: Scene = new Container();
   let L = battleLayout(view);
   let st: GameState;
@@ -133,7 +139,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   const fsz = (n: number) => Math.round(n * L.ui);
 
   /* ---------------- scenery ---------------- */
-  stage.setBackdrop(Texture.from(battlefieldUrl(FIRST_THRONE.battlefield)), 0.62);
+  stage.setBackdrop(Texture.from(battlefieldUrl(sc.battlefield)), 0.62);
 
   const lanes = new Graphics();
   const zoneGlow = new Graphics();
@@ -144,7 +150,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     x.alpha = 0.55; x.anchor.set(0, 0.5); s.addChild(x); return x;
   });
 
-  const durg: [DurgView, DurgView] = [new DurgView(0, 'durg_maurya_camp'), new DurgView(1, 'durg_pataliputra')];
+  const durg: [DurgView, DurgView] = [new DurgView(0, sc.durgArt[0]), new DurgView(1, sc.durgArt[1])];
   s.addChild(durg[0], durg[1]);
 
   // right column: enemy info, end turn, your treasury, deck
@@ -245,7 +251,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
 
   /* ---------------- start ---------------- */
   function start(): void {
-    st = firstThroneGame(Math.floor(Math.random() * 1e9), 'normal');
+    st = sc.game(Math.floor(Math.random() * 1e9));
     drainEvents(st);
     shown = snapshot(st);
     intense = false;
@@ -253,6 +259,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     handHeld = true;
     applyLayout();
     reconcile(shown, true);
+    coachStep = 0; Object.assign(coachFlags, { ended: 0, attacks: 0, acted: 0, selected: false });
     briefing(true);
   }
 
@@ -272,17 +279,17 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     const panel = new Container();
     const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.72 });
     dim.eventMode = 'static';
-    const art = new Sprite(cardFace('m_chandragupta')); art.anchor.set(0.5); art.rotation = -0.05;
+    const art = new Sprite(cardFace(sc.heroCard)); art.anchor.set(0.5); art.rotation = -0.05;
     const as = L.phone ? (H * 0.82) / 672 : 0.8;
     art.scale.set(as); art.position.set(L.phone ? 40 + 240 * as : 560, L.phone ? H / 2 : 520);
     const tx = L.phone ? 40 + 480 * as + 60 : 860, wrap = L.phone ? W - tx - 50 : 820;
-    const t1 = new Text({ text: `${FIRST_THRONE.place.toUpperCase()} · ${FIRST_THRONE.year.toUpperCase()}`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(22 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold } });
-    const t2 = new Text({ text: FIRST_THRONE.title, style: { fontFamily: FONT_SERIF, fontSize: 86, fontWeight: '700', fill: INK.goldPale } });
-    const t3 = new Text({ text: FIRST_THRONE.briefing, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * k), fill: INK.cream, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(42 * k) } });
-    const t4 = new Text({ text: 'Destroy the Nanda Durg before they destroy yours.', style: { fontFamily: FONT_SERIF, fontSize: Math.round(26 * k), fontStyle: 'italic', fill: INK.gold, wordWrap: true, wordWrapWidth: wrap } });
+    const t1 = new Text({ text: `${sc.place.toUpperCase()} · ${sc.year.toUpperCase()}`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(22 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold } });
+    const t2 = new Text({ text: sc.title, style: { fontFamily: FONT_SERIF, fontSize: 86, fontWeight: '700', fill: INK.goldPale } });
+    const t3 = new Text({ text: sc.briefing, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * k), fill: INK.cream, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(42 * k) } });
+    const t4 = new Text({ text: sc.objective, style: { fontFamily: FONT_SERIF, fontSize: Math.round(26 * k), fontStyle: 'italic', fill: INK.gold, wordWrap: true, wordWrapWidth: wrap } });
     if (L.phone) { t2.style.fontSize = 76; t1.position.set(tx, 40); t2.position.set(tx - 4, 72); t3.position.set(tx, 180); t4.position.set(tx, t3.y + t3.height + 20); }
     else { t1.position.set(tx, 300); t2.position.set(tx - 4, 336); t3.position.set(tx, 460); t4.position.set(tx, 680); }
-    const go = makeButton('To battle', () => {
+    const go = makeButton(sc.goLabel, () => {
       audio.unlock(); audio.play('conch');
       audio.playMusic('music_battle_calm');
       overlay = null;
@@ -459,6 +466,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       gsap.to(h.scale, { x: lifted ? L.liftScale : rest, y: lifted ? L.liftScale : rest, duration: instant ? 0 : 0.2, overwrite: 'auto' });
     });
     if (hoverIdx >= 0 && hand[hoverIdx]) handLayer.addChild(hand[hoverIdx]);
+    syncPreview();
   }
 
   function syncEnemyHand(state: Snap, instant: boolean): void {
@@ -507,7 +515,8 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     durg[1].setRing(false);
     const anything = myTurn && (hand.some((_, i) => cardTargets(i).zone !== null || cardTargets(i).units.length > 0) || [...tokens.values()].some(v => v.owner === 0 && unitCanDoAnything(v.uid)));
     drawEnd(overlay?.kind === 'briefing' ? 'mine' : !myTurn ? 'enemy' : anything ? 'mine' : 'ready');
-    hint.text = myTurn ? hintText() : st.over || overlay || st.active === 0 ? '' : 'The Nanda generals are moving…';
+    hint.text = myTurn ? hintText() : st.over || overlay || st.active === 0 ? '' : `The ${sc.enemyName} is moving…`;
+    updateCoach();
     if (pick) showTargets(pick);
   }
 
@@ -519,7 +528,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     const ready = mine.filter(x => unitCanDoAnything(x.unit.uid));
     if (ready.some(x => unitTargets(x.unit.uid).hq)) return 'Your units hold the Yudhbhumi. Drag one onto the enemy Durg to strike it.';
     const guarded = st.front.owner === 0 && st.players[1].support.some(u => u.kw.includes('raksha'));
-    if (guarded && ready.length) return 'A Raksha guards the Nanda Durg. Cut it down before you strike the walls.';
+    if (guarded && ready.length) return 'A Raksha guards the enemy Durg. Cut it down before you strike the walls.';
     if (ready.some(x => unitTargets(x.unit.uid).front)) return L.phone ? 'Move a glowing unit up to the Yudhbhumi, or onto an enemy.' : 'Drag a glowing unit up to the Yudhbhumi to advance, or onto an enemy to attack.';
     if (ready.length) return `${tap} a glowing unit onto a red-ringed enemy to attack it.`;
     if (mine.some(x => x.unit.moved && !x.unit.attacked && !canCharge(x.unit))) return L.phone ? 'Units that advanced strike next turn. Cavalry and chariots can charge at once.' : 'Foot soldiers and elephants that advanced this turn strike next turn. Cavalry and chariots can charge at once.';
@@ -551,33 +560,55 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       tokens.get(p.uid)?.setRing('selected');
     }
     syncPreview();
+    coachFade();
   }
   function glowZone(y: number): void {
     zoneGlow.roundRect(L.laneX - 4, y - L.laneH / 2 - 4, L.laneW + 8, L.laneH + 8, 18).stroke({ width: 5, color: 0x7dff8a, alpha: 0.9 });
     zoneGlow.roundRect(L.laneX, y - L.laneH / 2, L.laneW, L.laneH, 16).fill({ color: 0x7dff8a, alpha: 0.08 });
   }
 
-  /** phones: while a card or unit is selected, show it large at the side so its text can be read */
+  /** While one of your cards or units is selected (or, with a mouse, a hand card is hovered),
+      its rules panel stands at the left; on phones a large copy of the card stands at the right. */
   let previewId: string | null = null;
+  let previewTimer: ReturnType<typeof setTimeout> | null = null;
+  /** mouse hovering only: wait until the pointer rests on a card, so sweeping across the hand
+      (or dragging over it) does not build a panel for every card it passes */
   function syncPreview(): void {
-    let id: string | null = null;
-    if (L.preview && pick && !drag) {
-      id = pick.kind === 'card' ? (hand[pick.index]?.cardId ?? null) : (tokens.get(pick.uid)?.cardId ?? null);
+    if (previewTimer) { clearTimeout(previewTimer); previewTimer = null; }
+    if (!pick && hoverIdx >= 0 && !drag) { previewTimer = setTimeout(() => { previewTimer = null; if (alive) buildPreview(); }, 220); return; }
+    buildPreview();
+  }
+  function buildPreview(): void {
+    let id: string | null = null, unit: Unit | undefined, cost: number | undefined, key: string | null = null;
+    if (!drag && !overlay) {
+      const hc = pick?.kind === 'card' ? hand[pick.index] : !pick && hoverIdx >= 0 && !L.phone ? hand[hoverIdx] : undefined;
+      if (hc && !hc.faceDown) { id = hc.cardId; cost = hc.cost; key = `c:${id}:${cost}`; coachFlags.selected = true; }
+      else if (pick?.kind === 'unit') {
+        unit = findUnit(st, 0, pick.uid)?.unit;
+        if (unit) { id = unit.cardId; key = `u:${unit.uid}:${unit.hp}:${unit.atk}:${unit.rank ?? 0}:${unit.moved}:${unit.attacked}`; }
+      }
     }
-    if (id === previewId) return;
-    previewId = id;
+    if (key === previewId) return;
+    previewId = key;
     previewLayer.children.forEach(c => stopTweens(c as Container));
-    previewLayer.removeChildren().forEach(c => c.destroy());
-    if (!id || !L.preview) return;
-    const fromHand = pick?.kind === 'card' ? hand[pick.index] : undefined;
-    const sp = new Sprite(cardFace(id, st.players[0].upgrades[id] || 0, fromHand?.cost));
-    sp.anchor.set(0.5); sp.position.set(L.preview.x, L.preview.y);
-    const k = L.preview.s;
-    sp.scale.set(k);
-    const shade = new Graphics().roundRect(L.preview.x - 240 * k - 8, L.preview.y - 336 * k - 8, 480 * k + 16, 672 * k + 16, 20).fill({ color: 0x000000, alpha: 0.55 });
-    previewLayer.addChild(shade, sp);
-    previewLayer.eventMode = 'none';
-    gsap.from(sp, { alpha: 0, x: sp.x + 40, duration: 0.2 });
+    previewLayer.removeChildren().forEach(c => destroyTree(c as Container));
+    if (!id) return;
+    const glosses = glossFor(id, unit, cost);
+    const pw = L.phone ? 470 : 440;
+    const maxH = L.phone ? L.handTop - 14 : L.handTop - 60;
+    const panel = glossPanel(glosses, pw, maxH, L.phone ? 1.2 : 1);
+    panel.position.set(8, L.phone ? 8 : Math.max(40, (L.handTop - panel.height) / 2));
+    previewLayer.addChild(panel);
+    gsap.from(panel, { alpha: 0, x: panel.x - 24, duration: 0.18 });
+    if (L.preview) {
+      const sp = new Sprite(cardFace(id, unit ? 0 : st.players[0].upgrades[id] || 0, cost));
+      sp.anchor.set(0.5); sp.position.set(L.preview.x, L.preview.y);
+      const k = L.preview.s;
+      sp.scale.set(k);
+      const shade = new Graphics().roundRect(L.preview.x - 240 * k - 8, L.preview.y - 336 * k - 8, 480 * k + 16, 672 * k + 16, 20).fill({ color: 0x000000, alpha: 0.55 });
+      previewLayer.addChild(shade, sp);
+      gsap.from(sp, { alpha: 0, x: sp.x + 40, duration: 0.2 });
+    }
   }
 
   /* ---------------- input ---------------- */
@@ -619,7 +650,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
   function armLongPress(cardId: string, extra: InspectExtra = {}): void {
     if (longPress) clearTimeout(longPress);
     pressAt = lastPointer ? { x: lastPointer.x, y: lastPointer.y } : null;
-    longPress = setTimeout(() => { longPress = null; if (drag && drag.moved) return; cancelDrag(); longPressFired = performance.now(); inspect(cardId, extra); }, 480);
+    longPress = setTimeout(() => { longPress = null; if (drag && drag.moved) return; cancelDrag(); longPressFired = performance.now(); inspect(cardId, extra); }, LONG_PRESS_MS());
   }
 
   s.eventMode = 'static';
@@ -637,6 +668,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
       pick = null;
       showTargets(drag.kind === 'card' ? { kind: 'card', index: drag.index } : { kind: 'unit', uid: drag.uid });
       if (drag.kind === 'card') { hoverIdx = -1; handLayer.addChild(drag.view); audio.play('cardDraw'); }
+      coachFade();
     }
     if (!drag.moved) return;
     if (drag.kind === 'card') {
@@ -754,6 +786,8 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     }
     const check = applyAction(st, action);
     if (!check.ok) { flashHint(check.reason); layoutHand(); return; }
+    if (action.type === 'attack') coachFlags.attacks++;
+    if (action.type === 'attack' || action.type === 'move') coachFlags.acted++;
     busy = true; animating = true;
     refreshInteractivity();
     const events = drainEvents(st);
@@ -849,6 +883,20 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
         case 'yantra':
           await reveal(e.cardId, e.owner);
           break;
+        case 'trample': {
+          const v = tokens.get(e.uid), d = durg[e.owner];
+          if (v) {
+            audio.play('elephant');
+            const k = new Text({ text: 'TRAMPLE!', style: { fontFamily: FONT_SERIF, fontSize: L.phone ? 50 : 44, fontWeight: '700', letterSpacing: 4, fill: 0xffc07a, stroke: { color: 0x2a0a04, width: 7 } } });
+            k.anchor.set(0.5); k.position.set(v.x, v.y - 110 * L.tok); fx.addChild(k);
+            gsap.fromTo(k.scale, { x: 0.3, y: 0.3 }, { x: 1, y: 1, duration: 0.25, ease: 'back.out(2)' });
+            gsap.to(k, { alpha: 0, duration: 0.4, delay: 0.8, onComplete: () => k.destroy() });
+            dust(d.x, d.y); shake(12);
+            audio.play('fortHit');
+            await wait(450);
+          }
+          break;
+        }
         case 'promote': {
           const v = tokens.get(e.uid);
           if (v) await promoteFx(v, e.rank);
@@ -1124,10 +1172,116 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     const c = inspectOverlay(cardId, extra.unit ? 0 : st.players[0].upgrades[cardId] || 0, closeInspect, extra);
     s.addChild(c);
     overlay = { kind: 'inspect', view: c };
+    syncPreview();
   }
   function closeInspect(): void {
     if (overlay?.kind !== 'inspect') return;
     destroyTree(overlay.view); overlay = null;
+    syncPreview();
+  }
+
+  /* ============================================================
+     The coach (tutorial scenarios only): Chanakya explains one thing
+     at a time. "Tap" steps wait for a tap anywhere; the others wait
+     until the player has done what they ask. A pulsing gold frame
+     shows where to look.
+     ============================================================ */
+  const coachFlags = { ended: 0, attacks: 0, acted: 0, selected: false };
+  let coachStep = 0;
+  let coachShown = -1;
+  const coachLayer = new Container();
+  s.addChild(coachLayer);
+  type Box = { x: number; y: number; w: number; h: number };
+  const laneBox = (y: number): Box => ({ x: L.laneX, y: y - L.laneH / 2, w: L.laneW, h: L.laneH });
+  const durgBox = (i: 0 | 1): Box => ({ x: durg[i].x - 130 * L.durgS, y: durg[i].y - 130 * L.durgS, w: 260 * L.durgS, h: 260 * L.durgS });
+  const handBox = (): Box => ({ x: L.laneX, y: L.handTop, w: L.laneW, h: L.H - L.handTop });
+  const endBox = (): Box => ({ x: L.rightX - 95 * L.endS, y: L.endY - 95 * L.endS, w: 190 * L.endS, h: 190 * L.endS });
+  const koshaBox = (): Box => ({ x: L.rightX - 130, y: L.koshaLabelY - 24, w: 260, h: L.myDiyas.y - L.koshaLabelY + 50 });
+  interface CoachStep { text: () => string; tap?: boolean; done?: () => boolean; focus: () => Box[] }
+  const mineOnField = () => allUnits(st, 0).length;
+  const STEPS: CoachStep[] = [
+    { tap: true, focus: () => [durgBox(0), durgBox(1)],
+      text: () => 'Welcome, commander. Your camp is the Durg at the lower left; the enemy border post is at the upper left. Bring its walls down to win.' },
+    { tap: true, focus: () => [koshaBox()],
+      text: () => 'Every card costs Kosha: the gold coin in its corner. Your treasury is on the right. It refills each turn and grows by one.' },
+    { focus: () => [handBox(), laneBox(L.line.mine)], done: () => mineOnField() > 0,
+      text: () => 'Drag a Padati (foot soldier) from your hand onto YOUR RAJYA, the bottom line.' },
+    { focus: () => [handBox()], done: () => coachFlags.selected,
+      text: () => L.phone ? 'Tap a card in your hand: its rules appear on the left, the card on the right. Tap it again to put it back.' : 'Point at (or tap) a card in your hand: its rules appear on the left.' },
+    { focus: () => [endBox()], done: () => coachFlags.ended >= 1,
+      text: () => 'New soldiers must rest one turn. Press END TURN.' },
+    { focus: () => [laneBox(L.line.front)], done: () => coachFlags.acted > 0 || coachFlags.ended >= 3,
+      text: () => st.front.owner === 1
+        ? 'The enemy holds the Yudhbhumi, the middle line. Drag your Padati onto one of them to attack.'
+        : 'Drag your Padati up to the YUDHBHUMI, the middle line. Whoever holds it can strike the enemy Durg.' },
+    { focus: () => [endBox()], done: () => coachFlags.ended >= 2,
+      text: () => 'Foot soldiers either advance or attack in a turn, never both. Press END TURN.' },
+    { focus: () => [handBox(), laneBox(L.line.front)], done: () => coachFlags.attacks > 0 || coachFlags.ended >= 5,
+      text: () => hand.some(h => h.cardId === 'n_ashvarohi')
+        ? 'Horsemen can CHARGE: deploy the Ashvarohi, then drag it straight onto an enemy, or onto the enemy Durg if you hold the Yudhbhumi.'
+        : 'Attack! Drag a ready unit onto an enemy, or onto the enemy Durg if you hold the Yudhbhumi.' },
+    { tap: true, focus: () => [laneBox(L.line.enemy)],
+      text: () => 'A unit that destroys an enemy and survives is promoted: Veer, then Mahaveer. A Raksha (shield) on the enemy line guards their Durg: break it first.' },
+    { tap: true, focus: () => [],
+      text: () => 'Hold any card, or tap an enemy, to read it in full. The rest is yours, commander. Take the border post!' }
+  ];
+
+  function updateCoach(): void {
+    if (!sc.coached || !st) return;
+    if (coachStep >= STEPS.length || st.over) { if (coachShown !== -2) { clearCoach(); coachShown = -2; hint.visible = true; } return; }
+    const step = STEPS[coachStep];
+    if (!step.tap && step.done?.()) { coachStep++; updateCoach(); return; }
+    const myTurn = !busy && st.active === 0 && !overlay && !handHeld;
+    hint.visible = false;
+    if (!myTurn) { if (coachShown !== -1) { clearCoach(); coachShown = -1; } return; }
+    const sig = coachStep * 1000 + (st.front.owner ?? 9) + (L.phone ? 100 : 0);
+    if (coachShown === sig) { coachFade(); return; }
+    coachShown = sig;
+    drawCoach(step);
+    coachFade();
+  }
+  /** the coach steps back (nearly invisible) while you aim, so it never hides a target */
+  function coachFade(): void {
+    const away = !!(drag?.moved || pick);
+    gsap.to(coachLayer, { alpha: away ? 0.1 : 1, duration: 0.15, overwrite: 'auto' });
+  }
+  function clearCoach(): void {
+    coachLayer.children.forEach(c => stopTweens(c as Container));
+    coachLayer.removeChildren().forEach(c => destroyTree(c as Container));
+  }
+  function drawCoach(step: CoachStep): void {
+    clearCoach();
+    const ph = L.phone;
+    // a tap step catches the tap anywhere; an action step lets every tap through
+    if (step.tap) {
+      const catcher = new Graphics().rect(0, 0, L.W, L.H).fill({ color: 0x000000, alpha: 0.35 });
+      catcher.eventMode = 'static'; catcher.cursor = 'pointer';
+      catcher.on('pointertap', () => { audio.play('click'); coachStep++; coachShown = -1; clearCoach(); updateCoach(); });
+      coachLayer.addChild(catcher);
+    }
+    for (const b of step.focus()) {
+      const f = new Graphics().roundRect(b.x - 6, b.y - 6, b.w + 12, b.h + 12, 18).stroke({ width: 6, color: 0xffd76a });
+      f.eventMode = 'none'; coachLayer.addChild(f);
+      gsap.fromTo(f, { alpha: 1 }, { alpha: 0.25, duration: 0.7, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+    }
+    const bw = ph ? Math.min(980, L.W - 420) : 1000;
+    const box = new Container(); box.eventMode = 'none';
+    const name = new Text({ text: 'CHANAKYA', style: { fontFamily: FONT_SERIF, fontSize: ph ? 26 : 22, fontWeight: '700', letterSpacing: 6, fill: INK.gold } });
+    const t = new Text({ text: step.text(), style: { fontFamily: FONT_SERIF, fontSize: ph ? 34 : 30, fontWeight: '700', fill: 0xf8eedc, wordWrap: true, wordWrapWidth: bw - 150, lineHeight: ph ? 40 : 36 } });
+    const more = new Text({ text: step.tap ? 'Tap anywhere to continue ›' : '', style: { fontFamily: FONT_SERIF, fontSize: ph ? 24 : 20, fontStyle: 'italic', fill: INK.gold } });
+    const portrait = new Sprite(cardFace('m_chanakya')); portrait.scale.set(ph ? 0.2 : 0.18);
+    name.position.set(130, 14); t.position.set(130, name.y + name.height + 4); more.position.set(130, t.y + t.height + 6);
+    const bh = Math.max(portrait.height + 24, more.y + (step.tap ? more.height : 0) + 16);
+    portrait.position.set(16, (bh - portrait.height) / 2);
+    const bg = new Graphics().roundRect(0, 0, bw, bh, 14).fill({ color: 0x140d08, alpha: 0.94 }).stroke({ width: 3, color: INK.gold });
+    box.addChild(bg, portrait, name, t, more);
+    // stay clear of what the step points at: the top of the screen, unless that is where to look
+    const focusTop = step.focus().some(b => b.y < L.line.enemy + L.laneH / 2 && b.y + b.h > 0 && b.x < L.laneX + L.laneW);
+    const bx = L.laneX + (L.laneW - bw) / 2;
+    box.position.set(Math.max(8, Math.min(L.W - bw - 8, bx)), focusTop && !step.tap ? L.line.front - bh / 2 : ph ? 6 : 40);
+    if (focusTop && step.tap) box.y = L.line.front - bh / 2;
+    coachLayer.addChild(box);
+    gsap.from(box, { alpha: 0, y: box.y - 16, duration: 0.3, ease: 'power2.out' });
   }
 
   /* ---------------- turns ---------------- */
@@ -1135,8 +1289,9 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     const bh = L.phone ? 120 : 140;
     const band = new Graphics().rect(0, -bh / 2, L.W, bh).fill({ color: 0x000000, alpha: 0.75 });
     band.moveTo(0, -bh / 2).lineTo(L.W, -bh / 2).moveTo(0, bh / 2).lineTo(L.W, bh / 2).stroke({ width: 2, color: who === 0 ? INK.gold : 0xe0674a });
-    const t = new Text({ text: who === 0 ? 'YOUR TURN' : 'THE NANDA ARMY MOVES', style: { fontFamily: FONT_SERIF, fontSize: 72, fontWeight: '700', letterSpacing: 14, fill: who === 0 ? INK.goldPale : 0xffb09a } });
+    const t = new Text({ text: who === 0 ? 'YOUR TURN' : `THE ${sc.enemyName.toUpperCase()} MOVES`, style: { fontFamily: FONT_SERIF, fontSize: 72, fontWeight: '700', letterSpacing: 14, fill: who === 0 ? INK.goldPale : 0xffb09a } });
     t.anchor.set(0.5); t.x = L.W / 2;
+    if (t.width > L.W - 100) t.scale.set((L.W - 100) / t.width);
     const c = new Container(); c.addChild(band, t); c.y = L.line.front; fx.addChild(c);
     audio.play(who === 0 ? 'conch' : 'drum');
     await gsap.fromTo(c, { alpha: 0 }, { alpha: 1, duration: 0.25 });
@@ -1147,6 +1302,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
 
   async function endTurn(): Promise<void> {
     pick = null; clearTargets(); hoverIdx = -1;
+    coachFlags.ended++; coachFlags.acted = 0;
     busy = true; animating = true;
     applyAction(st, { type: 'end' });
     drainEvents(st);
@@ -1196,16 +1352,19 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
     const c = new Container();
     const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.78 });
     dim.eventMode = 'static';
-    const face = new Sprite(cardFace(won ? 'm_chandragupta' : 'n_gaja')); face.anchor.set(0.5); face.scale.set(ph ? 0.46 : 0.75); face.position.set(W / 2, ph ? H * 0.29 : 380);
+    const face = new Sprite(cardFace(won ? sc.heroCard : sc.defeatCard)); face.anchor.set(0.5); face.scale.set(ph ? 0.46 : 0.75); face.position.set(W / 2, ph ? H * 0.29 : 380);
     const title = new Text({ text: won ? 'VICTORY' : 'DEFEAT', style: { fontFamily: FONT_SERIF, fontSize: ph ? 104 : 120, fontWeight: '700', letterSpacing: 24, fill: won ? INK.goldPale : 0xffb09a, stroke: { color: 0x000000, width: 8 } } });
     title.anchor.set(0.5); title.position.set(W / 2, ph ? H * 0.6 : 690);
     if (ph) title.style.fontSize = 92;
     const sub = new Text({
-      text: won ? `Pataliputra opens its gates in turn ${st.turn}. The Mauryan age begins.` : 'The Nanda elephants hold the field. Chanakya is already planning the next war.',
+      text: won ? sc.winText(st.turn) : sc.loseText,
       style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * L.ui), fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - 200 }
     });
     sub.anchor.set(0.5); sub.position.set(W / 2, ph ? H * 0.72 : 780);
-    const again = makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 320 });
+    if (won && sc.coached) markTutorialDone();
+    const again = won && sc.coached && next
+      ? makeButton('The First Throne', next, { primary: true, w: 320 })
+      : makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 320 });
     const bx = ph ? 230 : 180;
     again.position.set(W / 2 - bx, ph ? H * 0.87 : 880);
     const leave = makeButton('Title screen', exit, { w: 320 });
@@ -1291,6 +1450,7 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
 
   s.enter = () => start();
   s.leave = () => {
+    coachLayer.children.forEach(c => stopTweens(c as Container));
     alive = false;
     fx.children.forEach(c => stopTweens(c as Container));
     window.removeEventListener('contextmenu', blockMenu);
@@ -1302,13 +1462,13 @@ export function battleScene(stage: Stage, exit: () => void): Scene {
 }
 
 /** the art a battle needs: both decks, the two Durgs, the battlefield */
-export function battleArt(): string[] {
-  return [...FIRST_THRONE.playerDeck, ...FIRST_THRONE.enemyDeck, 'durg_maurya_camp', 'durg_pataliputra'];
+export function battleArt(sc: Scenario = FIRST_THRONE_SCENARIO): string[] {
+  return [...sc.playerDeck, ...sc.enemyDeck, ...sc.durgArt];
 }
 
 /** preload the battlefield and paintings so the board never appears without them */
-export async function preloadBattle(): Promise<void> {
-  await Promise.all([loadBattlefield(FIRST_THRONE.battlefield), loadArt(battleArt())]);
+export async function preloadBattle(sc: Scenario = FIRST_THRONE_SCENARIO): Promise<void> {
+  await Promise.all([loadBattlefield(sc.battlefield), loadArt(battleArt(sc))]);
 }
 
 export type { Sfx };

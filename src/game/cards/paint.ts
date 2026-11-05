@@ -110,10 +110,14 @@ function coin(g: CanvasRenderingContext2D, x: number, y: number, r: number, labe
   g.lineWidth = 3; g.strokeStyle = 'rgba(40,20,5,0.8)'; g.stroke();
   g.beginPath(); g.arc(x, y, r - 7, 0, Math.PI * 2);
   g.lineWidth = 1.5; g.strokeStyle = kind === 'gold' ? 'rgba(120,70,10,0.6)' : 'rgba(255,220,180,0.35)'; g.stroke();
-  g.fillStyle = kind === 'bronze' ? '#fbe8c8' : '#2a1606';
-  g.font = `700 ${Math.round(r * 1.25)}px ${SERIF}`;
+  g.font = `700 ${Math.round(r * 1.42)}px ${SERIF}`;
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText(label, x, y + r * 0.06);
+  // bold numerals with a contrasting rim, readable on a small phone
+  g.lineJoin = 'round'; g.lineWidth = Math.max(3, r * 0.12);
+  g.strokeStyle = kind === 'bronze' ? 'rgba(30,12,2,0.9)' : 'rgba(255,240,200,0.7)';
+  g.strokeText(label, x, y + r * 0.08);
+  g.fillStyle = kind === 'bronze' ? '#fff3dc' : '#1e0f03';
+  g.fillText(label, x, y + r * 0.08);
 }
 
 /** attack (vermilion, blade) and defence (lapis, shield) badges */
@@ -137,10 +141,12 @@ export function statBadge(g: CanvasRenderingContext2D, x: number, y: number, r: 
   g.lineWidth = 4; g.strokeStyle = '#f0d79a'; g.stroke();
   if (label !== undefined) {
     g.fillStyle = '#fff';
-    g.font = `700 ${Math.round(r * 1.3)}px ${SERIF}`;
+    g.font = `700 ${Math.round(r * 1.5)}px ${SERIF}`;
     g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineJoin = 'round'; g.lineWidth = Math.max(4, r * 0.16); g.strokeStyle = 'rgba(10,4,0,0.95)';
+    g.strokeText(label, 0, r * 0.08);
     g.shadowColor = 'rgba(0,0,0,0.9)'; g.shadowBlur = 6;
-    g.fillText(label, 0, r * 0.06);
+    g.fillText(label, 0, r * 0.08);
   }
   g.restore();
 }
@@ -248,14 +254,14 @@ export function cardFace(id: string, upgrade = 0, cost?: number): Texture {
   // cost coin, operation cost, rarity gem
   const printed = Math.max(1, c.type !== 'unit' ? c.cost - upgrade : c.cost);
   const now = cost ?? printed;
-  coin(g, 58, 58, 40, String(now), now < printed ? 'cheaper' : 'gold');
-  if (c.type === 'unit') coin(g, W - 54, 56, 30, String(c.op ?? 0), 'bronze');
+  coin(g, 62, 62, 48, String(now), now < printed ? 'cheaper' : 'gold');
+  if (c.type === 'unit') coin(g, W - 56, 58, 36, String(c.op ?? 0), 'bronze');
   gem(g, W / 2, 26, 15, c.rarity);
 
   // stats
   if (c.type === 'unit') {
-    statBadge(g, 62, H - 58, 38, 'atk', String((c.atk ?? 0) + upgrade));
-    statBadge(g, W - 62, H - 58, 38, 'hp', String((c.hp ?? 0) + upgrade));
+    statBadge(g, 66, H - 64, 46, 'atk', String((c.atk ?? 0) + upgrade));
+    statBadge(g, W - 66, H - 64, 46, 'hp', String((c.hp ?? 0) + upgrade));
   }
   if (upgrade) {
     g.fillStyle = '#e7c46e'; g.font = `700 22px ${SERIF}`;
@@ -334,7 +340,7 @@ export function tokenFace(id: string, owner: 0 | 1): Texture {
   while (g.measureText(c.name).width > W - 120 && size > 20) { size -= 2; g.font = `700 ${size}px ${SERIF}`; }
   g.fillText(c.name, W / 2, ny + 26);
 
-  coin(g, W - 36, 40, 24, String(c.op ?? 0), 'bronze');
+  coin(g, W - 38, 42, 30, String(c.op ?? 0), 'bronze');
   const t = Texture.from(cv);
   if (!notReady(id)) tokenCache.set(key, t);
   return t;

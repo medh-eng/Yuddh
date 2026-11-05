@@ -494,6 +494,13 @@ function applyActionCore(st: GameState, action: Action): Check {
     const dmgBack = (a.range === 'melee' && d.range === 'melee') ? d.atk : 0;
     if (dmgBack > 0) a.hp -= dmgBack;
     if (d.hp <= 0) { pushEvent(st, { t: 'death', owner: tgt.owner, uid: d.uid }); destroyUnit(st, tgt.owner, d.uid); }
+    // Yuddh rules: a war elephant that crushes a unit tramples on; the blow it did not need falls on the enemy Durg
+    if (st.rules === 'yuddh' && d.hp < 0 && a.range === 'melee' && CARDS[a.cardId]?.sub === 'War Elephant') {
+      const over = -d.hp;
+      log(st, `${a.name} tramples on and strikes the Durg for ${over}.`, pIdx);
+      pushEvent(st, { t: 'trample', owner: tgt.owner, uid: a.uid, dmg: over });
+      damageHQ(st, tgt.owner, over);
+    }
     if (a.hp <= 0) { pushEvent(st, { t: 'death', owner: pIdx, uid: a.uid }); destroyUnit(st, pIdx, a.uid); }
     // Yuddh rules: a unit that destroys an enemy and lives is promoted: Veer +1 health, Mahaveer +1 attack more
     else if (st.rules === 'yuddh' && d.hp <= 0 && (a.rank ?? 0) < MAX_RANK) {

@@ -7,6 +7,7 @@ import { view } from '../view';
 import { makeButton } from '../ui/button';
 import { audio } from '../audio';
 import { battlefieldUrl } from '../../assets/manifest';
+import { tutorialDone } from '../../campaign/tutorial';
 import type { Scene, Stage } from '../stage';
 
 /** a soft dark pool, laid behind lettering so it reads against the bright sky */
@@ -22,7 +23,7 @@ function shadePool(): Texture {
   return shadeTex;
 }
 
-export function titleScene(stage: Stage, go: { battle(): void; gallery(): void; preview(): void; prototype(): void }): Scene {
+export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void; gallery(): void; preview(): void; prototype(): void }): Scene {
   const s: Scene = new Container();
   const painting = Texture.from(battlefieldUrl('title'));
   const art = new Sprite(painting); art.anchor.set(0.5);
@@ -74,10 +75,11 @@ export function titleScene(stage: Stage, go: { battle(): void; gallery(): void; 
     pool.position.set(W / 2, ty - 10); pool.width = ph ? 1250 : 1500; pool.height = ph ? 470 : 560;
 
     buttons.removeChildren().forEach(c => c.destroy({ children: true }));
-    const list: [string, () => void, boolean][] = [
-      ['To battle', go.battle, true], ['Card gallery', go.gallery, false],
-      ['Watch two generals', go.preview, false], ['Play the prototype', go.prototype, false]
-    ];
+    // new players are pointed at the training ground first
+    const fresh = !tutorialDone();
+    const list: [string, () => void, boolean][] = fresh
+      ? [['Learn to play', go.tutorial, true], ['To battle', go.battle, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]]
+      : [['To battle', go.battle, true], ['Learn to play', go.tutorial, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]];
     list.forEach(([label, fn, primary], i) => {
       const b = makeButton(label, fn, { primary, w: ph ? 380 : 400 });
       if (ph) b.position.set(W / 2 + (i % 2 ? 1 : -1) * 270, 462 + Math.floor(i / 2) * 112);
