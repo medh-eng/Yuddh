@@ -91,6 +91,8 @@ export interface Player {
   upgrades: Record<string, number>;
   drawBonus: number;
   counters: { ordersPlayed: number; unitsThisTurn: number; mantraThisTurn?: boolean };
+  /** Yuddh rules: the Dharma–Kuta meter, −3 (Kuta, cunning) to +3 (Dharma, honour); 0 if unset */
+  dharma?: number;
 }
 
 export type Objective =
@@ -113,7 +115,8 @@ export type GameEvent =
   | { t: 'yantraSet'; owner: PlayerIndex }
   | { t: 'promote'; owner: PlayerIndex; uid: number; rank: number }
   | { t: 'trample'; owner: PlayerIndex; uid: number; dmg: number }
-  | { t: 'heal'; owner: PlayerIndex; uid: number; amount: number; by: number };
+  | { t: 'heal'; owner: PlayerIndex; uid: number; amount: number; by: number }
+  | { t: 'dharma'; owner: PlayerIndex; value: number; delta: number; why: string };
 
 export interface GameState {
   seed: number;

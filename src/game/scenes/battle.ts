@@ -15,7 +15,7 @@
 import { Container, FederatedPointerEvent, Graphics, Point, Sprite, Text, Texture, Ticker } from 'pixi.js';
 import gsap from 'gsap';
 import {
-  CARDS, EMPIRES, RANK_NAMES, SEASONS, strikeDamage, actionObservers, findUnit, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
+  CARDS, EMPIRES, RANK_NAMES, SEASONS, dharmaOf, strikeDamage, actionObservers, findUnit, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
   drainEvents, type Action, type GameEvent, type Season, type GameState, type PlayerIndex, type Target, type Unit
 } from '../../engine';
 import { FIRST_THRONE_SCENARIO } from '../../campaign/firstThrone';
@@ -297,6 +297,61 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     // grishma's dust rises: wrap it from the bottom instead
     if (season === 'grishma') drops.forEach(d => { d.vy = -Math.abs(d.vy); });
   }
+  /* ---------------- the Dharma–Kuta meter under each Durg ---------------- */
+  const meters: [Container, Container] = [new Container(), new Container()];
+  meters.forEach((m, i) => {
+    s.addChild(m);
+    m.eventMode = 'static'; m.cursor = 'pointer';
+    m.on('pointertap', () => toggleDharmaTip(i as PlayerIndex));
+  });
+  const KUTA_COL = 0xb07ce8, DHARMA_COL = 0xffd76a;
+  function drawMeter(i: PlayerIndex, v: number): void {
+    const m = meters[i];
+    if (st?.rules !== 'yuddh') { m.visible = false; return; }
+    m.visible = true;
+    m.removeChildren().forEach(c => destroyTree(c as Container));
+    // phones: narrow enough to sit in the Durg column (176 wide) without touching the lanes
+    const pip = L.phone ? 16 : 24, gap = L.phone ? 4 : 6, w = 7 * pip + 6 * gap;
+    const g = new Graphics();
+    g.roundRect(-w / 2 - 10, -pip / 2 - 8, w + 20, pip + 16, 10).fill({ color: 0x140c07, alpha: 0.88 }).stroke({ width: 1.5, color: INK.gold, alpha: 0.6 });
+    for (let n = -3; n <= 3; n++) {
+      const x = -w / 2 + (n + 3) * (pip + gap) + pip / 2;
+      const lit = (v > 0 && n > 0 && n <= v) || (v < 0 && n < 0 && n >= v);
+      const col = n < 0 ? KUTA_COL : n > 0 ? DHARMA_COL : 0xe8dcc0;
+      if (n === 0) g.circle(x, 0, pip * 0.22).fill({ color: col, alpha: 0.8 });
+      else g.poly([x, -pip / 2, x + pip / 2, 0, x, pip / 2, x - pip / 2, 0]).fill({ color: col, alpha: lit ? 1 : 0.15 }).stroke({ width: 1.5, color: col, alpha: 0.7 });
+    }
+    const label = (t: string, col: number, x: number, ax: number) => {
+      const tx = new Text({ text: t, style: { fontFamily: FONT_SERIF, fontSize: L.phone ? 17 : 15, fontWeight: '700', letterSpacing: L.phone ? 1 : 3, fill: col, stroke: { color: 0x000000, width: 3 } } });
+      tx.anchor.set(ax, 1); tx.position.set(x, -pip / 2 - 9); return tx;
+    };
+    m.addChild(g, label('KUTA', KUTA_COL, -w / 2 - 6, 0), label('DHARMA', DHARMA_COL, w / 2 + 6, 1));
+    if (Math.abs(v) >= 3) {
+      const glow = new Graphics().roundRect(-w / 2 - 12, -pip / 2 - 10, w + 24, pip + 20, 11).stroke({ width: 3, color: v > 0 ? DHARMA_COL : KUTA_COL });
+      m.addChild(glow);
+      gsap.fromTo(glow, { alpha: 1 }, { alpha: 0.3, duration: 0.9, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+    }
+    const dy = 136 * L.durgS + (L.phone ? 30 : 26);
+    m.position.set(Math.max(L.durgX, w / 2 + 14), (i === 0 ? L.line.mine : L.line.enemy) + dy);
+  }
+  let dharmaTip: Container | null = null;
+  function toggleDharmaTip(i: PlayerIndex): void {
+    if (dharmaTip) { destroyTree(dharmaTip); dharmaTip = null; return; }
+    audio.play('click');
+    const v = dharmaOf(st.players[i]);
+    const now = v >= 3 ? 'Dharma Yuddha now: their blows on the enemy Durg strike +1.' : v <= -3 ? 'Kuta Yuddha now: their orders and Yantras cost 1 less.' : `Now at ${v > 0 ? '+' : ''}${v}.`;
+    const p = glossPanel([
+      { icon: 'rank', title: `${i === 0 ? 'YOUR' : 'ENEMY'} DHARMA–KUTA`, body: now },
+      { icon: 'melee', title: 'DHARMA (HONOUR)', body: 'A melee unit that destroys an enemy in its own attack: +1. At +3, blows on the enemy Durg strike +1.' },
+      { icon: 'yantra', title: 'KUTA (CUNNING)', body: 'Setting a Yantra, poisoned arrows or a spy: −1. At −3, orders and Yantras cost 1 less.' }
+    ], L.phone ? 640 : 520, L.H - 20, L.phone ? 1.2 : 1);
+    const m = meters[i];
+    p.position.set(Math.max(8, m.x - 60), Math.min(L.H - p.height - 8, Math.max(8, m.y + 30)));
+    p.eventMode = 'static'; p.on('pointertap', () => toggleDharmaTip(i));
+    s.addChild(p); dharmaTip = p;
+    setTimeout(() => { if (dharmaTip === p) toggleDharmaTip(i); }, 7000);
+  }
+
   function toggleSeasonTip(): void {
     if (seasonTip) { destroyTree(seasonTip); seasonTip = null; return; }
     const season = st.season ?? 'sharad', ss = SEASONS[season];
@@ -428,6 +483,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
       if (!instant && durg[i].hp && dh > 0) damageShield(durg[i].x, durg[i].y - 10, dh, 1.35);
       if (!instant && durg[i].hp && dh < 0) floatNumber(durg[i].x, durg[i].y - 10, `+${-dh}`, 0x9cff8a, 64);
       durg[i].set(p.hq.name, i === 0 ? EMPIRES[p.empire].name : p.faction, p.hq.hp, p.hq.maxHp);
+      drawMeter(i, dharmaOf(p));
     }
     // the music turns urgent once either Durg is half down
     if (!instant && !intense && !state.over && state.players.some(p => p.hq.hp <= p.hq.maxHp / 2)) {
@@ -989,6 +1045,15 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
           }
           break;
         }
+        case 'dharma': {
+          const m = meters[e.owner];
+          const col = e.delta > 0 ? DHARMA_COL : KUTA_COL;
+          drawMeter(e.owner, e.value);
+          floatNumber(m.x, m.y - 30, e.delta > 0 ? '+ DHARMA' : '− KUTA', col, 34);
+          gsap.fromTo(m.scale, { x: 1.25, y: 1.25 }, { x: 1, y: 1, duration: 0.4, ease: 'back.out(2)' });
+          if (Math.abs(e.value) === 3) { audio.play(e.delta > 0 ? 'conch' : 'yantra'); flash(col, 0.18); }
+          break;
+        }
         case 'promote': {
           const v = tokens.get(e.uid);
           if (v) await promoteFx(v, e.rank);
@@ -1289,6 +1354,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   const durgBox = (i: 0 | 1): Box => ({ x: durg[i].x - 130 * L.durgS, y: durg[i].y - 130 * L.durgS, w: 260 * L.durgS, h: 260 * L.durgS });
   const handBox = (): Box => ({ x: L.laneX, y: L.handTop, w: L.laneW, h: L.H - L.handTop });
   const endBox = (): Box => ({ x: L.rightX - 95 * L.endS, y: L.endY - 95 * L.endS, w: 190 * L.endS, h: 190 * L.endS });
+  const meterBox = (i: 0 | 1): Box => ({ x: meters[i].x - 150, y: meters[i].y - 40, w: 300, h: 70 });
   const koshaBox = (): Box => ({ x: L.rightX - 130, y: L.koshaLabelY - 24, w: 260, h: L.myDiyas.y - L.koshaLabelY + 50 });
   interface CoachStep { text: () => string; tap?: boolean; done?: () => boolean; focus: () => Box[] }
   const mineOnField = () => allUnits(st, 0).length;
@@ -1315,6 +1381,8 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
         : 'Attack! Drag a ready unit onto an enemy, or onto the enemy Durg if you hold the Yudhbhumi.' },
     { tap: true, focus: () => [laneBox(L.line.enemy)],
       text: () => 'A unit that destroys an enemy and survives is promoted: Veer, then Mahaveer. A Raksha (shield) on the enemy line guards their Durg: break it first.' },
+    { tap: true, focus: () => [meterBox(0)],
+      text: () => 'Under your Durg is the Dharma–Kuta meter. Win fair fights to climb toward Dharma; traps, poison and spies pull you toward Kuta. Both ends bring a reward.' },
     { tap: true, focus: () => [],
       text: () => 'Hold any card, or tap an enemy, to read it in full. The rest is yours, commander. Take the border post!' }
   ];
@@ -1497,6 +1565,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     clearBoard();
     applyLayout();
     if (seasonTip) { destroyTree(seasonTip); seasonTip = null; }
+    if (dharmaTip) { destroyTree(dharmaTip); dharmaTip = null; }
     buildSeason();
     reconcile(shown, true);
     if (open?.kind === 'briefing') briefing(false);

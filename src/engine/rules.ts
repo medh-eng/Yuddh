@@ -177,7 +177,27 @@ export function koshaCost(st: GameState, owner: PlayerIndex, card: CardDef): num
   const lvl = (pl.upgrades && pl.upgrades[card.id]) || 0;
   if (card.type !== 'unit' && lvl) c = Math.max(1, c - lvl);
   if (card.type === 'unit' && card.cost >= 3 && pl.empire === 'maurya' && (pl.counters.unitsThisTurn || 0) === 0) c = c - 1;
+  if (st.rules === 'yuddh' && card.type !== 'unit' && dharmaOf(pl) <= -DHARMA_MAX) c = Math.max(0, c - 1);
   return c;
+}
+
+/* ---------------- Dharma–Kuta ----------------
+   Yuddh rules. Fighting face to face (a melee unit destroying an enemy in its own attack)
+   moves a side toward Dharma; hidden traps, poison and spies toward Kuta. At +3 (Dharma
+   Yuddha) the army's blows on the enemy Durg strike 1 harder; at −3 (Kuta Yuddha) its
+   orders and Yantras cost 1 less. The meter can swing back and forth all battle. */
+export const DHARMA_MAX = 3;
+const KUTA_CARDS = new Set(['n_visha_baan', 'm_gudhchar']);
+export const dharmaOf = (p: Player): number => p.dharma ?? 0;
+function shiftDharma(st: GameState, idx: PlayerIndex, delta: number, why: string): void {
+  if (st.rules !== 'yuddh') return;
+  const p = st.players[idx];
+  const v = Math.max(-DHARMA_MAX, Math.min(DHARMA_MAX, dharmaOf(p) + delta));
+  if (v === dharmaOf(p)) return;
+  p.dharma = v;
+  if (v === DHARMA_MAX && delta > 0) log(st, `${p.faction} fights a Dharma Yuddha: its blows on the Durg strike harder.`, idx);
+  if (v === -DHARMA_MAX && delta < 0) log(st, `${p.faction} wages a Kuta Yuddha: its orders and Yantras cost less.`, idx);
+  pushEvent(st, { t: 'dharma', owner: idx, value: v, delta, why });
 }
 
 /* ---------------- game creation ---------------- */
@@ -414,6 +434,7 @@ function applyDeploy(st: GameState, pIdx: PlayerIndex, unit: Unit, line: Line): 
       p.yantras.push({ cardId: 'y_pratikar', uid: st.nextUid++ });
       log(st, `${unit.name} sets a hidden Pratikar Yantra.`, pIdx);
       pushEvent(st, { t: 'yantraSet', owner: pIdx });
+      shiftDharma(st, pIdx, -1, 'a hidden trap');
       break;
     case 'hillVolley':
       if (st.front.owner === other(pIdx)) [...st.front.units].forEach(u => damageUnit(st, other(pIdx), u.uid, 1));
@@ -489,6 +510,7 @@ function applyActionCore(st: GameState, action: Action): Check {
       log(st, `${EMPIRES[p.empire].name} deploys ${u.name}.`, pIdx);
       pushEvent(st, { t: 'deploy', owner: pIdx, uid: u.uid, cardId });
       applyDeploy(st, pIdx, u, 'support');
+      if (KUTA_CARDS.has(cardId)) shiftDharma(st, pIdx, -1, 'a spy in their camp');
       // an enemy Vighna Yantra may unmake the deployment
       const trap = fireYantra(st, other(pIdx), 'onEnemyDeploy');
       if (trap) destroyUnit(st, pIdx, u.uid);
@@ -496,11 +518,13 @@ function applyActionCore(st: GameState, action: Action): Check {
       p.yantras.push({ cardId, uid: st.nextUid++ });
       log(st, `${EMPIRES[p.empire].name} sets a Yantra, face down.`, pIdx);
       pushEvent(st, { t: 'yantraSet', owner: pIdx });
+      shiftDharma(st, pIdx, -1, 'a hidden trap');
     } else {
       log(st, `${EMPIRES[p.empire].name} casts ${c.name}.`, pIdx);
       pushEvent(st, { t: 'order', owner: pIdx, cardId });
       p.discard.push(cardId);
       applyOrder(st, pIdx, cardId, action.target);
+      if (KUTA_CARDS.has(cardId)) shiftDharma(st, pIdx, -1, 'poisoned arrows');
     }
     checkDeath(st);
     return { ok: true };
@@ -529,7 +553,7 @@ function applyActionCore(st: GameState, action: Action): Check {
     if (a.kw.includes('dhuan')) a.smokeBroken = true;
 
     if (action.target.kind === 'hq') {
-      let dmg = strikeDamage(st, a);
+      let dmg = strikeDamage(st, a) + (st.rules === 'yuddh' && dharmaOf(p) >= DHARMA_MAX ? 1 : 0);
       const ward = fireYantra(st, action.target.owner, 'onHQAttack');
       if (ward) dmg = Math.max(0, dmg - ward.power);
       // the timber walls also shoot back
@@ -550,6 +574,7 @@ function applyActionCore(st: GameState, action: Action): Check {
     const dmgBack = (a.range === 'melee' && d.range === 'melee') ? d.atk : 0;
     if (dmgBack > 0) a.hp -= dmgBack;
     if (d.hp <= 0) { pushEvent(st, { t: 'death', owner: tgt.owner, uid: d.uid }); destroyUnit(st, tgt.owner, d.uid); }
+    if (d.hp <= 0 && a.range === 'melee') shiftDharma(st, pIdx, 1, 'a fair fight won');
     // Yuddh rules: a war elephant that crushes a unit tramples on; the blow it did not need falls on the enemy Durg
     if (st.rules === 'yuddh' && d.hp < 0 && a.range === 'melee' && isElephant(a)) {
       const over = -d.hp;

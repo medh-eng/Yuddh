@@ -28,7 +28,7 @@ export const YUDDH_CARD_LIST: CardDef[] = [
     glyph: 'ग', text: 'Your units get +1 attack, and this turn every one of them may advance and attack.', rarity: 'epic' },
   { id: 'm_makara_vyuha', name: 'Makara Vyuha', sub: 'Crocodile Formation', empire: 'maurya', type: 'order', cost: 3,
     glyph: 'म', text: 'Your units on the Yudhbhumi get +2 health (if you hold none there, your Rajya line gets +1).', rarity: 'rare' },
-  { id: 'm_raja_dhwaja', name: 'Raja Dhwaja', sub: 'Standard-bearer', empire: 'maurya', type: 'unit', cost: 3, op: 1, atk: 1, hp: 3, range: 'melee',
+  { id: 'm_raja_dhwaja', name: 'Raja Dhwaja', sub: 'Standard-bearer', empire: 'maurya', type: 'unit', cost: 2, op: 1, atk: 1, hp: 3, range: 'melee',
     glyph: 'ध्व', text: 'Morale — while he stands, your other units on the Yudhbhumi deal +1 damage.', rarity: 'rare' },
   { id: 'm_shalya_vaidya', name: 'Shalya Vaidya', sub: 'Army Surgeon', empire: 'maurya', type: 'unit', cost: 2, op: 1, atk: 0, hp: 3, range: 'ranged',
     glyph: 'वै', text: 'At the start of your turn, heal 2 health on your most wounded unit.', rarity: 'rare' },

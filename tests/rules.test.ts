@@ -1,6 +1,6 @@
 /* Card-mechanics checks, ported from the prototype's yantra-test.js. */
 import { describe, expect, it } from 'vitest';
-import { allUnits, applyAction, buildDeck, canAttack, canMove, drainEvents, findUnit, newGame, type Unit } from '../src/engine';
+import { CARDS, allUnits, applyAction, buildDeck, canAttack, canMove, drainEvents, findUnit, koshaCost, newGame, type Unit } from '../src/engine';
 import { Meta, type Store } from '../src/meta/progress';
 
 const mk = () => newGame({
@@ -220,5 +220,42 @@ describe('batch 3 cards (Yuddh rules)', () => {
     st.players[1].support = []; st.front = { owner: null, units: [] };
     applyAction(st, { type: 'end' });
     expect(findUnit(st, 0, 8301)!.unit.hp).toBe(3);
+  });
+});
+
+describe('Dharma–Kuta (Yuddh rules)', () => {
+  const mkD = () => newGame({
+    player: { empire: 'maurya', ally: 'neutral', deck: buildDeck('maurya', 'neutral') },
+    enemy: { empire: 'rajput', ally: 'neutral', deck: buildDeck('rajput', 'neutral') },
+    seed: 55, rules: 'yuddh'
+  });
+  it('a melee kill earns Dharma; a Yantra costs it', () => {
+    const st = mkD();
+    st.players[0].kosha = 20;
+    st.front.owner = 0; st.front.units = [unit(9000, 'n_padati', 0, 5, 9)];
+    st.players[1].support = [unit(9001, 'n_padati', 1, 1, 1)];
+    applyAction(st, { type: 'attack', uid: 9000, target: { kind: 'unit', owner: 1, uid: 9001 } });
+    expect(st.players[0].dharma).toBe(1);
+    st.players[0].hand = ['y_kavach', 'y_pratikar'];
+    applyAction(st, { type: 'play', handIndex: 0, target: null });
+    applyAction(st, { type: 'play', handIndex: 0, target: null });
+    expect(st.players[0].dharma).toBe(-1);
+  });
+  it('at +3 Dharma, Durg strikes hit 1 harder; at −3 Kuta, orders cost 1 less', () => {
+    const st = mkD();
+    st.players[0].kosha = 20; st.players[0].dharma = 3;
+    st.front.owner = 0; st.front.units = [unit(9100, 'n_padati', 0, 2, 9)];
+    st.players[1].yantras = [];
+    const hq = st.players[1].hq.hp;
+    applyAction(st, { type: 'attack', uid: 9100, target: { kind: 'hq', owner: 1 } });
+    expect(st.players[1].hq.hp).toBe(hq - 3);
+    st.players[0].dharma = -3;
+    expect(koshaCost(st, 0, CARDS.n_visha_baan)).toBe(CARDS.n_visha_baan.cost - 1);
+  });
+  it('the classic rules never move the meter', () => {
+    const st = mk();
+    st.players[0].kosha = 20; st.players[0].hand = ['y_kavach'];
+    applyAction(st, { type: 'play', handIndex: 0, target: null });
+    expect(st.players[0].dharma).toBeUndefined();
   });
 });

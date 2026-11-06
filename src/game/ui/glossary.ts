@@ -25,7 +25,7 @@ export function glossFor(cardId: string, unit?: Unit, cost?: number, season?: Se
       : { icon: 'foot', title: c.sub.toUpperCase(), body: 'Each turn it advances or attacks, not both.' });
     out.push(c.range === 'ranged'
       ? { icon: 'ranged', title: 'RANGED', body: season === 'grishma' ? 'Shoots from either line and takes no counter-blow. Summer heat haze: deals 1 less damage.' : 'Shoots from either line and takes no counter-blow.' }
-      : { icon: 'melee', title: 'MELEE', body: 'Trades blows with other melee units: both deal damage.' });
+      : { icon: 'melee', title: 'MELEE', body: 'Trades blows with other melee units: both deal damage. Winning such a fight earns Dharma.' });
     if (/Elephant/.test(c.sub)) out.push({ icon: 'charge', title: 'TRAMPLE', body: 'When it crushes a unit, the damage it did not need falls on the enemy Durg.' });
     if (unit?.surge !== undefined && unit.surge === turn) out.push({ icon: 'charge', title: 'GARUDA VYUHA', body: 'The eagle formation: this turn it may advance and attack.' });
     if (c.id === 'm_raja_dhwaja') out.push({ icon: 'rank', title: 'MORALE', body: 'While he stands, your other units on the Yudhbhumi deal +1 damage.' });
@@ -36,12 +36,13 @@ export function glossFor(cardId: string, unit?: Unit, cost?: number, season?: Se
     if (!unit?.rank) out.push({ icon: 'rank', title: 'PROMOTION', body: 'Destroy an enemy and survive: Veer (+1 health), then Mahaveer (+1 attack, +1 health more).' });
     out.push({ icon: 'op', title: `ORDERS COST ${c.op ?? 1}`, body: `Advancing or attacking spends ${c.op ?? 1} Kosha (the bronze coin).` });
   } else if (c.type === 'yantra') {
-    out.push({ icon: 'yantra', title: 'YANTRA', body: 'A hidden trap. It is set face-down and springs by itself when its moment comes.' });
+    out.push({ icon: 'yantra', title: 'YANTRA', body: 'A hidden trap. It is set face-down and springs by itself when its moment comes. Setting one moves you toward Kuta.' });
   } else if (c.kind === 'shakti') {
     out.push({ icon: 'shakti', title: 'SHAKTI', body: 'A great power: a costly order that can turn a whole battle.' });
   } else {
     out.push({ icon: 'mantra', title: 'MANTRA', body: 'An order: it takes effect at once and is then spent.' });
   }
+  if (c.id === 'n_visha_baan' || c.id === 'm_gudhchar') out.push({ icon: 'yantra', title: 'KUTA', body: 'Cunning, not honour: playing it moves you one step toward Kuta.' });
   const printed = c.cost;
   if (cost !== undefined && cost < printed) out.push({ icon: 'kosha', title: `KOSHA ${cost}, NOT ${printed}`, body: "Cheaper this turn: your empire's gift." });
   if (c.empire !== 'neutral') out.push({ icon: 'empire', title: EMPIRES[c.empire].name.toUpperCase(), body: EMPIRES[c.empire].passive });
