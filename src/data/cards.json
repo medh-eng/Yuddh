@@ -1,5 +1,5 @@
 {
-"_about": "All card, empire and stat data. Edit numbers here; no code change needed. classic = the prototype's 50 cards (the golden test replays them; do not touch). yuddh = YUDDH cards. pendingArt = designed but unpainted, not loaded.",
+"_about": "All card, empire and stat data. Edit numbers here; no code change needed. classic = the prototype's 50 cards (the golden test replays them; do not touch). yuddh = YUDDH cards. pendingArt = designed but unpainted, not loaded (empty now).",
 "empires": {
  "maurya": {"id":"maurya","name":"Maurya","capital":"Pataliputra","color":"#d99a2b","glyph":"मौ","passive":"Arthashastra — the first unit costing 3 or more that you deploy each turn costs 1 less Kosha."},
  "gupta": {"id":"gupta","name":"Gupta","capital":"Ujjain","color":"#2f8f74","glyph":"गु","passive":"Golden Age — the first Mantra you cast each turn draws a card."},
@@ -79,12 +79,13 @@
  {"id":"se_hetairoi","name":"Hetairoi","sub":"Cavalry","empire":"neutral","type":"unit","cost":4,"op":1,"atk":4,"hp":3,"range":"melee","kw":["veg"],"glyph":"हे","text":"Vega. The Companion cavalry: the wedge that broke Persia.","rarity":"rare"},
  {"id":"se_toxotai","name":"Toxotai","sub":"Archer","empire":"neutral","type":"unit","cost":2,"op":1,"atk":2,"hp":1,"range":"ranged","glyph":"तो","text":"Cretan bowmen: hired, lean and deadly from the second line.","rarity":"common"},
  {"id":"se_lithobolos","name":"Lithobolos","sub":"Stone-thrower","empire":"neutral","type":"order","cost":3,"target":"enemyUnit","power":3,"hqDamage":1,"glyph":"लि","text":"Deal 3 damage to an enemy unit and 1 to its Durg.","rarity":"rare"},
- {"id":"se_megasthenes","name":"Megasthenes","sub":"Envoy","empire":"neutral","type":"order","cost":2,"draw":1,"dharma":1,"glyph":"मे","text":"Draw a card. The envoy writes an honest account: one step toward Dharma.","rarity":"common"}
+ {"id":"se_megasthenes","name":"Megasthenes","sub":"Envoy","empire":"neutral","type":"order","cost":2,"draw":1,"dharma":1,"glyph":"मे","text":"Draw a card. The envoy writes an honest account: one step toward Dharma.","rarity":"common"},
+ {"id":"m_sindhu_nauka","name":"Sindhu Nauka","sub":"River Boats","empire":"maurya","type":"order","cost":3,"glyph":"नौ","text":"Up to 2 of your Rajya-line units cross to the Yudhbhumi at no Kosha, and may strike this turn.","rarity":"rare"},
+ {"id":"m_takshashila","name":"Takshashila Scholars","sub":"Advisers","empire":"maurya","type":"unit","cost":3,"op":1,"atk":1,"hp":3,"range":"melee","glyph":"त","deploy":"drawHeal","text":"Deploy — draw a card and restore 2 to your Durg.","rarity":"common"},
+ {"id":"m_gaja_sandhi","name":"Gaja Sandhi","sub":"Treaty of Elephants","empire":"maurya","type":"order","cost":4,"draw":1,"heal":6,"glyph":"सं","text":"Draw a card and restore 6 to your Durg. Peace bought with elephants.","rarity":"epic"},
+ {"id":"m_ashva_dhanurdhara","name":"Ashva Dhanurdhara","sub":"Mounted Archer","empire":"maurya","type":"unit","cost":3,"op":1,"atk":2,"hp":2,"range":"ranged","kw":["veg"],"glyph":"अध","text":"Vega. Shoots from either line without a counter-blow.","rarity":"rare"}
 ],
 "pendingArt": [
- {"id":"m_sindhu_nauka","name":"Sindhu Nauka","sub":"River Boats","empire":"maurya","type":"order","cost":3,"glyph":"नौ","text":"TENTATIVE — your units on the Rajya line advance to the Yudhbhumi without paying Kosha this turn (needs a new rule).","rarity":"rare"},
- {"id":"m_takshashila","name":"Takshashila Scholars","sub":"Advisers","empire":"maurya","type":"unit","cost":3,"op":1,"atk":1,"hp":3,"range":"melee","glyph":"त","deploy":"draw1","text":"TENTATIVE — Deploy — draw a card.","rarity":"common"},
- {"id":"m_gaja_sandhi","name":"Gaja Sandhi","sub":"Treaty of Elephants","empire":"maurya","type":"order","cost":5,"glyph":"सं","text":"TENTATIVE — restore 5 to your Durg and draw 2 cards (needs power/draw fields on the order).","rarity":"epic"},
- {"id":"m_ashva_dhanurdhara","name":"Ashva Dhanurdhara","sub":"Mounted Archer","empire":"maurya","type":"unit","cost":3,"op":1,"atk":2,"hp":2,"range":"ranged","kw":["veg"],"glyph":"अध","text":"TENTATIVE — Vega. Shoots from either line without a counter-blow.","rarity":"rare"}
+
 ]
 }

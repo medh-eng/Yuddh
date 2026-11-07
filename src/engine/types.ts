@@ -11,7 +11,7 @@ export type CardType = 'unit' | 'order' | 'yantra';
 export type Range = 'melee' | 'ranged';
 export type AiLevel = 'easy' | 'normal' | 'hard';
 export type Line = 'support' | 'front';
-export type DeployEffect = 'draw1' | 'drawKosha' | 'kosha1' | 'buffLine' | 'buffAll' | 'kosha2' | 'setYantra' | 'hillVolley' | 'elephantBuff';
+export type DeployEffect = 'draw1' | 'drawKosha' | 'kosha1' | 'buffLine' | 'buffAll' | 'kosha2' | 'setYantra' | 'hillVolley' | 'elephantBuff' | 'drawHeal';
 export type YantraTrigger = 'onEnemyDeploy' | 'onHQAttack' | 'onUnitAttack';
 export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
 
@@ -47,6 +47,7 @@ export interface CardDef {
   /** data-driven order effects (cards.json): damage to the enemy Durg, cards drawn, Dharma steps */
   hqDamage?: number;
   draw?: number;
+  heal?: number;
   dharma?: number;
   /** Pikes: a melee unit that advanced this turn and strikes this unit takes this much damage (Yuddh rules) */
   reprisal?: number;

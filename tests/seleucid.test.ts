@@ -62,6 +62,42 @@ describe('Seleucid cards', () => {
   });
 });
 
+describe('Maurya batch 4', () => {
+  it('Sindhu Nauka ferries up to two ready units across, free, and lets them strike', () => {
+    const st = mkYuddh();
+    const p = st.players[0];
+    p.hand = ['m_sindhu_nauka']; p.kosha = 10;
+    p.support = [unit(40, 'n_padati', 0, 1, 2), unit(41, 'n_gaja', 0, 4, 5), unit(42, 'n_rathi', 0, 3, 2), unit(43, 'n_padati', 0, 1, 2, { canAct: false })];
+    expect(applyAction(st, { type: 'play', handIndex: 0 }).ok).toBe(true);
+    expect(st.front.owner).toBe(0);
+    expect(st.front.units.map(u => u.uid).sort()).toEqual([41, 42]);
+    expect(p.kosha).toBe(10 - CARDS.m_sindhu_nauka.cost);
+    st.players[1].support = [];
+    expect(applyAction(st, { type: 'attack', uid: 41, target: { kind: 'hq', owner: 1 } }).ok).toBe(true);
+  });
+  it('Sindhu Nauka cannot be played with nobody ready, or when the enemy holds the Yudhbhumi', () => {
+    const st = mkYuddh();
+    const p = st.players[0];
+    p.hand = ['m_sindhu_nauka']; p.kosha = 10; p.support = [];
+    expect(applyAction(st, { type: 'play', handIndex: 0 }).ok).toBe(false);
+    p.support = [unit(50, 'n_padati', 0, 1, 2)];
+    st.front.owner = 1; st.front.units = [unit(51, 'n_padati', 1, 1, 2)];
+    expect(applyAction(st, { type: 'play', handIndex: 0 }).ok).toBe(false);
+  });
+  it('Gaja Sandhi draws a card and restores 6; Takshashila draws and restores 2 (never above maximum)', () => {
+    const st = mkYuddh();
+    const p = st.players[0];
+    p.hq.hp = 10; p.hand = ['m_gaja_sandhi', 'm_takshashila']; p.kosha = 10; p.deck = ['n_padati', 'n_padati', 'n_padati'];
+    applyAction(st, { type: 'play', handIndex: 0 });
+    expect(p.hq.hp).toBe(16); expect(p.hand.length).toBe(2);
+    applyAction(st, { type: 'play', handIndex: 0 });
+    expect(p.hq.hp).toBe(18); expect(p.hand.length).toBe(2);
+    p.hq.hp = 23; p.hand = ['m_gaja_sandhi'];
+    applyAction(st, { type: 'play', handIndex: 0 });
+    expect(p.hq.hp).toBe(p.hq.maxHp);
+  });
+});
+
 describe('data files', () => {
   it('every deck in decks.json names existing cards, and expandDeck keeps order', () => {
     for (const id of ['training_ground', 'first_throne', 'indus_line']) {

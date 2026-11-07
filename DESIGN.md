@@ -17,6 +17,7 @@ Owner: Pon (directs the work, generates all art with AI image tools from prompts
 - **Seasons (Ritu):** Sharad (none), Varsha (mud: nothing advances and attacks in one turn), Grishma (ranged deal 1 less), Hemanta (+1 Kosha each turn). Chosen by the battle's seed.
 - **Dharma–Kuta meter** (−3..+3 under each Durg): fair melee kills +1 Dharma; hidden traps, poison and spies −1. At +3 the Durg strikes +1 harder; at −3 orders and Yantras cost 1 less.
 - **Yantras** are face-down traps that spring on their own trigger (when the enemy deploys, attacks your Durg, or attacks your unit).
+- **River boats** (Sindhu Nauka): up to two ready Rajya-line units cross to the Yudhbhumi free and may strike that turn.
 - **Pikes** (Seleucid Phalanx): a melee unit that advanced this turn and strikes it takes 2 extra damage.
 - Two rulesets exist: `'classic'` (the original prototype, replayed by the golden test) and `'yuddh'` (everything above, and all new work). New rule changes go behind `st.rules === 'yuddh'`.
 
@@ -25,7 +26,7 @@ Owner: Pon (directs the work, generates all art with AI image tools from prompts
 |---|---|---|---|
 | 0 | The Training Ground | Nanda border post (coached by Chanakya) | Done |
 | 1 | The First Throne, Pataliputra, c. 321 BCE | Nanda court (Dhana Nanda, elephants, gold) | Done, approved at Gate 1 |
-| 2 | The Indus Line, c. 305 BCE | Seleucus Nicator: pike phalanx, Companion cavalry, Cretan archers, stone-throwers | Built 7 Nov (6 of 10 batch 4 cards painted) |
+| 2 | The Indus Line, c. 305 BCE | Seleucus Nicator: pike phalanx, Companion cavalry, Cretan archers, stone-throwers | Built 7 Nov (all 10 batch 4 paintings in) |
 
 Not locked: any battle can be started from the campaign map; a laurel marks battles won, "NEXT" marks the next unwon one. Winning a battle offers the next one. The nine battles of the prototype (`src/campaign/missions.ts`) are the later campaign's skeleton; the agreed direction is cinematic briefings, mid-battle events and an original narrator voice (not an imitation of a real person).
 
@@ -43,7 +44,7 @@ Not locked: any battle can be started from the campaign map; a laurel marks batt
 
 ## Balance targets (AI "normal" vs AI "normal", 200 seeded games)
 - The First Throne: player side 55–80% (now ~57%, ~16 turns).
-- The Indus Line: player side 45–70% (now ~54%, ~15 turns). Deliberately harder than the first battle; a human beats the AI more often than the AI beats itself.
+- The Indus Line: player side 45–70% (now ~50%, ~15 turns). Deliberately harder than the first battle; a human beats the AI more often than the AI beats itself.
 
 ## Decisions log
 - 3 Nov 2026: web + TypeScript + Vite + PixiJS + GSAP; Google Play via wrapper in Phase 5; name "YUDDH: Rise of the Rajyas"; repo public.

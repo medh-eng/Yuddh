@@ -3,12 +3,10 @@
 *Updated at the end of each session (last: 7 Nov 2026). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
-- [ ] **Paint the four Maurya cards of batch 4** (prompts in `art/PROMPTS-BATCH4.md`): `m_sindhu_nauka`, `m_takshashila`, `m_gaja_sandhi`, `m_ashva_dhanurdhara`. They were not in the upload (only 6 Seleucid cards, 2 Durgs and the battlefield arrived). Upload to `art/source/cards/` named exactly so.
 - [ ] Play The Indus Line on the phone: is it fun and fair? Tell Claude if the pikes feel too harsh or the Seleucids too weak (balance is a JSON edit).
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
 
 ## Next for Claude
-- [ ] **When the four Maurya cards arrive:** move their entries from `pendingArt` to `yuddh` in `src/data/cards.json` (stats there are tentative; two need small new rules: Sindhu Nauka's free advance, Gaja Sandhi's draw/heal), run `npm run assets`, add them to the `indus_line` player deck in `src/data/decks.json`, re-run `npm test` (balance band 45–70%).
 - [ ] Morale / rout.
 - [ ] More cards toward ~120.
 - [ ] Search-based AI → **Gate 2**.
@@ -16,6 +14,7 @@
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
 
 ## Done (7 Nov 2026)
+- [x] Batch 4 complete: the four Maurya cards arrived mid-session and are in the game and in the Indus Line player deck: Sindhu Nauka (ferries 2 units across free, they may strike), Takshashila Scholars (draw + heal 2), Gaja Sandhi (draw + heal 6), Ashva Dhanurdhara (Vega mounted archer). Balance ~50%.
 - [x] UI polish round, all 11 items (commit d100210).
 - [x] Game data (cards, empires, decks, rule constants) moved into `src/data/*.json`; engine reads it; golden test unchanged.
 - [x] DESIGN.md, TASKS.md, README file-layout guide for AI agents.

@@ -401,6 +401,7 @@ export function canPlay(st: GameState, pIdx: PlayerIndex, handIdx: number, targe
   const c = CARDS[cardId];
   if (p.kosha < koshaCost(st, pIdx, c)) return { ok: false, reason: 'Not enough Kosha' };
   if (c.type === 'unit' && p.support.length >= 4) return { ok: false, reason: 'Rajya line is full' };
+  if (c.id === 'm_sindhu_nauka' && ferryable(st, pIdx).length === 0) return { ok: false, reason: 'No ready unit on your Rajya line can cross' };
   if (c.type === 'yantra' && p.yantras.length >= 2) return { ok: false, reason: 'You have two Yantras set' };
   if (c.target === 'enemyUnit') {
     if (!target || target.kind !== 'unit') return { ok: false, reason: 'Choose an enemy unit' };
@@ -409,6 +410,13 @@ export function canPlay(st: GameState, pIdx: PlayerIndex, handIdx: number, targe
     if (f.unit.kw.includes('dhuan') && !f.unit.smokeBroken) return { ok: false, reason: 'Hidden by Dhuan' };
   }
   return { ok: true };
+}
+
+/** units that Sindhu Nauka can ferry: ready, on the Rajya line, room and right to hold the Yudhbhumi; strongest first */
+function ferryable(st: GameState, pIdx: PlayerIndex): Unit[] {
+  if (st.front.owner !== null && st.front.owner !== pIdx) return [];
+  const room = 4 - st.front.units.length;
+  return st.players[pIdx].support.filter(u => u.canAct && !u.moved && !u.attacked).sort((a, b) => b.atk - a.atk).slice(0, Math.max(0, room));
 }
 
 /* ---------------- effects ---------------- */
@@ -435,6 +443,7 @@ function applyDeploy(st: GameState, pIdx: PlayerIndex, unit: Unit, line: Line): 
     case 'hillVolley':
       if (st.front.owner === other(pIdx)) [...st.front.units].forEach(u => damageUnit(st, other(pIdx), u.uid, 1));
       break;
+    case 'drawHeal': draw(st, pIdx, 1); p.hq.hp = Math.min(p.hq.maxHp, p.hq.hp + 2); break;
     case 'elephantBuff':
       allUnits(st, pIdx).forEach(x => { if (isElephant(x.unit)) { x.unit.atk += 1; x.unit.hp += 1; x.unit.maxHp += 1; } });
       break;
@@ -457,6 +466,17 @@ function applyOrder(st: GameState, pIdx: PlayerIndex, cardId: string, target?: T
     case 's_agni': damageUnit(st, t.owner, t.uid, 5); break;
     case 's_chakravyuha': damageAll(st, other(pIdx), 2); break;
     case 'nd_nanda_kosha': p.kosha = Math.min(p.maxKosha + 2, p.kosha + 3); break;
+    case 'm_sindhu_nauka':
+      // river boats: up to two ready units cross free and may strike at once
+      ferryable(st, pIdx).slice(0, 2).forEach(u => {
+        p.support.splice(p.support.indexOf(u), 1);
+        if (st.front.owner === null) st.front.owner = pIdx;
+        st.front.units.push(u);
+        u.moved = true; u.surge = st.turn;
+        log(st, `${u.name} crosses the river to the Yudhbhumi.`, pIdx);
+        pushEvent(st, { t: 'move', owner: pIdx, uid: u.uid });
+      });
+      break;
     case 'm_garuda_vyuha': allUnits(st, pIdx).forEach(x => { x.unit.atk += 1; x.unit.surge = st.turn; }); break;
     case 'm_makara_vyuha':
       if (st.front.owner === pIdx && st.front.units.length) st.front.units.forEach(u => { u.hp += 2; u.maxHp += 2; });
@@ -470,6 +490,7 @@ function applyOrder(st: GameState, pIdx: PlayerIndex, cardId: string, target?: T
       const c = CARDS[cardId];
       if (c.power && t && t.kind === 'unit') damageUnit(st, t.owner, t.uid, c.power);
       if (c.hqDamage && t && t.kind === 'unit') damageHQ(st, t.owner, c.hqDamage);
+      if (c.heal) p.hq.hp = Math.min(p.hq.maxHp, p.hq.hp + c.heal);
       if (c.draw) draw(st, pIdx, c.draw);
       if (c.dharma) shiftDharma(st, pIdx, c.dharma, 'an honest account');
     }

@@ -9,7 +9,7 @@
  "enemy": ["n_padati*2","n_dhanurdhar*3","n_rakshak*2","n_ashvarohi*2","n_rathi","nd_ratha_dal","n_gaja","nd_gaja_sena","n_maharathi*2","n_senapati","nd_dhana_nanda","nd_amatya_rakshasa","nd_nanda_kosha","nd_kashtha_prakara","n_aakraman*2","n_sena_bhojan","n_visha_baan","y_pratikar","s_agni","s_chakravyuha"]
 },
 "indus_line": {
- "player": ["n_padati","m_padati*2","n_dhanurdhar*2","n_ashvarohi*2","n_rakshak","n_rathi","n_maharathi","n_atirathi","n_gaja","m_hasti*2","n_senapati","m_gudhchar","m_chanakya","m_chandragupta","m_arthashastra","m_parvataka","m_raja_dhwaja","m_shalya_vaidya","m_hastipaka","m_garuda_vyuha","m_makara_vyuha","n_aakraman*2","n_yudh_niti","y_kavach","y_pratikar","s_agni","s_chakravyuha"],
+ "player": ["n_padati","m_padati*2","n_dhanurdhar*2","n_ashvarohi*2","n_rakshak","n_rathi","n_maharathi","n_atirathi","n_gaja","m_hasti*2","n_senapati","m_gudhchar","m_chanakya","m_chandragupta","m_arthashastra","m_parvataka","m_raja_dhwaja","m_shalya_vaidya","m_hastipaka","m_garuda_vyuha","m_makara_vyuha","m_takshashila","m_ashva_dhanurdhara","m_sindhu_nauka","m_gaja_sandhi","n_aakraman*2","n_yudh_niti","y_kavach","y_pratikar","s_agni","s_chakravyuha"],
  "enemy": ["n_padati","se_toxotai*3","se_phalanx*3","n_rakshak","se_hetairoi*2","n_maharathi","n_gaja","se_seleucus","n_senapati","se_lithobolos*2","se_megasthenes","n_aakraman*2","n_sena_bhojan","y_pratikar","s_agni","s_chakravyuha"]
 }
 }

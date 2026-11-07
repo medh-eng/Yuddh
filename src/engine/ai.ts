@@ -106,6 +106,8 @@ function orderValue(st: GameState, pIdx: PlayerIndex, entry: PlayOption): number
     const dmg = entry.c.power ?? (id === 's_agni' ? 5 : 2);
     return (dmg >= v.hp ? unitValue(v) + 2 : dmg * 0.6) + (entry.c.hqDamage ?? 0) * 0.5;
   }
+  if (id === 'm_sindhu_nauka') return st.front.owner !== other(pIdx) && p.support.filter(u => u.canAct && !u.moved).length >= 1 ? 6.5 : 0;
+  if (id === 'm_gaja_sandhi') return (p.hq.maxHp - p.hq.hp) >= 6 ? 8 : (p.hand.length <= 5 ? 3 : 0);
   if (id === 'se_megasthenes') return p.hand.length <= 6 ? 6 : 2;
   if (id === 's_chakravyuha') {
     const n = allUnits(st, enemy).length;
