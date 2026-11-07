@@ -92,9 +92,7 @@
  {"id":"sa_ashva_dhanurdhar","name":"Saka Horse-Archers","sub":"Mounted Archer","empire":"neutral","type":"unit","cost":2,"op":1,"atk":2,"hp":1,"range":"ranged","kw":["veg"],"glyph":"श","text":"Vega. Steppe bowmen: cheap, fast and fragile.","rarity":"common"},
  {"id":"sa_bhalladhari","name":"Saka Lancers","sub":"Cavalry","empire":"neutral","type":"unit","cost":4,"op":1,"atk":3,"hp":5,"range":"melee","kw":["veg"],"glyph":"भ","text":"Vega. Armoured horse and long lances from the Western steppe.","rarity":"rare"},
  {"id":"sa_marubhumi","name":"Marubhumi Toofan","sub":"Desert Storm","empire":"neutral","type":"order","cost":3,"glyph":"तू","text":"Deal 1 damage to every enemy unit.","rarity":"rare","damageAll":1},
- {"id":"sa_mudra","name":"Silver Mudra","sub":"Caravan Wealth","empire":"neutral","type":"order","cost":1,"kosha":2,"draw":1,"glyph":"मु","text":"Gain 2 Kosha and draw a card.","rarity":"common"}
-],
-"pendingArt": [
+ {"id":"sa_mudra","name":"Silver Mudra","sub":"Caravan Wealth","empire":"neutral","type":"order","cost":1,"kosha":2,"draw":1,"glyph":"मु","text":"Gain 2 Kosha and draw a card.","rarity":"common"},
  {"id":"na_ganapati_naga","name":"Ganapati Naga","sub":"Naga King","empire":"neutral","type":"unit","cost":6,"op":2,"atk":4,"hp":6,"range":"melee","kw":["raksha"],"glyph":"ग","deploy":"buffLine","text":"Raksha. Deploy — your other units in this line get +1 attack.","rarity":"legendary"},
  {"id":"na_nagasena","name":"Nagasena","sub":"Naga King","empire":"neutral","type":"unit","cost":4,"op":1,"atk":3,"hp":4,"range":"melee","glyph":"ना","deploy":"draw1","text":"Deploy — draw a card.","rarity":"rare"},
  {"id":"na_achyuta","name":"Achyuta","sub":"King of Ahichchhatra","empire":"neutral","type":"unit","cost":4,"op":1,"atk":3,"hp":3,"range":"melee","kw":["veg"],"glyph":"अ","text":"Vega. The first of the three kings to take the field.","rarity":"rare"},
@@ -102,5 +100,8 @@
  {"id":"na_dhanurdhar","name":"Naga Dhanurdhar","sub":"Archer","empire":"neutral","type":"unit","cost":2,"op":1,"atk":1,"hp":3,"range":"ranged","glyph":"ध","text":"Ranged. Forest archers who shoot from behind the clan shields.","rarity":"common"},
  {"id":"na_sarpa_vish","name":"Sarpa Vish","sub":"Serpent Venom","empire":"neutral","type":"order","cost":3,"target":"enemyUnit","power":3,"dharma":-1,"glyph":"वि","text":"Deal 3 damage to an enemy unit. Venom is Kuta: one step toward Kuta.","rarity":"rare"},
  {"id":"g_veena","name":"Veena","sub":"The King's Music","empire":"gupta","type":"order","cost":2,"draw":1,"kosha":1,"dharma":1,"glyph":"वी","text":"Draw a card and gain 1 Kosha. The warrior-king is also a poet: one step toward Dharma.","rarity":"rare"}
+],
+"pendingArt": [
+
 ]
 }

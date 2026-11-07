@@ -16,7 +16,7 @@ import { audio } from '../audio';
 import { loadArt, loadBattlefield } from '../../assets/manifest';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
-type TabId = EmpireId | 'nanda' | 'seleucid';
+type TabId = EmpireId | 'nanda' | 'seleucid' | 'naga';
 const TABS: { id: TabId; name: string; ground: string; place: string }[] = [
   { id: 'maurya', name: 'Maurya', ground: 'pataliputra', place: 'Pataliputra' },
   { id: 'gupta', name: 'Gupta', ground: 'ujjain', place: 'Ujjain' },
@@ -25,6 +25,7 @@ const TABS: { id: TabId; name: string; ground: string; place: string }[] = [
   { id: 'rajput', name: 'Rajput', ground: 'tarain', place: 'Tarain' },
   { id: 'nanda', name: 'Nanda', ground: 'pataliputra', place: 'Pataliputra' },
   { id: 'seleucid', name: 'Seleucid', ground: 'indus', place: 'the Indus' },
+  { id: 'naga', name: 'Naga', ground: 'padmavati', place: 'Padmavati' },
   { id: 'neutral', name: 'Neutral', ground: 'title', place: 'any field' }
 ];
 
@@ -48,7 +49,7 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
   head.addChild(shade, kicker, name, line);
 
   // the Nanda court's cards are neutral in the rules but get their own page
-  const cards = (id: TabId) => Object.values(CARDS).filter(c => id === 'nanda' ? c.id.startsWith('nd_') : id === 'seleucid' ? c.id.startsWith('se_') : c.empire === id && !c.id.startsWith('nd_') && !c.id.startsWith('se_')).sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name));
+  const cards = (id: TabId) => Object.values(CARDS).filter(c => id === 'nanda' ? c.id.startsWith('nd_') : id === 'seleucid' ? c.id.startsWith('se_') : id === 'naga' ? c.id.startsWith('na_') : c.empire === id && !c.id.startsWith('nd_') && !c.id.startsWith('se_') && !c.id.startsWith('na_')).sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name));
 
   /** How to lay out `n` cards: as large as possible in one or two rows when they all fit
       on one page, otherwise two rows of the standard size, page by page. */
@@ -106,14 +107,15 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
 
   function drawHead(): void {
     const t = TABS[tab], ph = view.phone, W = view.w;
-    const eid: EmpireId = t.id === 'nanda' || t.id === 'seleucid' ? 'neutral' : t.id;
+    const eid: EmpireId = t.id === 'nanda' || t.id === 'seleucid' || t.id === 'naga' ? 'neutral' : t.id;
     const st = EMPIRE_STYLE[eid];
     const emp = EMPIRES[eid];
     kicker.style.fontSize = Math.round(20 * view.ui); kicker.position.set(ph ? 60 : 100, ph ? 12 : 40);
-    name.text = t.id === 'nanda' ? 'The Nanda court · Pataliputra' : t.id === 'seleucid' ? 'The Seleucid host · the Indus' : t.id === 'neutral' ? 'Neutral cards' : `${emp.name} · ${emp.capital}`;
+    name.text = t.id === 'nanda' ? 'The Nanda court · Pataliputra' : t.id === 'seleucid' ? 'The Seleucid host · the Indus' : t.id === 'naga' ? 'The Naga kings · Padmavati' : t.id === 'neutral' ? 'Neutral cards' : `${emp.name} · ${emp.capital}`;
     name.style.fontSize = ph ? 54 : 72; name.position.set(ph ? 56 : 96, ph ? 38 : 70);
     line.text = t.id === 'nanda' ? 'Dhana Nanda, his minister, his elephants and his gold: the enemy of The First Throne.'
       : t.id === 'seleucid' ? 'Seleucus, his phalanx, his Companion cavalry and his catapults: the enemy of The Indus Line.'
+      : t.id === 'naga' ? 'Ganapati Naga, Nagasena, Achyuta and their clan warriors: the enemy of The Digvijaya.'
       : t.id === 'neutral' ? 'Soldiers, orders and hidden Yantras that any empire may take to war.' : `${st.material} frame. ${emp.passive}`;
     line.style.fontSize = ph ? 26 : 24; line.style.wordWrapWidth = W - (ph ? 120 : 500);
     line.position.set(ph ? 60 : 100, ph ? 100 : 156);

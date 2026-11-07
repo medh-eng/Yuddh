@@ -8,6 +8,7 @@ import type { Scenario } from './scenario';
 import { TUTORIAL, tutorialDone } from './tutorial';
 import { FIRST_THRONE_SCENARIO } from './firstThrone';
 import { INDUS_LINE_SCENARIO } from './indusLine';
+import { DIGVIJAYA_SCENARIO } from './digvijaya';
 import { GOLDEN_AGE_SCENARIO } from './goldenAge';
 
 export interface CampaignNode {
@@ -34,6 +35,7 @@ export const MAURYA_CAMPAIGN: CampaignNode[] = [
   { scenario: INDUS_LINE_SCENARIO, face: 'se_seleucus', blurb: 'Meet Seleucus at the river.' }
 ];
 export const GUPTA_CAMPAIGN: CampaignNode[] = [
+  { scenario: DIGVIJAYA_SCENARIO, face: 'na_ganapati_naga', blurb: 'Break the Naga kings of the Ganges plain.' },
   { scenario: GOLDEN_AGE_SCENARIO, face: 'sa_rudrasimha', blurb: 'Take Ujjain from the Satraps.' }
 ];
 

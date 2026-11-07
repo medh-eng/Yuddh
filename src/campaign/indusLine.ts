@@ -54,7 +54,7 @@ export const INDUS_LINE_SCENARIO: Scenario = {
   winText: turn => `Seleucus asks for terms in turn ${turn}. The Indus becomes the border, and five hundred elephants cross it westward.`,
   loseText: 'The pikes hold the river. Seleucus keeps the western provinces, and Chanakya begins again.',
   goLabel: 'To battle',
-  nextId: 'golden_age',
-  nextLabel: 'The Golden Age',
+  nextId: 'digvijaya',
+  nextLabel: 'The Digvijaya',
   game: seed => indusLineGame(seed, 'normal')
 };

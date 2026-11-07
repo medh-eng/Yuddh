@@ -3,8 +3,7 @@
    the allied Naga kings (Ganapati Naga, Nagasena, Achyuta) at Padmavati,
    c. 340 CE (the Allahabad Pillar names them among the kings of Aryavarta
    he "uprooted"). Decks are in src/data/decks.json ("digvijaya").
-   DRAFT: move to src/campaign/ when the batch 6 paintings are in
-   (see art/PROMPTS-BATCH6.md). Simulated at ~50% for the player side.
+   Simulated at ~50% for the player side. Batch 6 paintings: art/PROMPTS-BATCH6.md.
    Naga: cheap clan infantry and shielded archers, three named kings,
    elephants, venom (Sarpa Vish, a Kuta card). Gupta: Samudragupta's
    +1 attack to every unit, Veena (draw, Kosha, Dharma), Ashwamedha.
@@ -54,6 +53,8 @@ export const DIGVIJAYA_SCENARIO: Scenario = {
   music: { briefing: 'music_gupta_briefing', calm: 'music_gupta_calm', intense: 'music_gupta_intense' },
   winText: turn => `Ganapati Naga falls in turn ${turn}. The Allahabad Pillar will say the kings of Aryavarta were uprooted, and Samudragupta will turn south.`,
   loseText: 'The Naga clans close ranks in the forest. The march of conquest is put off for a generation.',
+  nextId: 'golden_age',
+  nextLabel: 'The Golden Age',
   goLabel: 'To battle',
   game: seed => digvijayaGame(seed, 'normal')
 };

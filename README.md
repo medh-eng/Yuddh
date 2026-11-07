@@ -24,7 +24,7 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 | A card's stats, cost, text, keywords; an empire's name or passive | `src/data/cards.json` (`yuddh` = new cards, `classic` = the prototype's 50, which the golden test replays: do not touch; `pendingArt` = designed but unpainted, not loaded) |
 | What is in a battle's decks (`"id*3"` = three copies; order matters) | `src/data/decks.json` |
 | Rank names, seasons and their rules, Dharma limit, charging classes, Kuta cards | `src/data/rules.json` |
-| A battle's story, Durgs, AI level, start Kosha / Durg health | `src/campaign/<battle>.ts` (`firstThrone.ts`, `indusLine.ts`, `goldenAge.ts`, `tutorial.ts`) |
+| A battle's story, Durgs, AI level, start Kosha / Durg health | `src/campaign/<battle>.ts` (`firstThrone.ts`, `indusLine.ts`, `digvijaya.ts`, `goldenAge.ts`, `tutorial.ts`) |
 | The campaigns, the order of their battles, and win tracking | `src/campaign/campaign.ts` |
 | A new *kind* of rule or order effect | `src/engine/rules.ts` (behind `st.rules === 'yuddh'`), then the AI's value in `src/engine/ai.ts`, then the reading panel in `src/game/ui/glossary.ts` |
 | How a screen looks | `src/game/scenes/` (title, campaign, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
@@ -33,7 +33,7 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 ```
 src/data/          cards.json, decks.json, rules.json (all balance), index.ts (typed access)
 src/engine/        rules engine: types, lookups (cards.ts), rules, AI (no screen code)
-src/campaign/      battles (tutorial, firstThrone, indusLine, goldenAge), campaign.ts, the prototype's nine missions (missions.ts, data only)
+src/campaign/      battles (tutorial, firstThrone, indusLine, digvijaya, goldenAge), campaign.ts, the prototype's nine missions (missions.ts, data only)
 src/meta/          Kirti and per-card upgrades (saved in the browser)
 src/game/          PixiJS renderer: stage, screen modes, theme, audio, scenes (title, campaign, battle, gallery, preview)
 src/game/cards/    card painter (frames, arch window, coins, badges), board views, 3D card flips

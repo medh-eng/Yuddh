@@ -144,8 +144,9 @@ describe('data files', () => {
     expect(MAURYA_CAMPAIGN.map(n => n.scenario.id)).toEqual(['training_ground', 'first_throne', 'indus_line']);
     expect(MAURYA_CAMPAIGN[0].scenario.nextId).toBe('first_throne');
     expect(MAURYA_CAMPAIGN[1].scenario.nextId).toBe('indus_line');
-    expect(INDUS_LINE_SCENARIO.nextId).toBe('golden_age');
+    expect(INDUS_LINE_SCENARIO.nextId).toBe('digvijaya');
     expect(CAMPAIGNS.map(c => c.id)).toEqual(['maurya', 'gupta']);
+    expect(scenarioById('digvijaya')).toBeDefined();
     expect(scenarioById('golden_age')).toBeDefined();
   });
 });
