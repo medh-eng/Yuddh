@@ -40,7 +40,7 @@ for (const j of jobs) {
 
 /* ---------------- sounds ---------------- */
 /** other names a file may arrive under → the game's name for it */
-const ALIAS = { shankh: 'conch', nagara: 'drum', dhol: 'drum', horse_gallop: 'gallop', horsegallop: 'gallop', galloping: 'gallop', sand_wind: 'sandGust', sandwind: 'sandGust', sand_gust: 'sandGust', wind_gust: 'sandGust', gust: 'sandGust' };
+const ALIAS = { shankh: 'conch', nagara: 'drum', dhol: 'drum', horse_gallop: 'gallop', 'horse-gallop': 'gallop', 'sand-wind-gust': 'sandGust', 'wind-gust': 'sandGust', horsegallop: 'gallop', galloping: 'gallop', sand_wind: 'sandGust', sandwind: 'sandGust', sand_gust: 'sandGust', wind_gust: 'sandGust', gust: 'sandGust' };
 /** name: [longest length s, fade-out s, one hit only, loudness dBFS RMS] */
 const SHAPE = {
   conch: [2.6, 0.9, false, -20], drum: [1.1, 0.5, true, -15], clash: [0.6, 0.15, true, -16],

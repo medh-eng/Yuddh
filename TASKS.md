@@ -3,7 +3,6 @@
 *Updated at the end of each session (last: 7 Nov 2026). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
-- [ ] **Upload the 3 Gupta music pieces and the 2 sounds** (they did not reach the repo on 7 Nov): `music_gupta_briefing`, `music_gupta_calm`, `music_gupta_intense`, and a horse gallop and a sand-wind gust (any of the names `gallop`, `horse_gallop`, `sandGust`, `sand_wind`, `wind_gust` work) into `art/source/sfx/`. The game already plays them where they belong; until then it uses the standard music and synthesised stand-ins.
 - [ ] Play The Golden Age (it follows The Indus Line, or open Campaign → The Golden Age).
 - [ ] Play The Indus Line on the phone: is it fun and fair? Tell Claude if the pikes feel too harsh or the Seleucids too weak (balance is a JSON edit).
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
@@ -16,7 +15,7 @@
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
 
 ## Done (7 Nov 2026)
-- [x] **The Golden Age** (Gupta campaign, battle 1): Chandragupta II vs Rudrasimha III at Ujjain. 11 batch-5 paintings in (Ujjain and Satrap Durgs, 5 Satrap cards, 4 Gupta cards); Marubhumi Toofan (damage every enemy unit), Silver Mudra (Kosha + card), Navaratna, Kalidasa, Iron Pillar, Vikramaditya; second campaign on the map (tabs), The Indus Line now leads into it; per-battle music slot and gallop / sand-gust sound hooks. Balance ~53%.
+- [x] **The Golden Age** (Gupta campaign, battle 1): Chandragupta II vs Rudrasimha III at Ujjain. 11 batch-5 paintings in (Ujjain and Satrap Durgs, 5 Satrap cards, 4 Gupta cards); Marubhumi Toofan (damage every enemy unit), Silver Mudra (Kosha + card), Navaratna, Kalidasa, Iron Pillar, Vikramaditya; second campaign on the map (tabs), The Indus Line now leads into it; Gupta music (3 pieces, ~3 min each) and the horse-gallop and sand-gust sounds delivered and converted (the game uses them in The Golden Age). Balance ~53%.
 - [x] Batch 4 complete: the four Maurya cards arrived mid-session and are in the game and in the Indus Line player deck: Sindhu Nauka (ferries 2 units across free, they may strike), Takshashila Scholars (draw + heal 2), Gaja Sandhi (draw + heal 6), Ashva Dhanurdhara (Vega mounted archer). Balance ~50%.
 - [x] UI polish round, all 11 items (commit d100210).
 - [x] Game data (cards, empires, decks, rule constants) moved into `src/data/*.json`; engine reads it; golden test unchanged.

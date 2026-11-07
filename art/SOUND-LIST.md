@@ -44,7 +44,7 @@ Short is better: most should be under 1 second. Leave no silence at the start.
 | `victory` | Conch plus a short triumphant phrase on shehnai or brass | 2–4 s | |
 | `defeat` | A slow, falling phrase on bansuri or a single deep drum | 2–3 s | |
 
-## Added for The Golden Age (not yet delivered)
+## Added for The Golden Age (delivered 7 Nov 2026)
 
 | File name | What it is | Where it plays |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ Short is better: most should be under 1 second. Leave no silence at the start.
 | `sandGust` (also accepted: `sand_wind`, `wind_gust`) | A gust of wind and sand, 1–1.5 s | The card Marubhumi Toofan |
 | `music_gupta_briefing`, `music_gupta_calm`, `music_gupta_intense` | Gupta campaign music (prompts in `art/PROMPTS-BATCH5.md`) | The Golden Age's briefing, early battle and late battle; other battles keep the standard pieces |
 
-Each is optional and replaces a stand-in (or the standard music) the moment its file is uploaded.
+All five are in the game now (the file names `horse-gallop` and `sand-wind-gust` are accepted too).
 
 ## Music (6 pieces)
 

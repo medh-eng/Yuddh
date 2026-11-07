@@ -13,12 +13,17 @@
   "elephant",
   "fire",
   "fortHit",
+  "gallop",
   "march",
   "music_battle_calm",
   "music_battle_intense",
   "music_briefing",
   "music_defeat",
+  "music_gupta_briefing",
+  "music_gupta_calm",
+  "music_gupta_intense",
   "music_title",
   "music_victory",
+  "sandGust",
   "yantra"
 ]
