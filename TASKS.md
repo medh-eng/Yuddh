@@ -33,3 +33,9 @@
 ## Done 7 Nov (evening)
 - Share image + icons (art/source/brand/ masters; public/icons, og-image.jpg; tags in index.html, manifest).
 - Robust painting loader: retries, throttle, stall guard, in-place repaint of placeholder faces (phone report: glyph-only cards, blank campaign map). Verified by aborting 2 requests each for three paintings in headless Chrome: all still appeared.
+
+## Next: The Digvijaya (Gupta battle 2), waiting for paintings
+- Designed and balanced (~50% player win over 300 simulated games, both sides "normal"). Samudragupta vs the Naga kings Ganapati Naga, Nagasena, Achyuta at Padmavati, c. 340 CE.
+- 7 new cards sit in `cards.json` "pendingArt" (na_ganapati_naga, na_nagasena, na_achyuta, na_gana, na_dhanurdhar, na_sarpa_vish, g_veena); draft scenario, deck entry and cards are in `art/digvijaya-draft/`.
+- **Pon's job:** paint the 9 images in `art/PROMPTS-BATCH6.md` (battlefield padmavati, durg_padmavati, 6 Naga cards, g_veena) and upload to `art/source/`.
+- **Claude then:** `npm run assets`; move the 7 cards to "yuddh"; add `na_sarpa_vish` to `kutaCards` in rules.json; add the deck entry; move digvijaya.ts to src/campaign/; add the map node to GUPTA_CAMPAIGN and chain The Golden Age → The Digvijaya (nextId); add tests/digvijaya.test.ts (copy goldenAge.test.ts, band 45–70%); playtest; update README/DESIGN.

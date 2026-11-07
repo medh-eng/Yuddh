@@ -1,0 +1,113 @@
+[
+ {
+  "id": "na_ganapati_naga",
+  "name": "Ganapati Naga",
+  "sub": "Naga King",
+  "empire": "neutral",
+  "type": "unit",
+  "cost": 6,
+  "op": 2,
+  "atk": 4,
+  "hp": 6,
+  "range": "melee",
+  "kw": [
+   "raksha"
+  ],
+  "glyph": "ग",
+  "deploy": "buffLine",
+  "text": "Raksha. Deploy — your other units in this line get +1 attack.",
+  "rarity": "legendary"
+ },
+ {
+  "id": "na_nagasena",
+  "name": "Nagasena",
+  "sub": "Naga King",
+  "empire": "neutral",
+  "type": "unit",
+  "cost": 4,
+  "op": 1,
+  "atk": 3,
+  "hp": 4,
+  "range": "melee",
+  "glyph": "ना",
+  "deploy": "draw1",
+  "text": "Deploy — draw a card.",
+  "rarity": "rare"
+ },
+ {
+  "id": "na_achyuta",
+  "name": "Achyuta",
+  "sub": "King of Ahichchhatra",
+  "empire": "neutral",
+  "type": "unit",
+  "cost": 4,
+  "op": 1,
+  "atk": 3,
+  "hp": 3,
+  "range": "melee",
+  "kw": [
+   "veg"
+  ],
+  "glyph": "अ",
+  "text": "Vega. The first of the three kings to take the field.",
+  "rarity": "rare"
+ },
+ {
+  "id": "na_gana",
+  "name": "Naga Gana",
+  "sub": "Clan Warriors",
+  "empire": "neutral",
+  "type": "unit",
+  "cost": 2,
+  "op": 1,
+  "atk": 2,
+  "hp": 2,
+  "range": "melee",
+  "glyph": "ग",
+  "text": "Serpent-clan spearmen of the Padmavati country.",
+  "rarity": "common"
+ },
+ {
+  "id": "na_dhanurdhar",
+  "name": "Naga Dhanurdhar",
+  "sub": "Archer",
+  "empire": "neutral",
+  "type": "unit",
+  "cost": 2,
+  "op": 1,
+  "atk": 1,
+  "hp": 3,
+  "range": "ranged",
+  "glyph": "ध",
+  "text": "Ranged. Forest archers who shoot from behind the clan shields.",
+  "rarity": "common"
+ },
+ {
+  "id": "na_sarpa_vish",
+  "name": "Sarpa Vish",
+  "sub": "Serpent Venom",
+  "empire": "neutral",
+  "type": "order",
+  "cost": 3,
+  "target": "enemyUnit",
+  "power": 3,
+  "dharma": -1,
+  "glyph": "वि",
+  "text": "Deal 3 damage to an enemy unit. Venom is Kuta: one step toward Kuta.",
+  "rarity": "rare"
+ },
+ {
+  "id": "g_veena",
+  "name": "Veena",
+  "sub": "The King's Music",
+  "empire": "gupta",
+  "type": "order",
+  "cost": 2,
+  "draw": 1,
+  "kosha": 1,
+  "dharma": 1,
+  "glyph": "वी",
+  "text": "Draw a card and gain 1 Kosha. The warrior-king is also a poet: one step toward Dharma.",
+  "rarity": "rare"
+ }
+]
