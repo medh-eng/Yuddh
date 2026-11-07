@@ -29,3 +29,7 @@
 
 ## Earlier
 - Phase 0 (foundation), Phase 1 (the look, approved 4 Nov), Phase 2 so far: reading panels, damage shields, promotion, trample, seasons, tutorial, batch 3 cards, Dharma–Kuta meter. Details in `CLAUDE.md` and the git log.
+
+## Done 7 Nov (evening)
+- Share image + icons (art/source/brand/ masters; public/icons, og-image.jpg; tags in index.html, manifest).
+- Robust painting loader: retries, throttle, stall guard, in-place repaint of placeholder faces (phone report: glyph-only cards, blank campaign map). Verified by aborting 2 requests each for three paintings in headless Chrome: all still appeared.

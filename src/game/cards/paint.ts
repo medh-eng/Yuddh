@@ -6,7 +6,7 @@
    ============================================================ */
 import { Texture } from 'pixi.js';
 import { CARDS, type CardDef, type EmpireId } from '../../engine';
-import { artImage, hasArt } from '../../assets/manifest';
+import { artImage, hasArt, whenArt } from '../../assets/manifest';
 import { EMPIRE_STYLE } from '../theme';
 
 const TITLE = "'Cinzel', Georgia, serif";
@@ -20,6 +20,17 @@ export const TOKEN_W = 340, TOKEN_H = 420;
 
 /** a painting that exists but has not loaded yet: draw a placeholder now, but do not keep it */
 const notReady = (id: string) => hasArt(id) && !artImage(id);
+
+/** a face drawn with a placeholder is repainted in place the moment its painting arrives */
+function healLater(id: string, cv: HTMLCanvasElement, t: Texture, redraw: () => Texture): void {
+  whenArt(id, () => {
+    const fresh = redraw().source.resource as CanvasImageSource;
+    const g = cv.getContext('2d')!;
+    g.clearRect(0, 0, cv.width, cv.height);
+    g.drawImage(fresh, 0, 0);
+    t.source.update();
+  });
+}
 
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
 function shade(n: number, f: number): string {
@@ -299,6 +310,7 @@ export function cardFace(id: string, upgrade = 0, cost?: number): Texture {
 
   const t = Texture.from(cv);
   if (!notReady(id)) faceCache.set(key, t);
+  else healLater(id, cv, t, () => cardFace(id, upgrade, cost));
   return t;
 }
 
@@ -379,6 +391,7 @@ export function tokenFace(id: string, owner: 0 | 1, plate = true): Texture {
   if ((c.op ?? 1) !== 1) coin(g, W - 40, 44, 32, String(c.op ?? 0), 'bronze');
   const t = Texture.from(cv);
   if (!notReady(id)) tokenCache.set(key, t);
+  else healLater(id, cv, t, () => tokenFace(id, owner, plate));
   return t;
 }
 
@@ -408,5 +421,6 @@ export function durgFace(artId: string, owner: 0 | 1): Texture {
   archPath(g, ax, ay, aw, ah); g.lineWidth = 4; g.strokeStyle = '#e7c46e'; g.stroke();
   const t = Texture.from(cv);
   if (!notReady(artId)) durgCache.set(key, t);
+  else healLater(artId, cv, t, () => durgFace(artId, owner));
   return t;
 }

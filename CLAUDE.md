@@ -50,6 +50,7 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 - Layer order in battle: hand, arrow, damage shields, reading panels and fx are re-added above the meters and season chip; tips and the coach layer go above those.
 - Fullscreen: `src/game/fullscreen.ts`; the second round button in battle; a phone's first tap goes fullscreen once (main.ts); `public/manifest.webmanifest` (landscape, fullscreen).
 - Combat feedback (KARDS-like): while aiming a unit, red damage shields show what each side would take (`combatFx`, above the arrow); hits pop a red shield with the number, the struck unit flashes red and flinches, melee raises dust.
+- **Paintings load defensively (manifest.ts).** Max 6 requests at once, each retried 5× with a pause, a 15 s stall guard, `decode()` before use. Screens never wait for them for long (`orTimeout`: map 4 s, battle 20 s). A face painted with the placeholder glyph is repainted in place when its painting arrives (`healLater` in paint.ts via `whenArt`). Cause of the 7 Nov report (some cards showing only a glyph, a blank campaign map): one failed or stalled request used to be swallowed for good.
 - Music needs a user gesture; `audio.playMusic()` before unlock just records the wish. `audio.unlock()` runs on every pointerdown and retries a blocked play.
 
 ## Status (7 Nov 2026)

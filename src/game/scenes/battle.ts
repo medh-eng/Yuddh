@@ -31,7 +31,7 @@ import { DurgView, HandCard, TOKEN_DH, TOKEN_DW, TokenView, drawDiyas, stopTween
 import { makeButton } from '../ui/button';
 import { glossPanel, inspectOverlay, type InspectExtra } from '../ui/inspect';
 import { glossFor } from '../ui/glossary';
-import { battlefieldUrl, loadArt, loadBattlefield } from '../../assets/manifest';
+import { battlefieldUrl, loadArt, loadBattlefield, orTimeout } from '../../assets/manifest';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
 /* ---------------- layout ---------------- */
@@ -1690,7 +1690,7 @@ export function battleArt(sc: Scenario = FIRST_THRONE_SCENARIO): string[] {
 
 /** preload the battlefield and paintings so the board never appears without them */
 export async function preloadBattle(sc: Scenario = FIRST_THRONE_SCENARIO): Promise<void> {
-  await Promise.all([loadBattlefield(sc.battlefield), loadArt(battleArt(sc))]);
+  await orTimeout(Promise.all([loadBattlefield(sc.battlefield), loadArt(battleArt(sc))]), 20000);
 }
 
 export type { Sfx };

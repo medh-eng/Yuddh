@@ -11,7 +11,7 @@ import { view } from '../view';
 import { cardFace, FACE_H, FACE_W } from '../cards/paint';
 import { makeButton } from '../ui/button';
 import { audio } from '../audio';
-import { loadArt, loadBattlefield } from '../../assets/manifest';
+import { loadArt, loadBattlefield, orTimeout } from '../../assets/manifest';
 import { battlesWon, CAMPAIGNS, currentCampaign, type Campaign } from '../../campaign/campaign';
 import type { Scenario } from '../../campaign/scenario';
 import { destroyTree, type Scene, type Stage } from '../stage';
@@ -34,7 +34,7 @@ export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: ()
 
   async function draw(): Promise<void> {
     const list = cur.nodes;
-    await loadArt(list.map(n => n.face));
+    await orTimeout(loadArt(list.map(n => n.face)), 4000); // late paintings fill in by themselves
     if (!alive) return;
     body.removeChildren().forEach(c => destroyTree(c as Container));
     nodes.length = 0; tabs.length = 0; ids = list.map(n => n.scenario.id);
