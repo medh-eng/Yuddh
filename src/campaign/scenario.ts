@@ -29,6 +29,8 @@ export interface Scenario {
   /** the battle that follows in the campaign, and the label of the victory button that leads to it */
   nextId?: string;
   nextLabel?: string;
+  /** this battle's own music (files named music_<x> in art/source/sfx); any piece not delivered falls back to the standard one */
+  music?: { briefing?: string; calm?: string; intense?: string };
   /** a guided battle: the coach explains each step */
   coached?: boolean;
 }

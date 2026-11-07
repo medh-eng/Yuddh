@@ -30,6 +30,9 @@ Owner: Pon (directs the work, generates all art with AI image tools from prompts
 
 Not locked: any battle can be started from the campaign map; a laurel marks battles won, "NEXT" marks the next unwon one. Winning a battle offers the next one. The nine battles of the prototype (`src/campaign/missions.ts`) are the later campaign's skeleton; the agreed direction is cinematic briefings, mid-battle events and an original narrator voice (not an imitation of a real person).
 
+## Next campaign: The Golden Age (Gupta)
+Battle 1: Chandragupta II (Vikramaditya) against the Western Satraps (Saka, Rudrasimha III) at Ujjain, c. 409 CE. Theme: the Satraps are fast and fragile (horse-archers, lancers, silver for Kosha, a desert storm); the Gupta win with court and craft (Navaratna draws cards and moves toward Dharma, the Iron Pillar wards the Durg, Kalidasa draws). Cards are designed in cards.json `pendingArt`, prompts in `art/PROMPTS-BATCH5.md`, waiting on paintings. Scenarios may carry their own music (`Scenario.music`).
+
 ## Art and sound
 - Pon paints every card, Durg and battlefield from Claude's prompt sheets (`art/PROMPTS-*.md`) and uploads masters to `art/source/{cards,battlefields,sfx}/` named exactly by card id. `npm run assets` makes the game files; credits in `art/CREDITS.md`.
 - Fonts: Cinzel (titles, names, numbers), Alegreya Sans (rules text), Cormorant Garamond (story lines only).

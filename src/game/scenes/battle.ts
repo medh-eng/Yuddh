@@ -24,7 +24,7 @@ import { markTutorialDone } from '../../campaign/tutorial';
 import { markBattleWon } from '../../campaign/campaign';
 import { FONT_SERIF, INK, FONT_TITLE, FONT_BODY } from '../theme';
 import { view, type View } from '../view';
-import { audio, type Sfx } from '../audio';
+import { audio, type Sfx, type Track } from '../audio';
 import { cardFace } from '../cards/paint';
 import { canFullscreen, toggleFullscreen } from '../fullscreen';
 import { DurgView, HandCard, TOKEN_DH, TOKEN_DW, TokenView, drawDiyas, stopTweens } from '../cards/views';
@@ -430,9 +430,15 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     deckPile.removeChildren().forEach(c => { if (c !== deckCount) c.destroy(); });
   }
 
+  /** this scenario's own piece if it has been delivered, else the standard one */
+  function tune(kind: 'briefing' | 'calm' | 'intense', fallback: Track): Track {
+    const t = sc.music?.[kind] as Track | undefined;
+    return t && audio.has(t) ? t : fallback;
+  }
+
   function briefing(animate: boolean): void {
     busy = true;
-    audio.playMusic('music_briefing');
+    audio.playMusic(tune('briefing', 'music_briefing'));
     const W = L.W, H = L.H, k = L.ui;
     const panel = new Container();
     const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.72 });
@@ -459,7 +465,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     } else { t1.position.set(tx, 260); t2.position.set(tx - 4, 296); t3.position.set(tx, 420); t4.position.set(tx, t3.y + t3.height + 24); t5.position.set(tx, t4.y + t4.height + 22); }
     const go = makeButton(sc.goLabel, () => {
       audio.unlock(); audio.play('conch');
-      audio.playMusic('music_battle_calm');
+      audio.playMusic(tune('calm', 'music_battle_calm'));
       overlay = null;
       gsap.to(panel, {
         alpha: 0, duration: 0.4, onComplete: () => {
@@ -532,7 +538,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     }
     // the music turns urgent once either Durg is half down
     if (!instant && !intense && !state.over && state.players.some(p => p.hq.hp <= p.hq.maxHp / 2)) {
-      intense = true; audio.playMusic('music_battle_intense');
+      intense = true; audio.playMusic(tune('intense', 'music_battle_intense'));
     }
 
     // yantras face-down

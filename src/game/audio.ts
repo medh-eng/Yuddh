@@ -17,7 +17,8 @@ const RECORDED = new Set(recordedList as string[]);
 
 export type Sfx = 'conch' | 'drum' | 'clash' | 'bow' | 'arrowHit' | 'deploy' | 'cardDraw' | 'cardPlay'
   | 'march' | 'fortHit' | 'death' | 'coin' | 'yantra' | 'fire' | 'victory' | 'defeat' | 'click' | 'elephant';
-export type Track = 'music_title' | 'music_briefing' | 'music_battle_calm' | 'music_battle_intense' | 'music_victory' | 'music_defeat';
+/** the six core pieces, or a campaign's own piece named music_<something> (see art/SOUND-LIST.md) */
+export type Track = 'music_title' | 'music_briefing' | 'music_battle_calm' | 'music_battle_intense' | 'music_victory' | 'music_defeat' | `music_${string}`;
 
 const SFX_NAMES: Sfx[] = ['conch', 'drum', 'clash', 'bow', 'arrowHit', 'deploy', 'cardDraw', 'cardPlay', 'march', 'fortHit',
   'death', 'coin', 'yantra', 'fire', 'victory', 'defeat', 'click', 'elephant'];

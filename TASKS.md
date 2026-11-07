@@ -3,10 +3,12 @@
 *Updated at the end of each session (last: 7 Nov 2026). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
+- [ ] **Paint batch 5, The Golden Age** (`art/PROMPTS-BATCH5.md`): 2 Durgs, 5 Satrap cards, 4 Gupta cards (11 images). Optional: 3 Gupta music pieces (`music_gupta_briefing`, `music_gupta_calm`, `music_gupta_intense`; the game switches to them automatically).
 - [ ] Play The Indus Line on the phone: is it fun and fair? Tell Claude if the pikes feel too harsh or the Seleucids too weak (balance is a JSON edit).
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
 
 ## Next for Claude
+- [ ] **When batch 5 arrives:** move the 9 `pendingArt` cards to `yuddh` in cards.json (Marubhumi needs an order that damages all enemy units; AI values for sa_mudra/g_navaratna), `npm run assets`, build `src/campaign/goldenAge.ts` (Gupta vs Western Satraps, Ujjain, battlefield `ujjain`, `music` override gupta), decks in decks.json (Gupta ally cards from the 6 painted g_* + neutrals), add a Gupta campaign to `campaign.ts` and the map, balance 45–70%.
 - [ ] Morale / rout.
 - [ ] More cards toward ~120.
 - [ ] Search-based AI → **Gate 2**.

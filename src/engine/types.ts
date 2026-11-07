@@ -48,6 +48,7 @@ export interface CardDef {
   hqDamage?: number;
   draw?: number;
   heal?: number;
+  kosha?: number;
   dharma?: number;
   /** Pikes: a melee unit that advanced this turn and strikes this unit takes this much damage (Yuddh rules) */
   reprisal?: number;
