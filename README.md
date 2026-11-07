@@ -9,28 +9,42 @@ A tactical card game of ancient India: Maurya, Gupta, Chalukya, Chola and Rajput
 | Phase | What | Status |
 | --- | --- | --- |
 | 0 | Foundation: TypeScript engine, PixiJS renderer, automatic publishing | Done |
-| 1 | The Look: one battle (Maurya against the Nandas) at KARDS quality | Built: The First Throne with card flips, phone layout, painted Durgs and title, recorded sounds and music, card gallery. Awaiting Pon's approval (Gate 1); 10 small sounds still to record ([sound list](art/SOUND-LIST.md)) |
-| 2 | Deeper war: formations, promotion, elephant rampage, morale, terrain, Dharma–Kuta, heroes, new AI | |
+| 1 | The Look: one battle (Maurya against the Nandas) at KARDS quality | Done: approved at Gate 1 (4 Nov). Some small sounds still to record ([sound list](art/SOUND-LIST.md)) |
+| 2 | Deeper war: formations, promotion, elephant rampage, morale, terrain, Dharma–Kuta, heroes, new AI | In progress: seasons, promotion, trample, Dharma–Kuta, tutorial, campaign map with The Indus Line built |
 | 3 | Itihasa campaigns, Digvijaya conquest mode, Chanakya's Puzzles | |
 | 4 | Collection, deck builder, Kirti crafting | |
 | 5 | Polish, Hindi and Marathi, Google Play release | |
 
-## Project layout
+## For AI agents: read this instead of exploring the repo
+
+Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (working rules and hard-won lessons). Then:
+
+| To change… | Edit |
+| --- | --- |
+| A card's stats, cost, text, keywords; an empire's name or passive | `src/data/cards.json` (`yuddh` = new cards, `classic` = the prototype's 50, which the golden test replays: do not touch; `pendingArt` = designed but unpainted, not loaded) |
+| What is in a battle's decks (`"id*3"` = three copies; order matters) | `src/data/decks.json` |
+| Rank names, seasons and their rules, Dharma limit, charging classes, Kuta cards | `src/data/rules.json` |
+| A battle's story, Durgs, AI level, start Kosha / Durg health | `src/campaign/<battle>.ts` (`firstThrone.ts`, `indusLine.ts`, `tutorial.ts`) |
+| The order of battles and win tracking | `src/campaign/campaign.ts` |
+| A new *kind* of rule or order effect | `src/engine/rules.ts` (behind `st.rules === 'yuddh'`), then the AI's value in `src/engine/ai.ts`, then the reading panel in `src/game/ui/glossary.ts` |
+| How a screen looks | `src/game/scenes/` (title, campaign, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
+| Art or sound | Drop masters in `art/source/{cards,battlefields,sfx}/`, run `npm run assets`, commit `public/assets/` and `src/assets/*.json` |
 
 ```
-src/engine/        rules engine: types, card data, rules, AI (no screen code)
-src/campaign/      the prototype's nine missions; The First Throne
+src/data/          cards.json, decks.json, rules.json (all balance), index.ts (typed access)
+src/engine/        rules engine: types, lookups (cards.ts), rules, AI (no screen code)
+src/campaign/      battles (tutorial, firstThrone, indusLine), campaign.ts, the prototype's nine missions (missions.ts, data only)
 src/meta/          Kirti and per-card upgrades (saved in the browser)
-src/game/          PixiJS renderer: stage, screen modes, theme, audio, scenes (title, battle, card gallery, preview)
+src/game/          PixiJS renderer: stage, screen modes, theme, audio, scenes (title, campaign, battle, gallery, preview)
 src/game/cards/    card painter (frames, arch window, coins, badges), board views, 3D card flips
 src/assets/        art manifest (which cards have paintings)
-art/               prompt sheets and sound list; masters live in art/source/
-scripts/           convert-assets.mjs: masters → small WebP game files
-tests/             rules tests, golden traces, First Throne balance
-tests/e2e/         scripted playtest: plays a whole battle with real mouse drags
-legacy/            Sarwam's prototype source and tests, unchanged
-public/prototype/  the prototype build, still playable
+art/               prompt sheets, sound list, credits; masters in art/source/
+scripts/           convert-assets.mjs: masters → small WebP / MP3 game files
+tests/             golden traces, rules, card mechanics, battle balance; tests/e2e/ = scripted real-mouse playtests
+legacy/            Sarwam's prototype source and tests, unchanged; public/prototype/ is its build
 ```
+
+**End of every session:** update `DESIGN.md` (if rules or decisions changed) and `TASKS.md` (tick what is done, add what is next).
 
 ## Commands
 
@@ -42,6 +56,7 @@ npm run build      # typecheck and build to dist/
 npm run assets     # convert art/source/* (cards, battlefields, sounds) into public/assets/*
 node tests/e2e/playtest.cjs http://localhost:4173/ shots            # after `npm run preview` (desktop 1600×900)
 node tests/e2e/playtest.cjs http://localhost:4173/ shots 844 390    # phone held sideways
+node tests/e2e/campaign.cjs http://localhost:4173/ shots 1280 720   # title → campaign map → The Indus Line (TURNS=n to stop early)
 ```
 
 ## The golden-trace test

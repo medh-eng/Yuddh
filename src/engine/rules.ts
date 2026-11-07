@@ -4,6 +4,7 @@
    trace test proves the two produce identical games.
    ============================================================ */
 import { CARDS, CARD_LIST, EMPIRES } from './cards';
+import { RULES } from '../data';
 import type {
   Action, CardDef, Check, EmpireId, GameEvent, GameState, Line, NewGameOptions,
   Player, PlayerIndex, SideConfig, Target, Unit, YantraTrigger
@@ -186,8 +187,8 @@ export function koshaCost(st: GameState, owner: PlayerIndex, card: CardDef): num
    moves a side toward Dharma; hidden traps, poison and spies toward Kuta. At +3 (Dharma
    Yuddha) the army's blows on the enemy Durg strike 1 harder; at −3 (Kuta Yuddha) its
    orders and Yantras cost 1 less. The meter can swing back and forth all battle. */
-export const DHARMA_MAX = 3;
-const KUTA_CARDS = new Set(['n_visha_baan', 'm_gudhchar']);
+export const DHARMA_MAX = RULES.dharmaMax;
+const KUTA_CARDS = RULES.kutaCards;
 export const dharmaOf = (p: Player): number => p.dharma ?? 0;
 function shiftDharma(st: GameState, idx: PlayerIndex, delta: number, why: string): void {
   if (st.rules !== 'yuddh') return;
@@ -319,7 +320,7 @@ function fireYantra(st: GameState, owner: PlayerIndex, trigger: YantraTrigger): 
 const hasGuard = (list: Unit[]) => list.some(u => u.kw.includes('raksha'));
 
 /** promotion: ranks a unit can earn by destroying enemies (Yuddh rules) */
-export const MAX_RANK = 2;
+export const MAX_RANK = RULES.ranks.length - 1;
 
 /** the four seasons a Yuddh battle can be fought in, and what each changes */
 /** the damage a unit deals when it strikes (Grishma haze blunts archers) */
@@ -333,16 +334,11 @@ export function strikeDamage(st: GameState, a: Unit): number {
   return d;
 }
 
-export const SEASONS: Record<import('./types').Season, { name: string; english: string; rule: string }> = {
-  sharad: { name: 'Sharad', english: 'Autumn', rule: 'The campaigning season: clear skies, firm ground. No special rule.' },
-  varsha: { name: 'Varsha', english: 'Monsoon', rule: 'Mud: cavalry and chariots cannot charge. Every unit advances or attacks, not both.' },
-  grishma: { name: 'Grishma', english: 'Summer', rule: 'Heat haze: ranged units deal 1 less damage (never less than 1).' },
-  hemanta: { name: 'Hemanta', english: 'Harvest', rule: 'Full granaries: every turn, both treasuries hold 1 extra Kosha.' }
-};
-export const RANK_NAMES = ['', 'Veer', 'Mahaveer'];
+export const SEASONS = RULES.seasons;
+export const RANK_NAMES = RULES.ranks;
 
 /** unit classes fast enough to advance and strike in the same turn (Yuddh rules) */
-const CHARGE_CLASSES = new Set(['Cavalry', 'Chariot', 'Elite Chariot', 'Legendary Warrior']);
+const CHARGE_CLASSES = RULES.chargeClasses;
 export const canCharge = (u: { cardId: string }): boolean => CHARGE_CLASSES.has(CARDS[u.cardId]?.sub ?? '');
 export const isElephant = (u: { cardId: string }): boolean => /Elephant/.test(CARDS[u.cardId]?.sub ?? '');
 
@@ -469,6 +465,14 @@ function applyOrder(st: GameState, pIdx: PlayerIndex, cardId: string, target?: T
     case 's_ashwamedha':
       allUnits(st, pIdx).forEach(x => { x.unit.atk += 2; x.unit.hp += 2; x.unit.maxHp += 2; });
       break;
+    default: {
+      // orders described by data (cards.json): power → damage to the target, hqDamage → its Durg, draw, dharma
+      const c = CARDS[cardId];
+      if (c.power && t && t.kind === 'unit') damageUnit(st, t.owner, t.uid, c.power);
+      if (c.hqDamage && t && t.kind === 'unit') damageHQ(st, t.owner, c.hqDamage);
+      if (c.draw) draw(st, pIdx, c.draw);
+      if (c.dharma) shiftDharma(st, pIdx, c.dharma, 'an honest account');
+    }
   }
   p.counters.ordersPlayed += 1;
   if (p.empire === 'gupta' && CARDS[cardId].kind !== 'shakti' && !p.counters.mantraThisTurn) {
@@ -571,7 +575,9 @@ function applyActionCore(st: GameState, action: Action): Check {
     const hit = strikeDamage(st, a);
     pushEvent(st, { t: 'attack', owner: pIdx, uid: a.uid, target: { owner: tgt.owner, uid: d.uid }, dmg: hit });
     d.hp -= hit;
-    const dmgBack = (a.range === 'melee' && d.range === 'melee') ? d.atk : 0;
+    let dmgBack = (a.range === 'melee' && d.range === 'melee') ? d.atk : 0;
+    // Yuddh rules: pikes punish a melee unit that advanced this turn and struck them
+    if (st.rules === 'yuddh' && a.range === 'melee' && a.moved) dmgBack += CARDS[d.cardId]?.reprisal ?? 0;
     if (dmgBack > 0) a.hp -= dmgBack;
     if (d.hp <= 0) { pushEvent(st, { t: 'death', owner: tgt.owner, uid: d.uid }); destroyUnit(st, tgt.owner, d.uid); }
     if (d.hp <= 0 && a.range === 'melee') shiftDharma(st, pIdx, 1, 'a fair fight won');

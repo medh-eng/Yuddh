@@ -44,6 +44,12 @@ export interface CardDef {
   target?: 'enemyUnit';
   trigger?: YantraTrigger;
   power?: number;
+  /** data-driven order effects (cards.json): damage to the enemy Durg, cards drawn, Dharma steps */
+  hqDamage?: number;
+  draw?: number;
+  dharma?: number;
+  /** Pikes: a melee unit that advanced this turn and strikes this unit takes this much damage (Yuddh rules) */
+  reprisal?: number;
   rarity?: Rarity;
 }
 

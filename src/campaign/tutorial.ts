@@ -5,15 +5,10 @@
    Durg, and the easy AI.
    ============================================================ */
 import { newGame } from '../engine/rules';
+import { decksOf } from '../data';
 import type { Scenario } from './scenario';
 
-const rep = (id: string, n: number) => Array.from({ length: n }, () => id);
-
-const playerDeck = [
-  ...rep('n_padati', 4), ...rep('n_ashvarohi', 2), ...rep('n_dhanurdhar', 3), ...rep('m_padati', 2),
-  'n_rakshak', 'n_rathi', 'n_aakraman', 'n_sena_bhojan', 'm_chanakya'
-];
-const enemyDeck = [...rep('n_padati', 5), ...rep('n_dhanurdhar', 3), ...rep('n_rakshak', 2), 'n_aakraman'];
+const { player: playerDeck, enemy: enemyDeck } = decksOf('training_ground');
 
 export const TUTORIAL: Scenario = {
   id: 'training_ground',
@@ -30,6 +25,8 @@ export const TUTORIAL: Scenario = {
   winText: turn => `The outpost falls in turn ${turn}. Chanakya nods: you are ready for The First Throne.`,
   loseText: 'The outpost holds. Chanakya smiles: even he lost his first battles. Try again.',
   goLabel: 'Begin training',
+  nextId: 'first_throne',
+  nextLabel: 'The First Throne',
   playerDeck, enemyDeck,
   coached: true,
   game: seed => newGame({

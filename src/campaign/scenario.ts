@@ -26,6 +26,9 @@ export interface Scenario {
   playerDeck: string[];
   enemyDeck: string[];
   game: (seed: number) => GameState;
+  /** the battle that follows in the campaign, and the label of the victory button that leads to it */
+  nextId?: string;
+  nextLabel?: string;
   /** a guided battle: the coach explains each step */
   coached?: boolean;
 }

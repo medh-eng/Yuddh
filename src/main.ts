@@ -18,6 +18,9 @@ import { titleScene } from './game/scenes/title';
 import { battlePreviewScene } from './game/scenes/battlePreview';
 import { battleScene, preloadBattle } from './game/scenes/battle';
 import { galleryScene } from './game/scenes/gallery';
+import { campaignScene } from './game/scenes/campaign';
+import { scenarioById } from './campaign/campaign';
+import type { Scenario } from './campaign/scenario';
 import { audio } from './game/audio';
 import { TUTORIAL } from './campaign/tutorial';
 import { CARD_ART, loadArt, loadBattlefield } from './assets/manifest';
@@ -67,13 +70,18 @@ async function boot(): Promise<void> {
     if (askedFull || !view.phone || !canFullscreen() || isFullscreen()) return;
     askedFull = true; void toggleFullscreen();
   });
+  /** play a campaign battle; winning it offers the next one, and leaving returns to `back` */
+  const play = (sc: Scenario, back: () => void): void => {
+    audio.unlock();
+    const next = sc.nextId ? scenarioById(sc.nextId) : undefined;
+    void loading(preloadBattle(sc)).then(() =>
+      stage.show(battleScene(stage, back, sc, next ? () => play(next, back) : undefined)));
+  };
+  const campaign = (): void => stage.show(campaignScene(stage, sc => play(sc, campaign), title));
   const title = (): void => stage.show(titleScene(stage, {
-    battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title))); },
-    tutorial: () => {
-      audio.unlock();
-      void loading(Promise.all([battleReady, preloadBattle(TUTORIAL)])).then(() =>
-        stage.show(battleScene(stage, title, TUTORIAL, () => void loading(battleReady).then(() => stage.show(battleScene(stage, title))))));
-    },
+    battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title, undefined, () => play(scenarioById('indus_line')!, title)))); },
+    tutorial: () => play(TUTORIAL, title),
+    campaign,
     gallery: () => { audio.unlock(); stage.show(galleryScene(stage, title)); },
     preview: () => { void loading(loadArt(CARD_ART)).then(() => { stage.setBackdrop(null); stage.show(battlePreviewScene(title)); }); },
     prototype: () => { window.location.href = `${import.meta.env.BASE_URL}prototype/`; }

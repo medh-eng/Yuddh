@@ -1,0 +1,15 @@
+{
+"_about": "Decks for each battle. 'id*3' means three copies. ORDER MATTERS: decks are shuffled from a seeded generator, so reordering changes games. Balance a battle by editing counts or swapping ids here. Scenario text and setup (hp, kosha, AI level) live in src/campaign/*.ts.",
+"training_ground": {
+ "player": ["n_padati*4","n_ashvarohi*2","n_dhanurdhar*3","m_padati*2","n_rakshak","n_rathi","n_aakraman","n_sena_bhojan","m_chanakya"],
+ "enemy": ["n_padati*5","n_dhanurdhar*3","n_rakshak*2","n_aakraman"]
+},
+"first_throne": {
+ "player": ["n_padati","m_padati*2","n_dhanurdhar*2","n_ashvarohi*2","n_rakshak","n_rathi","n_maharathi","n_atirathi","n_gaja","m_hasti","n_senapati","m_gudhchar","m_chanakya","m_chandragupta","m_arthashastra","m_parvataka","m_raja_dhwaja","m_shalya_vaidya","m_hastipaka","m_garuda_vyuha","m_makara_vyuha","n_aakraman*2","n_sena_bhojan","n_yudh_niti","y_kavach","y_pratikar","s_agni","s_chakravyuha"],
+ "enemy": ["n_padati*2","n_dhanurdhar*3","n_rakshak*2","n_ashvarohi*2","n_rathi","nd_ratha_dal","n_gaja","nd_gaja_sena","n_maharathi*2","n_senapati","nd_dhana_nanda","nd_amatya_rakshasa","nd_nanda_kosha","nd_kashtha_prakara","n_aakraman*2","n_sena_bhojan","n_visha_baan","y_pratikar","s_agni","s_chakravyuha"]
+},
+"indus_line": {
+ "player": ["n_padati","m_padati*2","n_dhanurdhar*2","n_ashvarohi*2","n_rakshak","n_rathi","n_maharathi","n_atirathi","n_gaja","m_hasti*2","n_senapati","m_gudhchar","m_chanakya","m_chandragupta","m_arthashastra","m_parvataka","m_raja_dhwaja","m_shalya_vaidya","m_hastipaka","m_garuda_vyuha","m_makara_vyuha","n_aakraman*2","n_yudh_niti","y_kavach","y_pratikar","s_agni","s_chakravyuha"],
+ "enemy": ["n_padati","se_toxotai*3","se_phalanx*3","n_rakshak","se_hetairoi*2","n_maharathi","n_gaja","se_seleucus","n_senapati","se_lithobolos*2","se_megasthenes","n_aakraman*2","n_sena_bhojan","y_pratikar","s_agni","s_chakravyuha"]
+}
+}

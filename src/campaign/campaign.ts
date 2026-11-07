@@ -1,0 +1,42 @@
+/* ============================================================
+   The Maurya campaign ("Rise of Magadha"): the battles in order,
+   and which of them the player has won. Phase 3 adds more campaigns
+   and the briefings/cutscenes; for now this is the spine:
+   The Training Ground → The First Throne → The Indus Line.
+   ============================================================ */
+import type { Scenario } from './scenario';
+import { TUTORIAL, tutorialDone } from './tutorial';
+import { FIRST_THRONE_SCENARIO } from './firstThrone';
+import { INDUS_LINE_SCENARIO } from './indusLine';
+
+export interface CampaignNode {
+  scenario: Scenario;
+  /** the painting shown on the campaign map: the enemy's leader, or the teacher */
+  face: string;
+  /** one line under the title on the map */
+  blurb: string;
+}
+
+export const MAURYA_CAMPAIGN: CampaignNode[] = [
+  { scenario: TUTORIAL, face: 'm_chanakya', blurb: 'Chanakya teaches the war.' },
+  { scenario: FIRST_THRONE_SCENARIO, face: 'nd_dhana_nanda', blurb: 'Take Pataliputra from the Nanda.' },
+  { scenario: INDUS_LINE_SCENARIO, face: 'se_seleucus', blurb: 'Meet Seleucus at the river.' }
+];
+
+export const scenarioById = (id: string): Scenario | undefined => MAURYA_CAMPAIGN.find(n => n.scenario.id === id)?.scenario;
+
+const KEY = 'yuddh.campaign.v1';
+const read = (): string[] => { try { const v = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } };
+
+/** battles won at least once (the training ground also counts when its own flag is set) */
+export function battlesWon(): string[] {
+  const won = read();
+  if (tutorialDone() && !won.includes(TUTORIAL.id)) won.push(TUTORIAL.id);
+  return won;
+}
+export function markBattleWon(id: string): void {
+  const won = read();
+  if (won.includes(id)) return;
+  won.push(id);
+  try { localStorage.setItem(KEY, JSON.stringify(won)); } catch { /* private mode */ }
+}

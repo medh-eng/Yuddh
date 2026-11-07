@@ -23,7 +23,7 @@ function shadePool(): Texture {
   return shadeTex;
 }
 
-export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void; gallery(): void; preview(): void; prototype(): void }): Scene {
+export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void; campaign(): void; gallery(): void; preview(): void; prototype(): void }): Scene {
   const s: Scene = new Container();
   const painting = Texture.from(battlefieldUrl('title'));
   const art = new Sprite(painting); art.anchor.set(0.5);
@@ -42,7 +42,7 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
 
   const buttons = new Container();
   s.addChild(buttons);
-  const note = new Text({ text: 'Phase 1 build · The First Throne, Pataliputra, c. 321 BCE', style: { fontFamily: FONT_SERIF, fontSize: 20, fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 3 } } });
+  const note = new Text({ text: 'Phase 2 build · The Maurya campaign: Pataliputra to the Indus', style: { fontFamily: FONT_SERIF, fontSize: 20, fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 3 } } });
   note.anchor.set(0.5);
   s.addChild(note);
 
@@ -79,16 +79,17 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
     // new players are pointed at the training ground first
     const fresh = !tutorialDone();
     const list: [string, () => void, boolean][] = fresh
-      ? [['Learn to play', go.tutorial, true], ['To battle', go.battle, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]]
-      : [['To battle', go.battle, true], ['Learn to play', go.tutorial, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]];
+      ? [['Learn to play', go.tutorial, true], ['To battle', go.battle, false], ['Campaign', go.campaign, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]]
+      : [['Campaign', go.campaign, true], ['To battle', go.battle, false], ['Learn to play', go.tutorial, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]];
     list.forEach(([label, fn, primary], i) => {
       // one choice per visit: a second tap while a battle's paintings load would start a second scene
       const b = makeButton(label, () => { if (chosen) return; chosen = true; fn(); }, { primary, w: ph ? 380 : 400 });
-      if (ph) b.position.set(W / 2 + (i % 2 ? 1 : -1) * 270, 462 + Math.floor(i / 2) * 112);
-      else b.position.set(W / 2, 640 + i * 88);
+      // phones: two columns, the odd last button centred; desktop: one column
+      if (ph) b.position.set(i === list.length - 1 && list.length % 2 ? W / 2 : W / 2 + (i % 2 ? 1 : -1) * 270, 440 + Math.floor(i / 2) * 92);
+      else b.position.set(W / 2, 620 + i * 80);
       buttons.addChild(b);
     });
-    pool2.position.set(W / 2, ph ? 518 : 772); pool2.width = ph ? 1400 : 900; pool2.height = ph ? 360 : 560;
+    pool2.position.set(W / 2, ph ? 530 : 800); pool2.width = ph ? 1400 : 900; pool2.height = ph ? 400 : 640;
     note.style.fontSize = Math.round(20 * k); note.position.set(W / 2, H - (ph ? 34 : 40));
     specks.forEach(p => p.g.position.set(Math.random() * W, Math.random() * H));
   }

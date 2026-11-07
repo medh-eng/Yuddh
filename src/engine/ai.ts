@@ -100,12 +100,13 @@ function orderValue(st: GameState, pIdx: PlayerIndex, entry: PlayOption): number
   const p = st.players[pIdx];
   const enemy = other(pIdx);
   const id = entry.c.id;
-  if (id === 'n_aakraman' || id === 's_agni') {
+  if (id === 'n_aakraman' || id === 's_agni' || (entry.kind === 'removal' && entry.c.power)) {
     const v = entry.victim;
     if (!v) return 0;
-    const dmg = id === 's_agni' ? 5 : 2;
-    return (dmg >= v.hp ? unitValue(v) + 2 : dmg * 0.6);
+    const dmg = entry.c.power ?? (id === 's_agni' ? 5 : 2);
+    return (dmg >= v.hp ? unitValue(v) + 2 : dmg * 0.6) + (entry.c.hqDamage ?? 0) * 0.5;
   }
+  if (id === 'se_megasthenes') return p.hand.length <= 6 ? 6 : 2;
   if (id === 's_chakravyuha') {
     const n = allUnits(st, enemy).length;
     return n >= 2 ? 4 + n * 2 : 0;

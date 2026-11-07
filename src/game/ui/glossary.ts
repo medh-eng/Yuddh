@@ -29,6 +29,7 @@ export function glossFor(cardId: string, unit?: Unit, cost?: number, season?: Se
     if (/Elephant/.test(c.sub)) out.push({ icon: 'charge', title: 'TRAMPLE', body: 'When it crushes a unit, the damage it did not need falls on the enemy Durg.' });
     if (unit?.surge !== undefined && unit.surge === turn) out.push({ icon: 'charge', title: 'GARUDA VYUHA', body: 'The eagle formation: this turn it may advance and attack.' });
     if (c.id === 'm_raja_dhwaja') out.push({ icon: 'rank', title: 'MORALE', body: 'While he stands, your other units on the Yudhbhumi deal +1 damage.' });
+    if (c.reprisal) out.push({ icon: 'raksha', title: 'PIKES', body: `A melee unit that advanced this turn and strikes it takes ${c.reprisal} damage.` });
     if (c.id === 'm_shalya_vaidya') out.push({ icon: 'wound', title: 'SURGEON', body: 'At the start of your turn he heals 2 health on your most wounded unit.' });
     if (c.kw?.includes('raksha')) out.push({ icon: 'raksha', title: 'RAKSHA', body: 'Guard: must be struck first in its line, and on the Rajya line it shields the Durg.' });
     if (c.kw?.includes('veg')) out.push({ icon: 'veg', title: 'VEGA', body: 'Swift: can move or attack on the turn it is deployed.' });

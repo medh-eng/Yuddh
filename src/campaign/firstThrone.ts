@@ -7,9 +7,10 @@
    ============================================================ */
 import { newGame } from '../engine/rules';
 import type { AiLevel, GameState, Season } from '../engine/types';
+import { decksOf } from '../data';
 import type { Scenario } from './scenario';
 
-const rep = (id: string, n: number) => Array.from({ length: n }, () => id);
+const decks = decksOf('first_throne');
 
 export const FIRST_THRONE = {
   id: 'first_throne',
@@ -18,22 +19,9 @@ export const FIRST_THRONE = {
   year: 'c. 321 BCE',
   battlefield: 'pataliputra',
   briefing: 'The Nanda king sits on a mountain of gold, but his frontier levies are thin and badly led. Chanakya has spent years preparing this army. Take the Yudhbhumi, hold it, and the gates of Pataliputra will open.',
-  playerDeck: [
-    'n_padati', ...rep('m_padati', 2), ...rep('n_dhanurdhar', 2), ...rep('n_ashvarohi', 2),
-    'n_rakshak', 'n_rathi', 'n_maharathi', 'n_atirathi', 'n_gaja', 'm_hasti',
-    'n_senapati', 'm_gudhchar', 'm_chanakya', 'm_chandragupta', 'm_arthashastra',
-    // batch 3: Parvataka, the standard-bearer, the surgeon, the mahout, two battle formations
-    'm_parvataka', 'm_raja_dhwaja', 'm_shalya_vaidya', 'm_hastipaka', 'm_garuda_vyuha', 'm_makara_vyuha',
-    ...rep('n_aakraman', 2), 'n_sena_bhojan', 'n_yudh_niti', 'y_kavach', 'y_pratikar', 's_agni', 's_chakravyuha'
-  ],
-  // the Nanda host: famous for its elephants, chariots and gold, thin on good infantry
-  enemyDeck: [
-    ...rep('n_padati', 2), ...rep('n_dhanurdhar', 3), ...rep('n_rakshak', 2), ...rep('n_ashvarohi', 2),
-    'n_rathi', 'nd_ratha_dal', 'n_gaja', 'nd_gaja_sena', ...rep('n_maharathi', 2), 'n_senapati',
-    // the Nanda court: the king himself, his minister, his treasury, his walls
-    'nd_dhana_nanda', 'nd_amatya_rakshasa', 'nd_nanda_kosha', 'nd_kashtha_prakara',
-    ...rep('n_aakraman', 2), 'n_sena_bhojan', 'n_visha_baan', 'y_pratikar', 's_agni', 's_chakravyuha'
-  ],
+  // decks are in src/data/decks.json
+  playerDeck: decks.player,
+  enemyDeck: decks.enemy,
   enemyHq: 24,
   enemyStartKosha: 1
 };
@@ -65,5 +53,7 @@ export const FIRST_THRONE_SCENARIO: Scenario = {
   winText: turn => `Pataliputra opens its gates in turn ${turn}. The Mauryan age begins.`,
   loseText: 'The Nanda elephants hold the field. Chanakya is already planning the next war.',
   goLabel: 'To battle',
+  nextId: 'indus_line',
+  nextLabel: 'The Indus Line',
   game: seed => firstThroneGame(seed, 'normal')
 };

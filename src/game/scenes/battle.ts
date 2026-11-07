@@ -21,6 +21,7 @@ import {
 import { FIRST_THRONE_SCENARIO } from '../../campaign/firstThrone';
 import type { Scenario } from '../../campaign/scenario';
 import { markTutorialDone } from '../../campaign/tutorial';
+import { markBattleWon } from '../../campaign/campaign';
 import { FONT_SERIF, INK, FONT_TITLE, FONT_BODY } from '../theme';
 import { view, type View } from '../view';
 import { audio, type Sfx } from '../audio';
@@ -1569,8 +1570,9 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     });
     sub.anchor.set(0.5); sub.position.set(W / 2, ph ? H * 0.72 : 780);
     if (won && sc.coached) markTutorialDone();
-    const again = won && sc.coached && next
-      ? makeButton('The First Throne', next, { primary: true, w: 320 })
+    if (won) markBattleWon(sc.id);
+    const again = won && next
+      ? makeButton(sc.nextLabel ?? 'Next battle', next, { primary: true, w: 320 })
       : makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 320 });
     const bx = ph ? 230 : 180;
     again.position.set(W / 2 - bx, ph ? H * 0.87 : 880);
