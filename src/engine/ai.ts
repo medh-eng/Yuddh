@@ -108,13 +108,16 @@ function orderValue(st: GameState, pIdx: PlayerIndex, entry: PlayOption): number
   }
   if (id === 'm_sindhu_nauka') return st.front.owner !== other(pIdx) && p.support.filter(u => u.canAct && !u.moved).length >= 1 ? 6.5 : 0;
   if (id === 'm_gaja_sandhi') return (p.hq.maxHp - p.hq.hp) >= 6 ? 8 : (p.hand.length <= 5 ? 3 : 0);
+  if (id === 'sa_marubhumi') return allUnits(st, enemy).length >= 3 ? 8 : (allUnits(st, enemy).length === 2 ? 3 : 0);
+  if (id === 'sa_mudra') return p.hand.some(h => CARDS[h].cost > p.kosha && CARDS[h].cost <= p.kosha + 2) ? 6 : 2.5;
+  if (id === 'g_navaratna') return p.hand.length <= 5 ? 8 : 3.5;
   if (id === 'se_megasthenes') return p.hand.length <= 6 ? 6 : 2;
   if (id === 's_chakravyuha') {
     const n = allUnits(st, enemy).length;
     return n >= 2 ? 4 + n * 2 : 0;
   }
   if (id === 's_ashwamedha') return allUnits(st, pIdx).length >= 3 ? 9 : 1;
-  if (id === 'y_vighna' || id === 'y_kavach' || id === 'y_pratikar') return p.yantras.length >= 2 ? 0 : 3.5;
+  if (id === 'y_vighna' || id === 'y_kavach' || id === 'y_pratikar' || id === 'g_loha_stambha') return p.yantras.length >= 2 ? 0 : 3.5;
   if (id === 'n_sena_bhojan' || id === 'c_shilpa') return (p.hq.maxHp - p.hq.hp) >= 6 ? 7 : 0;
   if (id === 'g_swarn_yug') return p.hand.length <= 6 ? 7.5 : 3;
   if (id === 'n_yudh_niti' || id === 'm_arthashastra') return p.hand.length <= 5 ? 7 : 2;

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CARDS, applyAction, canMove, dharmaOf, findUnit, newGame, type Unit } from '../src/engine';
 import { PENDING_CARDS, decksOf, expandDeck } from '../src/data';
 import { INDUS_LINE_SCENARIO } from '../src/campaign/indusLine';
-import { MAURYA_CAMPAIGN } from '../src/campaign/campaign';
+import { CAMPAIGNS, MAURYA_CAMPAIGN, scenarioById } from '../src/campaign/campaign';
 
 const mkYuddh = () => newGame({
   player: { empire: 'maurya', deck: ['n_padati'], faction: 'Maurya' },
@@ -98,6 +98,37 @@ describe('Maurya batch 4', () => {
   });
 });
 
+describe('The Golden Age cards', () => {
+  it('Marubhumi Toofan hits every enemy unit for 1 and leaves Dharma alone', () => {
+    const st = mkYuddh();
+    const p = st.players[0];
+    p.hand = ['sa_marubhumi']; p.kosha = 10;
+    st.players[1].support = [unit(60, 'n_padati', 1, 1, 3), unit(61, 'n_gaja', 1, 4, 5)];
+    st.front.owner = 1; st.front.units = [unit(62, 'n_rathi', 1, 3, 2)];
+    expect(applyAction(st, { type: 'play', handIndex: 0 }).ok).toBe(true);
+    expect(findUnit(st, 1, 60)!.unit.hp).toBe(2);
+    expect(findUnit(st, 1, 61)!.unit.hp).toBe(4);
+    expect(findUnit(st, 1, 62)!.unit.hp).toBe(1);
+    expect(dharmaOf(p)).toBe(0);
+  });
+  it('Silver Mudra gives 2 Kosha and a card', () => {
+    const st = mkYuddh();
+    const p = st.players[0];
+    p.hand = ['sa_mudra']; p.kosha = 3; p.maxKosha = 3; p.deck = ['n_padati', 'n_padati'];
+    applyAction(st, { type: 'play', handIndex: 0 });
+    expect(p.kosha).toBe(3 - CARDS.sa_mudra.cost + 2);
+    expect(p.hand.length).toBe(1);
+  });
+  it('Navaratna draws 2 and moves one step toward Dharma', () => {
+    const st = mkYuddh();
+    const p = st.players[0];
+    p.hand = ['g_navaratna']; p.kosha = 10; p.deck = ['n_padati', 'n_padati', 'n_padati'];
+    applyAction(st, { type: 'play', handIndex: 0 });
+    expect(p.hand.length).toBeGreaterThanOrEqual(2);
+    expect(dharmaOf(p)).toBe(1);
+  });
+});
+
 describe('data files', () => {
   it('every deck in decks.json names existing cards, and expandDeck keeps order', () => {
     for (const id of ['training_ground', 'first_throne', 'indus_line']) {
@@ -113,6 +144,8 @@ describe('data files', () => {
     expect(MAURYA_CAMPAIGN.map(n => n.scenario.id)).toEqual(['training_ground', 'first_throne', 'indus_line']);
     expect(MAURYA_CAMPAIGN[0].scenario.nextId).toBe('first_throne');
     expect(MAURYA_CAMPAIGN[1].scenario.nextId).toBe('indus_line');
-    expect(INDUS_LINE_SCENARIO.nextId).toBeUndefined();
+    expect(INDUS_LINE_SCENARIO.nextId).toBe('golden_age');
+    expect(CAMPAIGNS.map(c => c.id)).toEqual(['maurya', 'gupta']);
+    expect(scenarioById('golden_age')).toBeDefined();
   });
 });

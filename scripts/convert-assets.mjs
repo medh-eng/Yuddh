@@ -40,7 +40,7 @@ for (const j of jobs) {
 
 /* ---------------- sounds ---------------- */
 /** other names a file may arrive under → the game's name for it */
-const ALIAS = { shankh: 'conch', nagara: 'drum', dhol: 'drum' };
+const ALIAS = { shankh: 'conch', nagara: 'drum', dhol: 'drum', horse_gallop: 'gallop', horsegallop: 'gallop', galloping: 'gallop', sand_wind: 'sandGust', sandwind: 'sandGust', sand_gust: 'sandGust', wind_gust: 'sandGust', gust: 'sandGust' };
 /** name: [longest length s, fade-out s, one hit only, loudness dBFS RMS] */
 const SHAPE = {
   conch: [2.6, 0.9, false, -20], drum: [1.1, 0.5, true, -15], clash: [0.6, 0.15, true, -16],
@@ -48,7 +48,7 @@ const SHAPE = {
   fortHit: [1.3, 0.5, false, -17], elephant: [1.7, 0.6, false, -19], cardDraw: [0.25, 0.08, true, -20],
   cardPlay: [0.35, 0.1, true, -18], march: [0.9, 0.25, false, -18], death: [0.9, 0.3, false, -18],
   coin: [0.6, 0.25, false, -19], yantra: [0.9, 0.3, false, -18], fire: [1.3, 0.5, false, -18],
-  click: [0.12, 0.04, true, -22], victory: [4.5, 1.2, false, -18], defeat: [3.5, 1.2, false, -18]
+  click: [0.12, 0.04, true, -22], gallop: [1.3, 0.45, false, -18], sandGust: [1.6, 0.7, false, -20], victory: [4.5, 1.2, false, -18], defeat: [3.5, 1.2, false, -18]
 };
 const SR = 22050, WIN = Math.round(SR * 0.01);
 

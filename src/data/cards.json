@@ -1,5 +1,5 @@
 {
-"_about": "All card, empire and stat data. Edit numbers here; no code change needed. classic = the prototype's 50 cards (the golden test replays them; do not touch). yuddh = YUDDH cards. pendingArt = designed but unpainted, not loaded.",
+"_about": "All card, empire and stat data. Edit numbers here; no code change needed. classic = the prototype's 50 cards (the golden test replays them; do not touch). yuddh = YUDDH cards. pendingArt = designed but unpainted, not loaded (empty now).",
 "empires": {
  "maurya": {"id":"maurya","name":"Maurya","capital":"Pataliputra","color":"#d99a2b","glyph":"मौ","passive":"Arthashastra — the first unit costing 3 or more that you deploy each turn costs 1 less Kosha."},
  "gupta": {"id":"gupta","name":"Gupta","capital":"Ujjain","color":"#2f8f74","glyph":"गु","passive":"Golden Age — the first Mantra you cast each turn draws a card."},
@@ -83,9 +83,7 @@
  {"id":"m_sindhu_nauka","name":"Sindhu Nauka","sub":"River Boats","empire":"maurya","type":"order","cost":3,"glyph":"नौ","text":"Up to 2 of your Rajya-line units cross to the Yudhbhumi at no Kosha, and may strike this turn.","rarity":"rare"},
  {"id":"m_takshashila","name":"Takshashila Scholars","sub":"Advisers","empire":"maurya","type":"unit","cost":3,"op":1,"atk":1,"hp":3,"range":"melee","glyph":"त","deploy":"drawHeal","text":"Deploy — draw a card and restore 2 to your Durg.","rarity":"common"},
  {"id":"m_gaja_sandhi","name":"Gaja Sandhi","sub":"Treaty of Elephants","empire":"maurya","type":"order","cost":4,"draw":1,"heal":6,"glyph":"सं","text":"Draw a card and restore 6 to your Durg. Peace bought with elephants.","rarity":"epic"},
- {"id":"m_ashva_dhanurdhara","name":"Ashva Dhanurdhara","sub":"Mounted Archer","empire":"maurya","type":"unit","cost":3,"op":1,"atk":2,"hp":2,"range":"ranged","kw":["veg"],"glyph":"अध","text":"Vega. Shoots from either line without a counter-blow.","rarity":"rare"}
-],
-"pendingArt": [
+ {"id":"m_ashva_dhanurdhara","name":"Ashva Dhanurdhara","sub":"Mounted Archer","empire":"maurya","type":"unit","cost":3,"op":1,"atk":2,"hp":2,"range":"ranged","kw":["veg"],"glyph":"अध","text":"Vega. Shoots from either line without a counter-blow.","rarity":"rare"},
  {"id":"g_vikramaditya","name":"Chandragupta II","sub":"Vikramaditya","empire":"gupta","type":"unit","cost":7,"op":2,"atk":5,"hp":7,"range":"melee","kw":["raksha"],"glyph":"वि","deploy":"drawKosha","text":"Raksha. Deploy — draw a card and gain 1 Kosha.","rarity":"legendary"},
  {"id":"g_navaratna","name":"Navaratna","sub":"The Nine Gems","empire":"gupta","type":"order","cost":4,"draw":2,"dharma":1,"glyph":"न","text":"Draw 2 cards. The Nine Gems counsel honour: one step toward Dharma.","rarity":"epic"},
  {"id":"g_kalidasa","name":"Kalidasa","sub":"Court Poet","empire":"gupta","type":"unit","cost":2,"op":1,"atk":1,"hp":3,"range":"melee","glyph":"का","deploy":"draw1","text":"Deploy — draw a card.","rarity":"rare"},
@@ -93,7 +91,10 @@
  {"id":"sa_rudrasimha","name":"Rudrasimha III","sub":"Kshatrapa","empire":"neutral","type":"unit","cost":5,"op":2,"atk":4,"hp":5,"range":"melee","kw":["veg"],"glyph":"रु","deploy":"buffLine","text":"Vega. Deploy — your other units in this line get +1 attack.","rarity":"legendary"},
  {"id":"sa_ashva_dhanurdhar","name":"Saka Horse-Archers","sub":"Mounted Archer","empire":"neutral","type":"unit","cost":2,"op":1,"atk":2,"hp":1,"range":"ranged","kw":["veg"],"glyph":"श","text":"Vega. Steppe bowmen: cheap, fast and fragile.","rarity":"common"},
  {"id":"sa_bhalladhari","name":"Saka Lancers","sub":"Cavalry","empire":"neutral","type":"unit","cost":4,"op":1,"atk":3,"hp":5,"range":"melee","kw":["veg"],"glyph":"भ","text":"Vega. Armoured horse and long lances from the Western steppe.","rarity":"rare"},
- {"id":"sa_marubhumi","name":"Marubhumi Toofan","sub":"Desert Storm","empire":"neutral","type":"order","cost":3,"glyph":"तू","text":"TENTATIVE — deal 1 damage to every enemy unit (needs an order that damages all: reuse the visha_baan code without the Kuta step).","rarity":"rare"},
+ {"id":"sa_marubhumi","name":"Marubhumi Toofan","sub":"Desert Storm","empire":"neutral","type":"order","cost":3,"glyph":"तू","text":"Deal 1 damage to every enemy unit.","rarity":"rare","damageAll":1},
  {"id":"sa_mudra","name":"Silver Mudra","sub":"Caravan Wealth","empire":"neutral","type":"order","cost":1,"kosha":2,"draw":1,"glyph":"मु","text":"Gain 2 Kosha and draw a card.","rarity":"common"}
+],
+"pendingArt": [
+
 ]
 }

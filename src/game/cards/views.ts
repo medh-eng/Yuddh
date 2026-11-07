@@ -223,6 +223,7 @@ export class DurgView extends Container {
   private hpText: Text;
   private nameText: Text;
   private subText: Text;
+  private subSize = 14;
   private nameSize = 26;
   private band = new Graphics();   // dark band behind the name, and the bronze badge behind the health
   private ring = new Graphics();
@@ -251,7 +252,7 @@ export class DurgView extends Container {
   setTextScale(k: number): void {
     this.nameSize = Math.round(26 * k); this.nameText.style.fontSize = this.nameSize; this.nameText.style.lineHeight = Math.round(28 * k);
     this.nameText.style.wordWrapWidth = 226;
-    this.subText.style.fontSize = Math.round(14 * k); this.subText.style.letterSpacing = k > 1 ? 2 : 4;
+    this.subSize = Math.round(14 * k); this.subText.style.fontSize = this.subSize; this.subText.style.letterSpacing = k > 1 ? 2 : 4;
     this.hpText.style.fontSize = Math.round(64 * Math.min(k, 1.25));
     this.subText.y = -58 + (k - 1) * 6;
     this.drawBand();
@@ -283,6 +284,9 @@ export class DurgView extends Container {
     // Cinzel is wide: a long single word (CHANDRAGUPTA'S) would run past the frame, so the name shrinks to fit
     this.nameText.style.fontSize = this.nameSize;
     while (this.nameText.width > 222 && +this.nameText.style.fontSize > 14) this.nameText.style.fontSize = +this.nameText.style.fontSize - 1;
+    // a long faction (WESTERN KSHATRAPAS) also shrinks to fit the frame
+    this.subText.style.fontSize = this.subSize;
+    while (this.subText.width > 200 && +this.subText.style.fontSize > 9) this.subText.style.fontSize = +this.subText.style.fontSize - 1;
     this.hpText.text = String(Math.max(0, hp));
     this.drawBand();
     this.stage = frac > 0.66 ? 0 : frac > 0.33 ? 1 : 2;

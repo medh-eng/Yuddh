@@ -16,16 +16,16 @@ const BASE = import.meta.env.BASE_URL;
 const RECORDED = new Set(recordedList as string[]);
 
 export type Sfx = 'conch' | 'drum' | 'clash' | 'bow' | 'arrowHit' | 'deploy' | 'cardDraw' | 'cardPlay'
-  | 'march' | 'fortHit' | 'death' | 'coin' | 'yantra' | 'fire' | 'victory' | 'defeat' | 'click' | 'elephant';
+  | 'march' | 'fortHit' | 'death' | 'coin' | 'yantra' | 'fire' | 'victory' | 'defeat' | 'click' | 'elephant' | 'gallop' | 'sandGust';
 /** the six core pieces, or a campaign's own piece named music_<something> (see art/SOUND-LIST.md) */
 export type Track = 'music_title' | 'music_briefing' | 'music_battle_calm' | 'music_battle_intense' | 'music_victory' | 'music_defeat' | `music_${string}`;
 
 const SFX_NAMES: Sfx[] = ['conch', 'drum', 'clash', 'bow', 'arrowHit', 'deploy', 'cardDraw', 'cardPlay', 'march', 'fortHit',
-  'death', 'coin', 'yantra', 'fire', 'victory', 'defeat', 'click', 'elephant'];
+  'death', 'coin', 'yantra', 'fire', 'victory', 'defeat', 'click', 'elephant', 'gallop', 'sandGust'];
 /** level of each recording relative to the others (1 = as converted) */
 const LEVEL: Partial<Record<Sfx, number>> = { conch: 0.85, elephant: 0.8, fortHit: 0.9, drum: 1.1 };
 /** these vary their pitch a little each time, so repeated blows do not sound copied */
-const VARY = new Set<Sfx>(['clash', 'bow', 'arrowHit', 'deploy', 'cardDraw', 'cardPlay', 'death', 'march', 'click']);
+const VARY = new Set<Sfx>(['clash', 'bow', 'arrowHit', 'deploy', 'cardDraw', 'cardPlay', 'death', 'march', 'click', 'gallop']);
 const ONE_SHOT = new Set<Track>(['music_victory', 'music_defeat']);
 const XFADE = 4;  // seconds of cross-fade when a looping piece wraps round
 
@@ -274,6 +274,8 @@ const SYNTH: Record<Sfx, Recipe> = {
   victory: (ctx, out) => { SYNTH.conch(ctx, out); [262, 330, 392, 523].forEach((f, i) => tone(ctx, out, 'triangle', f, f, 0.02, 0.15, 1.6, 0.5 + i * 0.18)); },
   defeat: (ctx, out) => { [392, 330, 262, 196].forEach((f, i) => tone(ctx, out, 'sine', f, f * 0.98, 0.05, 0.15, 1.2, i * 0.35)); },
   click: (ctx, out) => tone(ctx, out, 'sine', 880, 660, 0.002, 0.08, 0.06),
+  gallop: (ctx, out) => { for (let i = 0; i < 8; i++) { const t = (i >> 1) * 0.16 + (i & 1) * 0.07; tone(ctx, out, 'sine', 110, 60, 0.003, 0.2, 0.2, t); burst(ctx, out, 'lowpass', 700, 1, 0.003, 0.1, 0.12, t); } },
+  sandGust: (ctx, out) => { burst(ctx, out, 'bandpass', 700, 0.6, 0.35, 0.5, 1.4); burst(ctx, out, 'highpass', 2500, 0.5, 0.4, 0.2, 1.2, 0.1); },
   elephant: (ctx, out) => {
     const t0 = ctx.currentTime;
     const o = ctx.createOscillator(); o.type = 'sawtooth';

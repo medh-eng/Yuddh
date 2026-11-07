@@ -12,44 +12,50 @@ import { cardFace, FACE_H, FACE_W } from '../cards/paint';
 import { makeButton } from '../ui/button';
 import { audio } from '../audio';
 import { loadArt, loadBattlefield } from '../../assets/manifest';
-import { battlesWon, MAURYA_CAMPAIGN } from '../../campaign/campaign';
+import { battlesWon, CAMPAIGNS, currentCampaign, type Campaign } from '../../campaign/campaign';
 import type { Scenario } from '../../campaign/scenario';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
 /** where each battle's card sits on screen, for the automated playtest */
 const nodes: Container[] = [];
+let ids: string[] = [];
+const tabs: { id: string; c: Container }[] = [];
 (window as unknown as { __yuddhCampaign: () => { id: string; x: number; y: number }[] }).__yuddhCampaign = () =>
-  nodes.filter(c => !c.destroyed && c.parent).map((c, i) => { const p = c.getGlobalPosition(); return { id: MAURYA_CAMPAIGN[i].scenario.id, x: p.x, y: p.y }; });
+  [...nodes.filter(c => !c.destroyed && c.parent).map((c, i) => ({ id: ids[i], c })), ...tabs.filter(t => !t.c.destroyed && t.c.parent).map(t => ({ id: 'tab:' + t.id, c: t.c }))]
+    .map(({ id, c }) => { const p = c.getGlobalPosition(); return { id, x: p.x, y: p.y }; });
 
-export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: () => void): Scene {
+export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: () => void, start?: Campaign): Scene {
   const s: Scene = new Container();
+  let cur = start ?? currentCampaign();
   let alive = true;
   const body = new Container();
   s.addChild(body);
   let ground: Texture | null = null;
 
   async function draw(): Promise<void> {
-    await loadArt(MAURYA_CAMPAIGN.map(n => n.face));
+    const list = cur.nodes;
+    await loadArt(list.map(n => n.face));
     if (!alive) return;
     body.removeChildren().forEach(c => destroyTree(c as Container));
-    nodes.length = 0;
+    nodes.length = 0; tabs.length = 0; ids = list.map(n => n.scenario.id);
     const W = view.w, H = view.h, ph = view.phone, k = view.ui;
     const won = battlesWon();
-    const firstOpen = MAURYA_CAMPAIGN.findIndex(n => !won.includes(n.scenario.id));
+    const firstOpen = list.findIndex(n => !won.includes(n.scenario.id));
 
     const shade = new Graphics().rect(0, 0, W, ph ? 118 : 205).fill({ color: 0x0a0604, alpha: 0.6 });
-    const kicker = new Text({ text: 'THE MAURYA CAMPAIGN', style: { fontFamily: FONT_TITLE, fontSize: Math.round(20 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold, stroke: { color: 0x000000, width: 4 } } });
+    const kicker = new Text({ text: cur.kicker, style: { fontFamily: FONT_TITLE, fontSize: Math.round(20 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold, stroke: { color: 0x000000, width: 4 } } });
     kicker.position.set(ph ? 60 : 100, ph ? 12 : 40);
-    const title = new Text({ text: 'Rise of Magadha', style: { fontFamily: FONT_TITLE, fontSize: ph ? 54 : 72, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 6 } } });
+    const title = new Text({ text: cur.title, style: { fontFamily: FONT_TITLE, fontSize: ph ? 54 : 72, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 6 } } });
     title.position.set(ph ? 56 : 96, ph ? 38 : 70);
     body.addChild(shade, kicker, title);
 
-    const n = MAURYA_CAMPAIGN.length;
+    const n = list.length;
     const k0 = ph ? 0.42 : 0.56;
     const cw = FACE_W * k0, ch = FACE_H * k0;
-    const gap = Math.min(ph ? 150 : 190, (W - 200 - n * cw) / (n - 1));
+    const gap = n > 1 ? Math.min(ph ? 150 : 190, (W - 200 - n * cw) / (n - 1)) : 0;
     const total = n * cw + (n - 1) * gap;
-    const cy = ph ? 118 + (H - 118 - 100) / 2 - 8 : 205 + (H - 205 - 150) / 2 - 20;
+    const top = (ph ? 118 : 205) + 52;
+    const cy = ph ? top + (H - top - 100) / 2 - 8 : top + (H - top - 150) / 2 - 20;
     // the road
     const road = new Graphics();
     for (let i = 0; i < n - 1; i++) {
@@ -59,7 +65,21 @@ export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: ()
     }
     body.addChild(road);
 
-    MAURYA_CAMPAIGN.forEach((node, i) => {
+    // campaign tabs under the heading
+    CAMPAIGNS.forEach((c, i) => {
+      const on = c === cur;
+      const lab = new Text({ text: c.title, style: { fontFamily: FONT_TITLE, fontSize: Math.round(20 * k), fontWeight: '700', letterSpacing: 2, fill: on ? 0x22150d : INK.goldPale } });
+      lab.anchor.set(0.5);
+      const w = lab.width + 40, h = lab.height + 14;
+      const pill = new Graphics().roundRect(-w / 2, -h / 2, w, h, 8).fill({ color: on ? INK.gold : 0x24170e, alpha: 0.95 }).stroke({ width: 2, color: INK.gold });
+      const tab = new Container(); tab.addChild(pill, lab);
+      tab.position.set(W / 2 + (i - (CAMPAIGNS.length - 1) / 2) * (w + 24), (ph ? 118 : 205) + 30);
+      tab.eventMode = 'static'; tab.cursor = 'pointer';
+      tab.on('pointertap', () => { if (c === cur) return; audio.unlock(); audio.play('click'); cur = c; void loadBattlefield(c.ground).then(t => { if (alive) stage.setBackdrop(t, 0.5); }); void draw(); });
+      body.addChild(tab); tabs.push({ id: c.id, c: tab });
+    });
+
+    list.forEach((node, i) => {
       const sc = node.scenario;
       const x = W / 2 - total / 2 + cw / 2 + i * (cw + gap);
       const c = new Container();
@@ -99,7 +119,7 @@ export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: ()
   s.relayout = () => { void draw(); };
   s.enter = () => {
     audio.playMusic('music_briefing');
-    void loadBattlefield('pataliputra').then(t => { ground = t; if (alive) stage.setBackdrop(ground, 0.5); });
+    void loadBattlefield(cur.ground).then(t => { ground = t; if (alive) stage.setBackdrop(ground, 0.5); });
     void draw();
   };
   s.leave = () => { alive = false; };

@@ -21,17 +21,18 @@ Owner: Pon (directs the work, generates all art with AI image tools from prompts
 - **Pikes** (Seleucid Phalanx): a melee unit that advanced this turn and strikes it takes 2 extra damage.
 - Two rulesets exist: `'classic'` (the original prototype, replayed by the golden test) and `'yuddh'` (everything above, and all new work). New rule changes go behind `st.rules === 'yuddh'`.
 
-## Campaign (Maurya, "Rise of Magadha")
+## Campaigns (Maurya "Rise of Magadha", then Gupta "The Golden Age")
 | # | Battle | Enemy | Status |
 |---|---|---|---|
 | 0 | The Training Ground | Nanda border post (coached by Chanakya) | Done |
 | 1 | The First Throne, Pataliputra, c. 321 BCE | Nanda court (Dhana Nanda, elephants, gold) | Done, approved at Gate 1 |
 | 2 | The Indus Line, c. 305 BCE | Seleucus Nicator: pike phalanx, Companion cavalry, Cretan archers, stone-throwers | Built 7 Nov (all 10 batch 4 paintings in) |
+| G1 | The Golden Age, Ujjain, c. 409 CE (Gupta campaign) | Rudrasimha III and the Western Satraps: horse-archers, lancers, silver, desert storm | Built 7 Nov |
 
 Not locked: any battle can be started from the campaign map; a laurel marks battles won, "NEXT" marks the next unwon one. Winning a battle offers the next one. The nine battles of the prototype (`src/campaign/missions.ts`) are the later campaign's skeleton; the agreed direction is cinematic briefings, mid-battle events and an original narrator voice (not an imitation of a real person).
 
-## Next campaign: The Golden Age (Gupta)
-Battle 1: Chandragupta II (Vikramaditya) against the Western Satraps (Saka, Rudrasimha III) at Ujjain, c. 409 CE. Theme: the Satraps are fast and fragile (horse-archers, lancers, silver for Kosha, a desert storm); the Gupta win with court and craft (Navaratna draws cards and moves toward Dharma, the Iron Pillar wards the Durg, Kalidasa draws). Cards are designed in cards.json `pendingArt`, prompts in `art/PROMPTS-BATCH5.md`, waiting on paintings. Scenarios may carry their own music (`Scenario.music`).
+## Second campaign: The Golden Age (Gupta)
+Battle 1 (built 7 Nov): Chandragupta II (Vikramaditya) against the Western Satraps (Saka, Rudrasimha III) at Ujjain, c. 409 CE. Theme: the Satraps are fast and fragile (horse-archers, lancers, silver for Kosha, a desert storm); the Gupta win with court and craft (Navaratna draws cards and moves toward Dharma, the Iron Pillar wards the Durg, Kalidasa draws). Balance ~53% (band 45–70%). Prompts in `art/PROMPTS-BATCH5.md`. A scenario may carry its own music (`Scenario.music`, falls back to the standard pieces) and the new sound effects `gallop` (cavalry) and `sandGust` (Marubhumi).
 
 ## Art and sound
 - Pon paints every card, Durg and battlefield from Claude's prompt sheets (`art/PROMPTS-*.md`) and uploads masters to `art/source/{cards,battlefields,sfx}/` named exactly by card id. `npm run assets` makes the game files; credits in `art/CREDITS.md`.

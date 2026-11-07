@@ -1036,7 +1036,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
           break;
         }
         case 'move': {
-          audio.play('march');
+          audio.play(/ashva|bhalla|hetairoi/.test(tokens.get(e.uid)?.cardId ?? '') ? 'gallop' : 'march');
           const v = tokens.get(e.uid);
           if (v) await gsap.to(v, { y: L.line.front, duration: 0.35, ease: 'power2.inOut' });
           break;
@@ -1058,6 +1058,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
           if (e.cardId === 's_agni' || e.cardId === 'n_aakraman') {
             audio.play(e.cardId === 's_agni' ? 'fire' : 'clash');
           } else if (e.cardId === 's_chakravyuha' || e.cardId === 'n_visha_baan') { audio.play(e.cardId === 'n_visha_baan' ? 'bow' : 'drum'); shake(10); }
+          else if (e.cardId === 'sa_marubhumi') { audio.play('sandGust'); shake(10); }
           else audio.play('coin');
           break;
         }
@@ -1136,6 +1137,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const c = CARDS[cardId];
     audio.play('deploy');
     if (/gaja|hasti/.test(cardId)) setTimeout(() => audio.play('elephant'), 150);
+    else if (c.sub === 'Cavalry' || /ashva|bhalla|hetairoi/.test(cardId)) setTimeout(() => audio.play('gallop'), 100);
     else if (c.kw?.includes('veg')) setTimeout(() => audio.play('march'), 100);
   }
 

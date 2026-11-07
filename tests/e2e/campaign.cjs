@@ -1,4 +1,4 @@
-/* Scripted playtest of the campaign: title → Campaign map → The Indus Line, played through
+/* Scripted playtest of the campaign: title → Campaign map → The Indus Line (or SCENARIO=golden_age), played through
    real mouse drags in Chromium, saving screenshots along the way. Set TURNS to stop early.
    The game lists its buttons (window.__yuddhButtons) and every legal drag
    (window.__yuddh.moves) in screen pixels; the bot presses and drags them.
@@ -35,7 +35,9 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   await press('Campaign'); await p.waitForTimeout(2500); await shot('02-campaign-map');
   const nodes = await p.evaluate(() => window.__yuddhCampaign());
   console.log('map nodes', JSON.stringify(nodes));
-  const indus = nodes.find(n => n.id === 'indus_line');
+  const target = process.env.SCENARIO || 'indus_line';
+  if (target === 'golden_age') { const tab = nodes.find(n => n.id === 'tab:gupta'); await p.mouse.click(tab.x, tab.y); await p.waitForTimeout(2500); await shot('02b-gupta-map'); }
+  const indus = (await p.evaluate(() => window.__yuddhCampaign())).find(n => n.id === target);
   await p.mouse.click(indus.x, indus.y);
   await p.waitForFunction(() => !!window.__yuddh && !window.__yuddhButtons().some(b => b.label === 'Campaign'), null, { timeout: 90000 }); await p.waitForTimeout(1800); await shot('03-indus-briefing');
   await press('To battle'); await p.waitForTimeout(3200); await shot('04-indus-start');

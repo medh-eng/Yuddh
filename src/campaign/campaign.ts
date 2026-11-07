@@ -8,6 +8,7 @@ import type { Scenario } from './scenario';
 import { TUTORIAL, tutorialDone } from './tutorial';
 import { FIRST_THRONE_SCENARIO } from './firstThrone';
 import { INDUS_LINE_SCENARIO } from './indusLine';
+import { GOLDEN_AGE_SCENARIO } from './goldenAge';
 
 export interface CampaignNode {
   scenario: Scenario;
@@ -17,13 +18,38 @@ export interface CampaignNode {
   blurb: string;
 }
 
+export interface Campaign {
+  id: string;
+  /** small heading on the map */
+  kicker: string;
+  title: string;
+  /** battlefield painted behind the map */
+  ground: string;
+  nodes: CampaignNode[];
+}
+
 export const MAURYA_CAMPAIGN: CampaignNode[] = [
   { scenario: TUTORIAL, face: 'm_chanakya', blurb: 'Chanakya teaches the war.' },
   { scenario: FIRST_THRONE_SCENARIO, face: 'nd_dhana_nanda', blurb: 'Take Pataliputra from the Nanda.' },
   { scenario: INDUS_LINE_SCENARIO, face: 'se_seleucus', blurb: 'Meet Seleucus at the river.' }
 ];
+export const GUPTA_CAMPAIGN: CampaignNode[] = [
+  { scenario: GOLDEN_AGE_SCENARIO, face: 'sa_rudrasimha', blurb: 'Take Ujjain from the Satraps.' }
+];
 
-export const scenarioById = (id: string): Scenario | undefined => MAURYA_CAMPAIGN.find(n => n.scenario.id === id)?.scenario;
+export const CAMPAIGNS: Campaign[] = [
+  { id: 'maurya', kicker: 'THE MAURYA CAMPAIGN', title: 'Rise of Magadha', ground: 'pataliputra', nodes: MAURYA_CAMPAIGN },
+  { id: 'gupta', kicker: 'THE GUPTA CAMPAIGN', title: 'The Golden Age', ground: 'ujjain', nodes: GUPTA_CAMPAIGN }
+];
+
+export const scenarioById = (id: string): Scenario | undefined =>
+  CAMPAIGNS.flatMap(c => c.nodes).find(n => n.scenario.id === id)?.scenario;
+
+/** the first campaign that still has a battle not won (the last one when all are done) */
+export function currentCampaign(): Campaign {
+  const won = battlesWon();
+  return CAMPAIGNS.find(c => c.nodes.some(n => !won.includes(n.scenario.id))) ?? CAMPAIGNS[CAMPAIGNS.length - 1];
+}
 
 const KEY = 'yuddh.campaign.v1';
 const read = (): string[] => { try { const v = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } };

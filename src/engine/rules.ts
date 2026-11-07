@@ -490,6 +490,7 @@ function applyOrder(st: GameState, pIdx: PlayerIndex, cardId: string, target?: T
       const c = CARDS[cardId];
       if (c.power && t && t.kind === 'unit') damageUnit(st, t.owner, t.uid, c.power);
       if (c.hqDamage && t && t.kind === 'unit') damageHQ(st, t.owner, c.hqDamage);
+      if (c.damageAll) damageAll(st, other(pIdx), c.damageAll);
       if (c.kosha) p.kosha = Math.min(p.maxKosha + c.kosha, p.kosha + c.kosha);
       if (c.heal) p.hq.hp = Math.min(p.hq.maxHp, p.hq.hp + c.heal);
       if (c.draw) draw(st, pIdx, c.draw);
