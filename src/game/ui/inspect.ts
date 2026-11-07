@@ -5,7 +5,7 @@ import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import gsap from 'gsap';
 import { CARDS, type Season, type Unit } from '../../engine';
 import { FACE_H, FACE_W, cardFace } from '../cards/paint';
-import { FONT_SERIF, INK } from '../theme';
+import { INK, FONT_TITLE, FONT_BODY } from '../theme';
 import { view } from '../view';
 import { glossFor, type Gloss, type GlossIcon } from './glossary';
 
@@ -51,9 +51,9 @@ export function glossPanel(glosses: Gloss[], pw: number, maxH: number, ui: numbe
     glosses.forEach((gl, i) => {
       if (i > 0) { panel.addChild(new Graphics().moveTo(pad, y - 10).lineTo(pw - pad, y - 10).stroke({ width: 1.5, color: INK.gold, alpha: 0.45 })); }
       const ic = icon(gl.icon, ir); ic.position.set(pad + ir, y + head * 0.62);
-      const t = new Text({ text: gl.title, style: { fontFamily: FONT_SERIF, fontSize: head, fontWeight: '700', letterSpacing: 2, fill: INK.goldPale, stroke: { color: 0x000000, width: 2 } } });
+      const t = new Text({ text: gl.title, style: { fontFamily: FONT_TITLE, fontSize: head, fontWeight: '700', letterSpacing: 2, fill: INK.goldPale, stroke: { color: 0x000000, width: 2 } } });
       t.position.set(pad + ir * 2 + 14, y);
-      const b = new Text({ text: gl.body, style: { fontFamily: FONT_SERIF, fontSize: body, fontWeight: '700', fill: 0xf4ead6, wordWrap: true, wordWrapWidth: pw - pad * 2, lineHeight: Math.round(body * 1.22) } });
+      const b = new Text({ text: gl.body, style: { fontFamily: FONT_BODY, fontSize: body, fontWeight: '700', fill: 0xf4ead6, wordWrap: true, wordWrapWidth: pw - pad * 2, lineHeight: Math.round(body * 1.22) } });
       b.position.set(pad, y + head + 8);
       panel.addChild(ic, t, b);
       y = b.y + b.height + 22;
@@ -90,7 +90,7 @@ export function inspectOverlay(cardId: string, upgrade: number, onClose: () => v
   if (!glosses.length) panel.visible = false;
   c.addChild(panel, face);
 
-  const tip = new Text({ text: 'Tap anywhere to close', style: { fontFamily: FONT_SERIF, fontSize: Math.round(20 * ui), fontStyle: 'italic', fill: INK.smoke } });
+  const tip = new Text({ text: 'Tap anywhere to close', style: { fontFamily: FONT_BODY, fontSize: Math.round(20 * ui), fontStyle: 'italic', fill: INK.smoke } });
   tip.anchor.set(0.5, 1); tip.position.set(face.x, H - 4); tip.alpha = 0.8;
   c.addChild(tip);
   c.eventMode = 'static'; c.on('pointertap', onClose);

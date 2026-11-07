@@ -13,7 +13,7 @@ KARDS-style card game of ancient India, built for Pon (owner, non-programmer, di
 - Commit as "Claude", attribution lines per session instructions.
 
 ## Stack
-TypeScript, Vite 8, PixiJS 8, GSAP 3, Vitest. Fonts bundled via @fontsource (Cormorant Garamond, Tiro Devanagari Hindi). Two screen modes (`src/game/view.ts`): desktop uses a 1920×1080 design space; a phone held sideways (short side ≤ 540 CSS px) gets a 720-high design space 1280–1800 wide (follows the screen's shape, 16:9 to 2.5:1), plus `view.ui` (1.25) for text and controls. Phone layout is tuned for 5.5–6 inch phones: test at 640×360 and 732×412 as well as 844×390. Responsive scenes read `view` and implement `relayout()`; the battle keeps its numbers in one `battleLayout()` table per mode and rebuilds the board from the game state when the mode changes. A scene can pin a fixed size with `design` (the old AI-vs-AI preview does). The battlefield fills the window behind everything (`Stage.setBackdrop`).
+TypeScript, Vite 8, PixiJS 8, GSAP 3, Vitest. Fonts bundled via @fontsource (theme.ts): **Cinzel** (`FONT_TITLE`) for titles, names, labels and every number; **Alegreya Sans** (`FONT_BODY`) for rules text, panels, hints and coaching; Cormorant Garamond (`FONT_SERIF`) only for story lines (briefing, end-screen line); Tiro Devanagari Hindi. Cinzel is wide: anything that can grow (names, banners, info) shrinks to fit. Two screen modes (`src/game/view.ts`): desktop uses a 1920×1080 design space; a phone held sideways (short side ≤ 540 CSS px) gets a 720-high design space 1280–1800 wide (follows the screen's shape, 16:9 to 2.5:1), plus `view.ui` (1.25) for text and controls. Phone layout is tuned for 5.5–6 inch phones: test at 640×360 and 732×412 as well as 844×390. Responsive scenes read `view` and implement `relayout()`; the battle keeps its numbers in one `battleLayout()` table per mode and rebuilds the board from the game state when the mode changes. A scene can pin a fixed size with `design` (the old AI-vs-AI preview does). The battlefield fills the window behind everything (`Stage.setBackdrop`).
 
 ## Map
 ```
@@ -44,10 +44,13 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 - Hand cards show their current cost (`HandCard.setCost(koshaCost(...))` in refreshInteractivity); a discount (Maurya passive, upgrades) paints the coin green. Card faces mark charging classes "· CHARGES".
 - Tapping an enemy unit reads its card; a tap that just chose a target is ignored for 0.7 s (`targetTapAt`).
 - The playtest presses a hand card on its uncovered left strip (cards overlap on narrow phones).
+- Board units (`TokenView`): badges sit inside the frame's lower corners; on phones the painting fills the token (no name plate, `tokenFace(id, owner, false)`) and the name shows above it while selected. The bronze order-cost coin (with a sword mark) appears only when the cost isn't 1. Lines keep ≥24 px between units (`lineFit`/`slotX`, inner `body` scale via `setFit`). Keywords in card text are bold bronze (`wrapRich`, KEYWORD regex in paint.ts).
+- Layer order in battle: hand, arrow, damage shields, reading panels and fx are re-added above the meters and season chip; tips and the coach layer go above those.
+- Fullscreen: `src/game/fullscreen.ts`; the second round button in battle; a phone's first tap goes fullscreen once (main.ts); `public/manifest.webmanifest` (landscape, fullscreen).
 - Combat feedback (KARDS-like): while aiming a unit, red damage shields show what each side would take (`combatFx`, above the arrow); hits pop a red shield with the number, the struck unit flashes red and flinches, melee raises dust.
 - Music needs a user gesture; `audio.playMusic()` before unlock just records the wish. `audio.unlock()` runs on every pointerdown and retries a blocked play.
 
-## Status (6 Nov 2026)
-- Phase 1 approved (Gate 1, 4 Nov). Phase 2 so far: rules panels, damage shields, promotion, trample, seasons, tutorial, bigger numbers, batch 3 cards, Dharma–Kuta meter.
+## Status (7 Nov 2026)
+- Phase 1 approved (Gate 1, 4 Nov). Phase 2 so far: rules panels, damage shields, promotion, trample, seasons, tutorial, bigger numbers, batch 3 cards, Dharma–Kuta meter (tug-of-war bar, dagger and lotus), UI polish round (fonts, tokens, Durg labels, fullscreen, lamps, keywords; plan in the project: claude/yuddh-ui-polish-plan.md).
 - First Throne balance (firstThrone.test.ts wants 55–80%): ~57% over the four seasons, ~16 turns (Raja Dhwaja now costs 2). Both sides reach +3 Dharma in ~64% of battles; Kuta −3 is rare (~5% player, ~14% Nanda).
 - Next: The Indus Line (second battle, Chandragupta vs Seleucus) once batch 4 is painted: Seleucid deck (se_*), new Durgs, battlefield `indus`; then a campaign map linking Training Ground → First Throne → Indus Line; morale/rout; search AI → Gate 2. Full plan: https://claude.ai/artifact/GXWYv5rFMrBzsoqt3X456s

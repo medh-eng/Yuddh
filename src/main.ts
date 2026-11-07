@@ -5,7 +5,15 @@ import '@fontsource/cormorant-garamond/500-italic.css';
 import '@fontsource/cormorant-garamond/600.css';
 import '@fontsource/cormorant-garamond/700.css';
 import '@fontsource/tiro-devanagari-hindi/400.css';
+import '@fontsource/cinzel/600.css';
+import '@fontsource/cinzel/700.css';
+import '@fontsource/alegreya-sans/500.css';
+import '@fontsource/alegreya-sans/500-italic.css';
+import '@fontsource/alegreya-sans/700.css';
+import '@fontsource/alegreya-sans/800.css';
 import { Stage } from './game/stage';
+import { view } from './game/view';
+import { canFullscreen, isFullscreen, toggleFullscreen } from './game/fullscreen';
 import { titleScene } from './game/scenes/title';
 import { battlePreviewScene } from './game/scenes/battlePreview';
 import { battleScene, preloadBattle } from './game/scenes/battle';
@@ -13,7 +21,7 @@ import { galleryScene } from './game/scenes/gallery';
 import { audio } from './game/audio';
 import { TUTORIAL } from './campaign/tutorial';
 import { CARD_ART, loadArt, loadBattlefield } from './assets/manifest';
-import { FONT_DEVA, FONT_SERIF } from './game/theme';
+import { FONT_BODY, FONT_DEVA, FONT_SERIF, FONT_TITLE } from './game/theme';
 
 /** a quiet "loading" line over the screen while something is fetched */
 async function loading<T>(p: Promise<T>): Promise<T> {
@@ -33,6 +41,12 @@ async function boot(): Promise<void> {
         document.fonts.load(`600 40px ${FONT_SERIF}`),
         document.fonts.load(`500 40px ${FONT_SERIF}`),
         document.fonts.load(`italic 500 40px ${FONT_SERIF}`),
+        document.fonts.load(`700 40px ${FONT_TITLE}`),
+        document.fonts.load(`600 40px ${FONT_TITLE}`),
+        document.fonts.load(`700 40px ${FONT_BODY}`),
+        document.fonts.load(`800 40px ${FONT_BODY}`),
+        document.fonts.load(`500 40px ${FONT_BODY}`),
+        document.fonts.load(`italic 500 40px ${FONT_BODY}`),
         document.fonts.load(`40px ${FONT_DEVA}`, 'युद्ध')
       ]),
       new Promise(r => setTimeout(r, 2500))
@@ -47,6 +61,12 @@ async function boot(): Promise<void> {
   const battleReady = preloadBattle();
 
   window.addEventListener('pointerdown', () => audio.unlock());
+  // a sideways phone: the first press also goes full screen, hiding the address bar (once; ⛶ in battle toggles it)
+  let askedFull = false;
+  window.addEventListener('pointerup', () => {
+    if (askedFull || !view.phone || !canFullscreen() || isFullscreen()) return;
+    askedFull = true; void toggleFullscreen();
+  });
   const title = (): void => stage.show(titleScene(stage, {
     battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title))); },
     tutorial: () => {

@@ -1,6 +1,6 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import gsap from 'gsap';
-import { FONT_SERIF, INK } from '../theme';
+import { INK, FONT_TITLE } from '../theme';
 import { view } from '../view';
 
 /** every live button, so the automated playtest can find and press them by label */
@@ -29,7 +29,7 @@ export function makeButton(label: string, onTap: () => void, opts: { w?: number;
   draw(false);
   const t = new Text({
     text: label.toUpperCase(),
-    style: { fontFamily: FONT_SERIF, fontSize: Math.round(24 * k), fontWeight: '700', letterSpacing: 5, fill: opts.primary ? 0x22150d : INK.goldPale }
+    style: { fontFamily: FONT_TITLE, fontSize: Math.round(24 * k), fontWeight: '700', letterSpacing: 5, fill: opts.primary ? 0x22150d : INK.goldPale }
   });
   t.anchor.set(0.5);
   // long labels on narrow buttons shrink to fit

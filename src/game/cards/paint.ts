@@ -9,7 +9,8 @@ import { CARDS, type CardDef, type EmpireId } from '../../engine';
 import { artImage, hasArt } from '../../assets/manifest';
 import { EMPIRE_STYLE } from '../theme';
 
-const SERIF = "'Cormorant Garamond', Georgia, serif";
+const TITLE = "'Cinzel', Georgia, serif";
+const BODY = "'Alegreya Sans', 'Trebuchet MS', sans-serif";
 const DEVA = "'Tiro Devanagari Hindi', serif";
 
 /** card face, in canvas pixels (displayed at half size: 240×336) */
@@ -110,7 +111,16 @@ function coin(g: CanvasRenderingContext2D, x: number, y: number, r: number, labe
   g.lineWidth = 3; g.strokeStyle = 'rgba(40,20,5,0.8)'; g.stroke();
   g.beginPath(); g.arc(x, y, r - 7, 0, Math.PI * 2);
   g.lineWidth = 1.5; g.strokeStyle = kind === 'gold' ? 'rgba(120,70,10,0.6)' : 'rgba(255,220,180,0.35)'; g.stroke();
-  g.font = `700 ${Math.round(r * 1.42)}px ${SERIF}`;
+  // the bronze coin (Kosha to advance or attack) carries a sword, so it is not mistaken for the gold cost coin
+  if (kind === 'bronze') {
+    g.save(); g.translate(x, y); g.rotate(-Math.PI / 4);
+    g.fillStyle = 'rgba(255,214,160,0.5)';
+    g.beginPath(); g.moveTo(-r * 0.12, r * 0.42); g.lineTo(-r * 0.12, -r * 0.62); g.lineTo(0, -r * 0.86); g.lineTo(r * 0.12, -r * 0.62); g.lineTo(r * 0.12, r * 0.42); g.closePath(); g.fill();
+    g.fillRect(-r * 0.4, r * 0.42, r * 0.8, r * 0.13);
+    g.fillRect(-r * 0.08, r * 0.55, r * 0.16, r * 0.26);
+    g.restore();
+  }
+  g.font = `700 ${Math.round(r * 1.42)}px ${TITLE}`;
   g.textAlign = 'center'; g.textBaseline = 'middle';
   // bold numerals with a contrasting rim, readable on a small phone
   g.lineJoin = 'round'; g.lineWidth = Math.max(3, r * 0.12);
@@ -141,7 +151,7 @@ export function statBadge(g: CanvasRenderingContext2D, x: number, y: number, r: 
   g.lineWidth = 4; g.strokeStyle = '#f0d79a'; g.stroke();
   if (label !== undefined) {
     g.fillStyle = '#fff';
-    g.font = `700 ${Math.round(r * 1.5)}px ${SERIF}`;
+    g.font = `700 ${Math.round(r * 1.5)}px ${TITLE}`;
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.lineJoin = 'round'; g.lineWidth = Math.max(4, r * 0.16); g.strokeStyle = 'rgba(10,4,0,0.95)';
     g.strokeText(label, 0, r * 0.08);
@@ -161,18 +171,33 @@ function gem(g: CanvasRenderingContext2D, x: number, y: number, r: number, rarit
   g.lineWidth = 2; g.strokeStyle = 'rgba(30,15,5,0.8)'; g.stroke();
 }
 
-function wrapText(g: CanvasRenderingContext2D, text: string, x: number, y: number, maxW: number, lineH: number, maxLines: number): void {
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let cur = '';
+const KEYWORD = /^(Raksha|Deploy|Vega|Charges|Tramples|Trample|Morale|Yantra)([.,:;]?)$/;
+/** rules text with its keywords in bold bronze-gold; `font` is the plain weight and size, e.g. "500 27px" */
+function wrapRich(g: CanvasRenderingContext2D, text: string, x: number, y: number, maxW: number, lineH: number, maxLines: number, size: number): void {
+  const plain = `500 ${size}px ${BODY}`, bold = `800 ${size + 1}px ${BODY}`;
+  const words = text.split(' ').map(w => ({ w, kw: KEYWORD.test(w) }));
+  const width = (w: { w: string; kw: boolean }) => { g.font = w.kw ? bold : plain; return g.measureText(w.w).width; };
+  g.font = plain; const space = g.measureText(' ').width;
+  const lines: { w: string; kw: boolean; px: number }[][] = [];
+  let cur: { w: string; kw: boolean; px: number }[] = [], cw = 0;
   for (const w of words) {
-    const t = cur ? cur + ' ' + w : w;
-    if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t;
+    const px = width(w), add = cur.length ? space + px : px;
+    if (cw + add > maxW && cur.length) { lines.push(cur); cur = [{ ...w, px }]; cw = px; } else { cur.push({ ...w, px }); cw += add; }
   }
-  if (cur) lines.push(cur);
+  if (cur.length) lines.push(cur);
   const shown = lines.slice(0, maxLines);
   const y0 = y - ((shown.length - 1) * lineH) / 2;
-  shown.forEach((l, i) => g.fillText(l, x, y0 + i * lineH));
+  const col = g.fillStyle;
+  g.textAlign = 'left';
+  shown.forEach((l, i) => {
+    const lw = l.reduce((a, w) => a + w.px, 0) + space * (l.length - 1);
+    let cx = x - lw / 2;
+    for (const w of l) {
+      g.font = w.kw ? bold : plain; g.fillStyle = w.kw ? '#8a4a00' : col;
+      g.fillText(w.w, cx, y0 + i * lineH); cx += w.px + space;
+    }
+  });
+  g.textAlign = 'center'; g.fillStyle = col;
 }
 
 /** unit classes that may advance and attack in one turn (engine: canCharge) */
@@ -229,8 +254,8 @@ export function cardFace(id: string, upgrade = 0, cost?: number): Texture {
   g.fillStyle = '#f6e7c3';
   g.textAlign = 'center'; g.textBaseline = 'middle';
   let size = 40;
-  g.font = `700 ${size}px ${SERIF}`;
-  while (g.measureText(c.name).width > W - 90 && size > 26) { size -= 2; g.font = `700 ${size}px ${SERIF}`; }
+  g.font = `700 ${size}px ${TITLE}`;
+  while (g.measureText(c.name).width > W - 90 && size > 26) { size -= 2; g.font = `700 ${size}px ${TITLE}`; }
   g.fillText(c.name, W / 2, ry + 38);
 
   // palm-leaf text panel
@@ -244,12 +269,16 @@ export function cardFace(id: string, upgrade = 0, cost?: number): Texture {
   for (let yy = py + 8; yy < py + ph; yy += 9) { g.beginPath(); g.moveTo(30, yy); g.lineTo(W - 30, yy + 2); g.stroke(); }
   g.restore();
   g.lineWidth = 2; g.strokeStyle = 'rgba(60,35,10,0.7)'; roundRect(g, 30, py, W - 60, ph, 10); g.stroke();
-  g.fillStyle = '#5a3a1a';
-  g.font = `700 19px ${SERIF}`;
-  g.fillText(typeLabel(c), W / 2, py + 22);
+  // the unit class: dark, large and spaced so it reads on the parchment
+  g.fillStyle = '#3a1e08';
+  let ls = 3, ts = 23;
+  g.font = `700 ${ts}px ${TITLE}`; g.letterSpacing = `${ls}px`;
+  while (g.measureText(typeLabel(c)).width > W - 84 && ts > 16) { ts -= 1; ls = Math.max(1, ls - 0.5); g.font = `700 ${ts}px ${TITLE}`; g.letterSpacing = `${ls}px`; }
+  g.fillText(typeLabel(c), W / 2, py + 24);
+  g.letterSpacing = '0px';
+  g.beginPath(); g.moveTo(W / 2 - 70, py + 42); g.lineTo(W / 2 + 70, py + 42); g.lineWidth = 1.5; g.strokeStyle = 'rgba(90,58,26,0.5)'; g.stroke();
   g.fillStyle = '#2a1708';
-  g.font = `500 27px ${SERIF}`;
-  wrapText(g, c.text, W / 2, py + ph / 2 + 14, W - 104, 29, 3);
+  wrapRich(g, c.text, W / 2, py + ph / 2 + 18, W - 100, 29, 3, 27);
 
   // cost coin, operation cost, rarity gem
   const printed = Math.max(1, c.type !== 'unit' ? c.cost - upgrade : c.cost);
@@ -264,7 +293,7 @@ export function cardFace(id: string, upgrade = 0, cost?: number): Texture {
     statBadge(g, W - 66, H - 64, 46, 'hp', String((c.hp ?? 0) + upgrade));
   }
   if (upgrade) {
-    g.fillStyle = '#e7c46e'; g.font = `700 22px ${SERIF}`;
+    g.fillStyle = '#e7c46e'; g.font = `700 22px ${BODY}`;
     g.fillText('★'.repeat(upgrade), W / 2, H - 30);
   }
 
@@ -305,9 +334,10 @@ export function cardBack(): Texture {
 /* ============================================================ board token */
 const tokenCache = new Map<string, Texture>();
 
-/** Static part of a unit on the board; stats are drawn live on top. */
-export function tokenFace(id: string, owner: 0 | 1): Texture {
-  const key = `${id}:${owner}`;
+/** Static part of a unit on the board; stats are drawn live on top.
+ *  `plate`: a name plate along the bottom. Without it (phones) the painting fills the token. */
+export function tokenFace(id: string, owner: 0 | 1, plate = true): Texture {
+  const key = `${id}:${owner}:${plate ? 1 : 0}`;
   const hit = tokenCache.get(key);
   if (hit) return hit;
   const c = CARDS[id];
@@ -319,28 +349,34 @@ export function tokenFace(id: string, owner: 0 | 1): Texture {
   roundRect(g, 0, 0, W, H, 22);
   material(g, c.empire, W, H);
   g.lineWidth = 4; g.strokeStyle = 'rgba(20,10,4,0.95)'; g.stroke();
+  // without a plate, the owner's colour runs round the frame instead
+  if (!plate) { roundRect(g, 5, 5, W - 10, H - 10, 18); g.lineWidth = 5; g.strokeStyle = owner === 0 ? '#d4a94f' : '#e0674a'; g.stroke(); }
 
-  const ax = 18, ay = 20, aw = W - 36, ah = H - 98;
+  const ax = plate ? 18 : 14, ay = plate ? 20 : 16, aw = W - ax * 2, ah = plate ? H - 98 : H - 32;
   g.save(); archPath(g, ax, ay, aw, ah); g.clip();
   drawArt(g, id, ax, ay, aw, ah, 0.28);
-  const vg = g.createLinearGradient(0, ay + ah * 0.6, 0, ay + ah);
-  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(10,5,0,0.6)');
+  // darker towards the bottom, where the attack and health badges sit
+  const vg = g.createLinearGradient(0, ay + ah * 0.55, 0, ay + ah);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(10,5,0,0.7)');
   g.fillStyle = vg; g.fillRect(ax, ay, aw, ah);
   g.restore();
   archPath(g, ax, ay, aw, ah); g.lineWidth = 5; g.strokeStyle = 'rgba(20,10,4,0.95)'; g.stroke();
   archPath(g, ax - 3, ay - 3, aw + 6, ah + 3); g.lineWidth = 2; g.strokeStyle = '#e7c46e'; g.stroke();
 
-  // nameplate in the owner's colour: gold-lacquer for you, vermilion for the enemy
-  const ny = H - 84;
-  roundRect(g, 10, ny, W - 20, 50, 8);
-  g.fillStyle = owner === 0 ? '#2a1c0c' : '#3d1009'; g.fill();
-  g.lineWidth = 2.5; g.strokeStyle = owner === 0 ? '#d4a94f' : '#e0674a'; g.stroke();
-  g.fillStyle = '#f6e7c3'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  let size = 30; g.font = `700 ${size}px ${SERIF}`;
-  while (g.measureText(c.name).width > W - 120 && size > 20) { size -= 2; g.font = `700 ${size}px ${SERIF}`; }
-  g.fillText(c.name, W / 2, ny + 26);
+  if (plate) {
+    // nameplate in the owner's colour: gold-lacquer for you, vermilion for the enemy
+    const ny = H - 84;
+    roundRect(g, 10, ny, W - 20, 50, 8);
+    g.fillStyle = owner === 0 ? '#2a1c0c' : '#3d1009'; g.fill();
+    g.lineWidth = 2.5; g.strokeStyle = owner === 0 ? '#d4a94f' : '#e0674a'; g.stroke();
+    g.fillStyle = '#f6e7c3'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    let size = 28; g.font = `700 ${size}px ${TITLE}`;
+    while (g.measureText(c.name).width > W - 40 && size > 18) { size -= 1; g.font = `700 ${size}px ${TITLE}`; }
+    g.fillText(c.name, W / 2, ny + 27);
+  }
 
-  coin(g, W - 38, 42, 30, String(c.op ?? 0), 'bronze');
+  // most units spend 1 Kosha to act; only the exceptions carry the bronze coin
+  if ((c.op ?? 1) !== 1) coin(g, W - 40, 44, 32, String(c.op ?? 0), 'bronze');
   const t = Texture.from(cv);
   if (!notReady(id)) tokenCache.set(key, t);
   return t;

@@ -7,7 +7,7 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import gsap from 'gsap';
 import { CARDS, EMPIRES, type CardDef, type EmpireId } from '../../engine';
-import { FONT_SERIF, INK, EMPIRE_STYLE } from '../theme';
+import { FONT_SERIF, INK, EMPIRE_STYLE, FONT_TITLE } from '../theme';
 import { view } from '../view';
 import { cardFace, FACE_H, FACE_W } from '../cards/paint';
 import { makeButton } from '../ui/button';
@@ -40,8 +40,8 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
   const nav = new Container();
   s.addChild(head, grid, tabs, nav);
 
-  const kicker = new Text({ text: 'CHITRASHALA · THE CARD GALLERY', style: { fontFamily: FONT_SERIF, fontSize: 20, fontWeight: '700', letterSpacing: 8, fill: INK.gold, stroke: { color: 0x000000, width: 4 } } });
-  const name = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 72, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 6 } } });
+  const kicker = new Text({ text: 'CHITRASHALA · THE CARD GALLERY', style: { fontFamily: FONT_TITLE, fontSize: 20, fontWeight: '700', letterSpacing: 8, fill: INK.gold, stroke: { color: 0x000000, width: 4 } } });
+  const name = new Text({ text: '', style: { fontFamily: FONT_TITLE, fontSize: 72, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 6 } } });
   const line = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 24, fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 4 }, wordWrap: true, wordWrapWidth: 1200 } });
   const shade = new Graphics();
   head.addChild(shade, kicker, name, line);
@@ -143,14 +143,14 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
       const r = 34 * view.ui;
       const enabled = dir < 0 ? page > 0 : page < pages - 1;
       c.addChild(new Graphics().circle(0, 0, r).fill({ color: 0x140c07, alpha: 0.85 }).stroke({ width: 2, color: INK.gold, alpha: enabled ? 1 : 0.3 }));
-      const t = new Text({ text: dir < 0 ? '‹' : '›', style: { fontFamily: FONT_SERIF, fontSize: Math.round(54 * view.ui), fontWeight: '700', fill: INK.goldPale } });
+      const t = new Text({ text: dir < 0 ? '‹' : '›', style: { fontFamily: FONT_TITLE, fontSize: Math.round(54 * view.ui), fontWeight: '700', fill: INK.goldPale } });
       t.anchor.set(0.5, 0.56); t.alpha = enabled ? 1 : 0.3; c.addChild(t);
       c.position.set(dir < 0 ? (g.ph ? 60 : 80) : g.W - (g.ph ? 60 : 80), g.top + (g.H - g.top - g.bottom) / 2);
       if (enabled) { c.eventMode = 'static'; c.cursor = 'pointer'; c.on('pointertap', () => { audio.play('cardDraw'); void show(tab, page + dir); }); }
       nav.addChild(c);
     };
     arrowBtn(-1); arrowBtn(1);
-    const pg = new Text({ text: `${page + 1} / ${pages}`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(22 * view.ui), fill: INK.cream, stroke: { color: 0x000000, width: 3 } } });
+    const pg = new Text({ text: `${page + 1} / ${pages}`, style: { fontFamily: FONT_TITLE, fontSize: Math.round(22 * view.ui), fill: INK.cream, stroke: { color: 0x000000, width: 3 } } });
     pg.anchor.set(0.5); pg.position.set(g.W - (g.ph ? 60 : 80), g.top + (g.H - g.top - g.bottom) / 2 + 34 * view.ui + 26);
     nav.addChild(pg);
   }

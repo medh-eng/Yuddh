@@ -21,11 +21,12 @@ import {
 import { FIRST_THRONE_SCENARIO } from '../../campaign/firstThrone';
 import type { Scenario } from '../../campaign/scenario';
 import { markTutorialDone } from '../../campaign/tutorial';
-import { FONT_SERIF, INK } from '../theme';
+import { FONT_SERIF, INK, FONT_TITLE, FONT_BODY } from '../theme';
 import { view, type View } from '../view';
 import { audio, type Sfx } from '../audio';
 import { cardFace } from '../cards/paint';
-import { DurgView, HandCard, TOKEN_DH, TokenView, drawDiyas, stopTweens } from '../cards/views';
+import { canFullscreen, toggleFullscreen } from '../fullscreen';
+import { DurgView, HandCard, TOKEN_DH, TOKEN_DW, TokenView, drawDiyas, stopTweens } from '../cards/views';
 import { makeButton } from '../ui/button';
 import { glossPanel, inspectOverlay, type InspectExtra } from '../ui/inspect';
 import { glossFor } from '../ui/glossary';
@@ -47,7 +48,7 @@ interface Layout {
   koshaLabelY: number; koshaY: number; myDiyas: { x: number; y: number; s: number };
   deck: { x: number; y: number; s: number };
   yantraX: number; yantraS: number; yantraGap: number;
-  roundY: number; roundX: [number, number, number]; roundR: number;
+  roundY: number; roundX: [number, number, number, number]; roundR: number;
   hintY: number;
   /** where a card the enemy plays is shown, and how big (HandCard scale) */
   reveal: { x: number; y: number; s: number };
@@ -69,7 +70,7 @@ function battleLayout(v: View): Layout {
       endY: 448, endS: 1, koshaLabelY: 766, koshaY: 800, myDiyas: { x: 1584, y: 846, s: 1 },
       deck: { x: 1852, y: 905, s: 0.2 },
       yantraX: 1486, yantraS: 0.22, yantraGap: 80,
-      roundY: 1040, roundX: [1720, 1780, 1840], roundR: 26, hintY: 38,
+      roundY: 1040, roundX: [1660, 1720, 1780, 1840], roundR: 26, hintY: 22,
       reveal: { x: 860, y: 448, s: 1.15 }, preview: null
     };
   }
@@ -90,7 +91,7 @@ function battleLayout(v: View): Layout {
     endY: line.front, endS: 0.8, koshaLabelY: 400, koshaY: 438, myDiyas: { x: rightX - 100, y: 482, s: 1 },
     deck: { x: W - 48, y: 600, s: 0.18 },
     yantraX: laneX + laneW + 40, yantraS: 0.15, yantraGap: 58,
-    roundY: H - 36, roundX: [rightX - 110, rightX - 40, rightX + 30], roundR: 28, hintY: 18,
+    roundY: H - 36, roundX: [rightX - 180, rightX - 110, rightX - 40, rightX + 30], roundR: 28, hintY: 6,
     reveal: { x: laneX + laneW / 2, y: line.front, s: 1.45 },
     preview: { x: W - 8 - 240 * ((H * 0.7) / 672), y: (L_HANDTOP(H)) / 2 + 4, s: (H * 0.7) / 672 }
   };
@@ -137,7 +138,13 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   const tokens = new Map<number, TokenView>();
   let hand: HandCard[] = [];
   let enemyHand: HandCard[] = [];
-  const slotX = (i: number, n: number) => L.laneX + L.laneW / 2 + (i - (n - 1) / 2) * L.slotGap;
+  /** at least 24 px between neighbouring units; a line too crowded for that shrinks its units */
+  const SLOT_MARGIN = 24;
+  const lineFit = (n: number) => Math.min(1, (L.laneW - 40) / (n * (TOKEN_DW * L.tok + SLOT_MARGIN)));
+  const slotX = (i: number, n: number) => {
+    const gap = Math.max(L.slotGap, TOKEN_DW * L.tok * lineFit(n) + SLOT_MARGIN);
+    return L.laneX + L.laneW / 2 + (i - (n - 1) / 2) * Math.min(gap, (L.laneW - TOKEN_DW * L.tok) / Math.max(1, n - 1));
+  };
   const fsz = (n: number) => Math.round(n * L.ui);
 
   /* ---------------- scenery ---------------- */
@@ -148,7 +155,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   const frontGlow = new Graphics();
   s.addChild(lanes, frontGlow, zoneGlow);
   const laneLabels = ['ENEMY RAJYA', 'YUDHBHUMI', 'YOUR RAJYA'].map(t => {
-    const x = new Text({ text: t, style: { fontFamily: FONT_SERIF, fontSize: 18, fontWeight: '700', letterSpacing: 7, fill: INK.goldPale } });
+    const x = new Text({ text: t, style: { fontFamily: FONT_TITLE, fontSize: 18, fontWeight: '700', letterSpacing: 7, fill: INK.goldPale } });
     x.alpha = 0.55; x.anchor.set(0, 0.5); s.addChild(x); return x;
   });
 
@@ -156,19 +163,19 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   s.addChild(durg[0], durg[1]);
 
   // right column: enemy info, end turn, your treasury, deck
-  const enemyInfo = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 22, fill: INK.goldPale, align: 'center', stroke: { color: 0x000000, width: 3 } } });
+  const enemyInfo = new Text({ text: '', style: { fontFamily: FONT_TITLE, fontSize: 22, fill: INK.goldPale, align: 'center', stroke: { color: 0x000000, width: 3 } } });
   enemyInfo.anchor.set(0.5);
   const enemyDiyas = new Graphics();
   const myDiyas = new Graphics();
-  const myKosha = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 40, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 5 } } });
+  const myKosha = new Text({ text: '', style: { fontFamily: FONT_TITLE, fontSize: 40, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 5 } } });
   myKosha.anchor.set(0.5);
-  const koshaLabel = new Text({ text: 'KOSHA', style: { fontFamily: FONT_SERIF, fontSize: 16, fontWeight: '700', letterSpacing: 6, fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
+  const koshaLabel = new Text({ text: 'KOSHA', style: { fontFamily: FONT_TITLE, fontSize: 16, fontWeight: '700', letterSpacing: 6, fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
   koshaLabel.anchor.set(0.5);
   s.addChild(enemyInfo, enemyDiyas, myDiyas, myKosha, koshaLabel);
 
   // your deck: a short stack of card backs with the count on top
   const deckPile = new Container();
-  const deckCount = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 30, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 5 } } });
+  const deckCount = new Text({ text: '', style: { fontFamily: FONT_TITLE, fontSize: 30, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 5 } } });
   deckCount.anchor.set(0.5);
   s.addChild(deckPile);
 
@@ -177,7 +184,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
 
   const endBtn = new Container();
   const endG = new Graphics();
-  const endT = new Text({ text: 'END TURN', style: { fontFamily: FONT_SERIF, fontSize: 26, fontWeight: '700', letterSpacing: 4, fill: 0x24170e, align: 'center' } });
+  const endT = new Text({ text: 'END TURN', style: { fontFamily: FONT_TITLE, fontSize: 26, fontWeight: '700', letterSpacing: 4, fill: 0x24170e, align: 'center' } });
   endT.anchor.set(0.5);
   endBtn.addChild(endG, endT);
   endBtn.eventMode = 'static'; endBtn.cursor = 'pointer';
@@ -197,9 +204,15 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   }
 
   // top hint bar
-  const hint = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 24, fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 4 } } });
-  hint.anchor.set(0.5);
+  const hint = new Text({ text: '', style: { fontFamily: FONT_BODY, fontSize: 24, fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 4 } } });
+  hint.anchor.set(0.5, 0);
   s.addChild(hint);
+  /** the hint line never runs off the screen: long hints shrink to fit above the lanes */
+  function fitHint(): void {
+    hint.scale.set(1);
+    const room = Math.min(L.W - 2 * (L.laneX - 40), L.laneW + 120);
+    if (hint.width > room) hint.scale.set(room / hint.width);
+  }
 
   const unitLayer = new Container();
   const handLayer = new Container();
@@ -212,20 +225,22 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   // must opt out, or a passing spark or the turn banner swallows a press on the unit beneath it.
   for (const deco of [lanes, frontGlow, zoneGlow, arrow, previewLayer, fx, combatFx]) deco.eventMode = 'none';
 
-  // small round buttons: menu, music, sound
+  // small round buttons: menu, full screen, music, sound
   const rounds = [
     { label: '✕', fn: () => confirmLeave() },
-    { label: '♪', fn: () => { roundT[1].alpha = audio.toggleMusic() ? 1 : 0.35; } },
-    { label: '◈', fn: () => { roundT[2].alpha = audio.toggleSfx() ? 1 : 0.35; } }
+    { label: '', fn: () => { void toggleFullscreen(); } },
+    { label: '♪', fn: () => { roundT[2].alpha = audio.toggleMusic() ? 1 : 0.35; } },
+    { label: '◈', fn: () => { roundT[3].alpha = audio.toggleSfx() ? 1 : 0.35; } }
   ].map(r => {
     const c = new Container();
     const g = new Graphics();
-    const t = new Text({ text: r.label, style: { fontFamily: FONT_SERIF, fontSize: 20, fontWeight: '700', fill: INK.goldPale } }); t.anchor.set(0.5);
+    const t = new Text({ text: r.label, style: { fontFamily: FONT_TITLE, fontSize: 20, fontWeight: '700', fill: INK.goldPale } }); t.anchor.set(0.5);
     c.addChild(g, t); c.eventMode = 'static'; c.cursor = 'pointer'; c.on('pointertap', r.fn);
     s.addChild(c); return { c, g, t };
   });
   const roundT = rounds.map(r => r.t);
-  roundT[1].alpha = audio.music ? 1 : 0.35; roundT[2].alpha = audio.sfx ? 1 : 0.35;
+  roundT[2].alpha = audio.music ? 1 : 0.35; roundT[3].alpha = audio.sfx ? 1 : 0.35;
+  rounds[1].c.visible = canFullscreen();
 
   /** put every fixed part of the board where the current layout says */
   function applyLayout(): void {
@@ -243,10 +258,16 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     yantraRow[0].position.set(L.yantraX, L.line.mine); yantraRow[1].position.set(L.yantraX, L.line.enemy);
     endBtn.position.set(L.rightX, L.endY); endBtn.scale.set(L.endS);
     endT.style.fontSize = L.phone ? 28 : 26;
-    hint.style.fontSize = fsz(24); hint.position.set(L.laneX + L.laneW / 2, L.hintY);
+    hint.style.fontSize = fsz(24); hint.position.set(L.laneX + L.laneW / 2, L.hintY); fitHint();
     rounds.forEach((r, i) => {
       r.g.clear().circle(0, 0, L.roundR).fill({ color: 0x140c07, alpha: 0.85 }).stroke({ width: 2, color: INK.gold });
       r.t.style.fontSize = Math.round(L.roundR * 0.78);
+      if (i === 1) {
+        // full screen: four corner brackets (the ⛶ glyph is missing from many phone fonts)
+        const a = L.roundR * 0.42, b = L.roundR * 0.2;
+        for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) r.g.moveTo(sx * a, sy * (a - b)).lineTo(sx * a, sy * a).lineTo(sx * (a - b), sy * a);
+        r.g.stroke({ width: 2.5, color: INK.goldPale, cap: 'round', join: 'round' });
+      }
       r.c.position.set(L.roundX[i], L.roundY);
     });
   }
@@ -271,7 +292,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const season = st?.season ?? 'sharad';
     const ss = SEASONS[season], tint = SEASON_TINT[season];
     seasonChip.removeChildren().forEach(c => destroyTree(c as Container));
-    const t = new Text({ text: `${ss.name.toUpperCase()} · ${ss.english}`, style: { fontFamily: FONT_SERIF, fontSize: fsz(19), fontWeight: '700', letterSpacing: 2, fill: tint } });
+    const t = new Text({ text: `${ss.name.toUpperCase()} · ${ss.english}`, style: { fontFamily: FONT_TITLE, fontSize: fsz(19), fontWeight: '700', letterSpacing: 2, fill: tint } });
     t.anchor.set(0.5);
     const w = t.width + 34, h = t.height + 14;
     seasonChip.addChild(new Graphics().roundRect(-w / 2, -h / 2, w, h, h / 2).fill({ color: 0x140c07, alpha: 0.85 }).stroke({ width: 2, color: tint, alpha: 0.9 }), t);
@@ -310,30 +331,51 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     if (st?.rules !== 'yuddh') { m.visible = false; return; }
     m.visible = true;
     m.removeChildren().forEach(c => destroyTree(c as Container));
-    // phones: narrow enough to sit in the Durg column (176 wide) without touching the lanes
-    const pip = L.phone ? 16 : 24, gap = L.phone ? 4 : 6, w = 7 * pip + 6 * gap;
+    // a tug-of-war: the bead leans toward the dagger (Kuta) or the lotus (Dharma).
+    // Phones: narrow enough to sit in the Durg column (176 wide) without touching the lanes.
+    const w = L.phone ? 112 : 190, h = L.phone ? 16 : 18, ic = L.phone ? 15 : 17, step = w / 6;
     const g = new Graphics();
-    g.roundRect(-w / 2 - 10, -pip / 2 - 8, w + 20, pip + 16, 10).fill({ color: 0x140c07, alpha: 0.88 }).stroke({ width: 1.5, color: INK.gold, alpha: 0.6 });
-    for (let n = -3; n <= 3; n++) {
-      const x = -w / 2 + (n + 3) * (pip + gap) + pip / 2;
-      const lit = (v > 0 && n > 0 && n <= v) || (v < 0 && n < 0 && n >= v);
-      const col = n < 0 ? KUTA_COL : n > 0 ? DHARMA_COL : 0xe8dcc0;
-      if (n === 0) g.circle(x, 0, pip * 0.22).fill({ color: col, alpha: 0.8 });
-      else g.poly([x, -pip / 2, x + pip / 2, 0, x, pip / 2, x - pip / 2, 0]).fill({ color: col, alpha: lit ? 1 : 0.15 }).stroke({ width: 1.5, color: col, alpha: 0.7 });
-    }
-    const label = (t: string, col: number, x: number, ax: number) => {
-      const tx = new Text({ text: t, style: { fontFamily: FONT_SERIF, fontSize: L.phone ? 17 : 15, fontWeight: '700', letterSpacing: L.phone ? 1 : 3, fill: col, stroke: { color: 0x000000, width: 3 } } });
-      tx.anchor.set(ax, 1); tx.position.set(x, -pip / 2 - 9); return tx;
+    g.roundRect(-w / 2 - ic * 2 - 8, -h / 2 - 9, w + ic * 4 + 16, h + 18, 12).fill({ color: 0x140c07, alpha: 0.9 }).stroke({ width: 1.5, color: INK.gold, alpha: 0.6 });
+    // the track: dim purple left, dim gold right, the lit stretch from the centre to the bead
+    g.roundRect(-w / 2, -h / 2, w / 2, h, h / 2).fill({ color: KUTA_COL, alpha: 0.18 });
+    g.roundRect(0, -h / 2, w / 2, h, h / 2).fill({ color: DHARMA_COL, alpha: 0.18 });
+    if (v < 0) g.roundRect(v * step, -h / 2, -v * step, h, h / 2).fill({ color: KUTA_COL, alpha: 0.95 });
+    if (v > 0) g.roundRect(0, -h / 2, v * step, h, h / 2).fill({ color: DHARMA_COL, alpha: 0.95 });
+    g.roundRect(-w / 2, -h / 2, w, h, h / 2).stroke({ width: 1.5, color: 0xe8dcc0, alpha: 0.5 });
+    for (let n = -2; n <= 2; n++) if (n) g.rect(n * step - 0.75, -h / 2 + 3, 1.5, h - 6).fill({ color: 0x000000, alpha: 0.45 });
+    g.rect(-1.5, -h / 2 - 3, 3, h + 6).fill({ color: 0xe8dcc0 });
+    // the bead
+    const bx = v * step;
+    g.circle(bx, 0, h * 0.62).fill({ color: v > 0 ? DHARMA_COL : v < 0 ? KUTA_COL : 0xe8dcc0 }).stroke({ width: 2.5, color: 0x140c07 });
+    // a dagger at the Kuta end, a lotus at the Dharma end
+    const kx = -w / 2 - ic - 2, lx = w / 2 + ic + 2, ka = v <= -3 ? 1 : 0.75, la = v >= 3 ? 1 : 0.75;
+    g.poly([kx - ic, 0, kx + ic * 0.15, -ic * 0.22, kx + ic * 0.15, ic * 0.22]).fill({ color: KUTA_COL, alpha: ka });
+    g.rect(kx + ic * 0.15, -ic * 0.5, ic * 0.16, ic).fill({ color: KUTA_COL, alpha: ka });
+    g.rect(kx + ic * 0.31, -ic * 0.12, ic * 0.5, ic * 0.24).fill({ color: KUTA_COL, alpha: ka });
+    g.circle(kx + ic * 0.9, 0, ic * 0.16).fill({ color: KUTA_COL, alpha: ka });
+    const petal = (a: number, len: number, wd: number) => {
+      const bx0 = lx, by0 = ic * 0.45, tx = bx0 + Math.sin(a) * len, ty = by0 - Math.cos(a) * len;
+      const px = Math.cos(a) * wd, py = Math.sin(a) * wd, mx = (bx0 + tx) / 2, my = (by0 + ty) / 2;
+      g.moveTo(bx0, by0).quadraticCurveTo(mx - px, my - py, tx, ty).quadraticCurveTo(mx + px, my + py, bx0, by0).fill({ color: DHARMA_COL, alpha: la });
     };
-    m.addChild(g, label('KUTA', KUTA_COL, -w / 2 - 6, 0), label('DHARMA', DHARMA_COL, w / 2 + 6, 1));
+    petal(-1.25, ic * 0.85, ic * 0.28); petal(1.25, ic * 0.85, ic * 0.28);
+    petal(-0.6, ic * 1.05, ic * 0.34); petal(0.6, ic * 1.05, ic * 0.34); petal(0, ic * 1.2, ic * 0.38);
+    const label = (t: string, col: number, x: number, ax: number) => {
+      const tx = new Text({ text: t, style: { fontFamily: FONT_TITLE, fontSize: L.phone ? 17 : 15, fontWeight: '700', letterSpacing: L.phone ? 1 : 3, fill: col, stroke: { color: 0x000000, width: 3 } } });
+      tx.anchor.set(ax, 1); tx.position.set(x, -h / 2 - 11); return tx;
+    };
+    const ex = w / 2 + ic * 2 + 6;
+    m.addChild(g, label('KUTA', KUTA_COL, -ex, 0), label('DHARMA', DHARMA_COL, ex, 1));
     if (Math.abs(v) >= 3) {
-      const glow = new Graphics().roundRect(-w / 2 - 12, -pip / 2 - 10, w + 24, pip + 20, 11).stroke({ width: 3, color: v > 0 ? DHARMA_COL : KUTA_COL });
+      const glow = new Graphics().roundRect(-ex - 4, -h / 2 - 11, ex * 2 + 8, h + 22, 13).stroke({ width: 3, color: v > 0 ? DHARMA_COL : KUTA_COL });
       m.addChild(glow);
       gsap.fromTo(glow, { alpha: 1 }, { alpha: 0.3, duration: 0.9, yoyo: true, repeat: -1, ease: 'sine.inOut' });
     }
-    const dy = 136 * L.durgS + (L.phone ? 30 : 26);
-    m.position.set(Math.max(L.durgX, w / 2 + 14), (i === 0 ? L.line.mine : L.line.enemy) + dy);
+    const dy = 136 * L.durgS + (L.phone ? 32 : 28);
+    m.position.set(Math.max(L.durgX, ex + 10), (i === 0 ? L.line.mine : L.line.enemy) + dy);
   }
+  // the hand, the aiming arrow and the reading panels go above the meters and the season label
+  s.addChild(handLayer, arrow, combatFx, previewLayer, fx);
   let dharmaTip: Container | null = null;
   function toggleDharmaTip(i: PlayerIndex): void {
     if (dharmaTip) { destroyTree(dharmaTip); dharmaTip = null; return; }
@@ -398,14 +440,15 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const as = L.phone ? (H * 0.82) / 672 : 0.8;
     art.scale.set(as); art.position.set(L.phone ? 40 + 240 * as : 560, L.phone ? H / 2 : 520);
     const tx = L.phone ? 40 + 480 * as + 60 : 860, wrap = L.phone ? W - tx - 50 : 820;
-    const t1 = new Text({ text: `${sc.place.toUpperCase()} · ${sc.year.toUpperCase()}`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(22 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold } });
-    const t2 = new Text({ text: sc.title, style: { fontFamily: FONT_SERIF, fontSize: 86, fontWeight: '700', fill: INK.goldPale } });
+    const t1 = new Text({ text: `${sc.place.toUpperCase()} · ${sc.year.toUpperCase()}`, style: { fontFamily: FONT_TITLE, fontSize: Math.round(22 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold } });
+    const t2 = new Text({ text: sc.title, style: { fontFamily: FONT_TITLE, fontSize: 86, fontWeight: '700', fill: INK.goldPale } });
     const t3 = new Text({ text: sc.briefing, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * k), fill: INK.cream, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(42 * k) } });
     const t4 = new Text({ text: sc.objective, style: { fontFamily: FONT_SERIF, fontSize: Math.round(26 * k), fontStyle: 'italic', fill: INK.gold, wordWrap: true, wordWrapWidth: wrap } });
     const ss = SEASONS[st.season ?? 'sharad'];
-    const t5 = new Text({ text: `${ss.name.toUpperCase()} · ${ss.english.toUpperCase()}\n${ss.rule}`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(24 * k), fontWeight: '700', fill: SEASON_TINT[st.season ?? 'sharad'], wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(32 * k) } });
+    const t5 = new Text({ text: `${ss.name.toUpperCase()} · ${ss.english.toUpperCase()}\n${ss.rule}`, style: { fontFamily: FONT_BODY, fontSize: Math.round(24 * k), fontWeight: '700', fill: SEASON_TINT[st.season ?? 'sharad'], wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(32 * k) } });
     if (L.phone) {
       t2.style.fontSize = 76; t1.position.set(tx, 34); t2.position.set(tx - 4, 64);
+      while (t2.width > W - tx - 24 && +t2.style.fontSize > 48) t2.style.fontSize = +t2.style.fontSize - 2;
       // long briefings step their type down so the season and the button still fit
       for (let f = 30; f >= 22; f -= 2) {
         t3.style.fontSize = Math.round(f * k); t3.style.lineHeight = Math.round(f * k * 1.36);
@@ -461,6 +504,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
         }
         v.update(u);
         v.setSpent(u.owner === state.active && (u.attacked || !u.canAct) && !state.over);
+        v.setFit(lineFit(list.length), instant);
         gsap.to(v, { x: slotX(i, list.length), y, rotation: 0, duration: d, ease: 'power2.out' });
       });
     };
@@ -520,6 +564,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     drawDiyas(myDiyas, me.kosha, me.maxKosha);
     drawDiyas(enemyDiyas, foe.kosha, foe.maxKosha);
     enemyInfo.text = `${foe.faction} · Kosha ${foe.kosha}/${foe.maxKosha}\nDeck ${foe.deck.length}`;
+    enemyInfo.scale.set(1); if (enemyInfo.width > 236) enemyInfo.scale.set(236 / enemyInfo.width);
     drawDeck(me.deck.length);
 
     syncHand(state, instant);
@@ -641,6 +686,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const anything = myTurn && (hand.some((_, i) => cardTargets(i).zone !== null || cardTargets(i).units.length > 0) || [...tokens.values()].some(v => v.owner === 0 && unitCanDoAnything(v.uid)));
     drawEnd(overlay?.kind === 'briefing' ? 'mine' : !myTurn ? 'enemy' : anything ? 'mine' : 'ready');
     hint.text = myTurn ? hintText() : st.over || overlay || st.active === 0 ? '' : `The ${sc.enemyName} is moving…`;
+    fitHint();
     updateCoach();
     if (pick) showTargets(pick);
   }
@@ -1018,7 +1064,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
           const v = tokens.get(e.uid), d = durg[e.owner];
           if (v) {
             audio.play('elephant');
-            const k = new Text({ text: 'TRAMPLE!', style: { fontFamily: FONT_SERIF, fontSize: L.phone ? 50 : 44, fontWeight: '700', letterSpacing: 4, fill: 0xffc07a, stroke: { color: 0x2a0a04, width: 7 } } });
+            const k = new Text({ text: 'TRAMPLE!', style: { fontFamily: FONT_TITLE, fontSize: L.phone ? 50 : 44, fontWeight: '700', letterSpacing: 4, fill: 0xffc07a, stroke: { color: 0x2a0a04, width: 7 } } });
             k.anchor.set(0.5); k.position.set(v.x, v.y - 110 * L.tok); fx.addChild(k);
             gsap.fromTo(k.scale, { x: 0.3, y: 0.3 }, { x: 1, y: 1, duration: 0.25, ease: 'back.out(2)' });
             gsap.to(k, { alpha: 0, duration: 0.4, delay: 0.8, onComplete: () => k.destroy() });
@@ -1177,7 +1223,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const v = new HandCard(cardId, 0, true);
     v.eventMode = 'none'; v.position.set(from.x, from.y); v.scale.set(L.yantraS);
     fx.addChild(v);
-    const label = new Text({ text: `${CARDS[cardId].name} springs!`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(52 * Math.min(L.ui, 1.15)), fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 7 } } });
+    const label = new Text({ text: `${CARDS[cardId].name} springs!`, style: { fontFamily: FONT_TITLE, fontSize: Math.round(52 * Math.min(L.ui, 1.15)), fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 7 } } });
     label.anchor.set(0.5); label.position.set(L.reveal.x, L.line.front + 336 * L.reveal.s * 0.5 + 34); label.alpha = 0;
     fx.addChild(label);
     await Promise.all([
@@ -1199,7 +1245,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const g = new Graphics().poly([-w / 2, -h / 2, w / 2, -h / 2, w / 2, h * 0.1, 0, h / 2, -w / 2, h * 0.1])
       .fill(color).stroke({ width: 4, color: 0x1a0503 });
     g.poly([-w / 2 + 6, -h / 2 + 6, w / 2 - 6, -h / 2 + 6, w / 2 - 6, h * 0.07, 0, h / 2 - 8, -w / 2 + 6, h * 0.07]).stroke({ width: 2, color: 0xffb0a0, alpha: 0.6 });
-    const t = new Text({ text: String(n), style: { fontFamily: FONT_SERIF, fontSize: 44, fontWeight: '700', fill: 0xffffff, stroke: { color: 0x3a0a04, width: 4 } } });
+    const t = new Text({ text: String(n), style: { fontFamily: FONT_TITLE, fontSize: 44, fontWeight: '700', fill: 0xffffff, stroke: { color: 0x3a0a04, width: 4 } } });
     t.anchor.set(0.5, 0.55);
     c.addChild(g, t);
     c.scale.set(k * (L.phone ? 1.2 : 1));
@@ -1260,14 +1306,14 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     gsap.fromTo(ring.scale, { x: 0.4, y: 0.4 }, { x: 2, y: 2, duration: 0.7, ease: 'power2.out' });
     gsap.to(ring, { alpha: 0, duration: 0.7, onComplete: () => ring.destroy() });
     sparks(v.x, v.y - 30 * L.tok, 0xffd76a);
-    const t = new Text({ text: `${RANK_NAMES[rank].toUpperCase()}!`, style: { fontFamily: FONT_SERIF, fontSize: L.phone ? 50 : 44, fontWeight: '700', letterSpacing: 4, fill: 0xffe39a, stroke: { color: 0x2a1404, width: 7 } } });
+    const t = new Text({ text: `${RANK_NAMES[rank].toUpperCase()}!`, style: { fontFamily: FONT_TITLE, fontSize: L.phone ? 50 : 44, fontWeight: '700', letterSpacing: 4, fill: 0xffe39a, stroke: { color: 0x2a1404, width: 7 } } });
     t.anchor.set(0.5); t.position.set(v.x, v.y - 110 * L.tok); fx.addChild(t);
     gsap.fromTo(t.scale, { x: 0.3, y: 0.3 }, { x: 1, y: 1, duration: 0.3, ease: 'back.out(2)' });
     await gsap.to(t, { y: t.y - 30, alpha: 0, duration: 0.5, delay: 0.7 });
     t.destroy();
   }
   function floatNumber(x: number, y: number, text: string, color: number, size = 54): void {
-    const t = new Text({ text, style: { fontFamily: FONT_SERIF, fontSize: Math.round(size * (L.phone ? 1.15 : 1)), fontWeight: '700', fill: color, stroke: { color: 0x3a0a04, width: 7 } } });
+    const t = new Text({ text, style: { fontFamily: FONT_TITLE, fontSize: Math.round(size * (L.phone ? 1.15 : 1)), fontWeight: '700', fill: color, stroke: { color: 0x3a0a04, width: 7 } } });
     t.anchor.set(0.5); t.position.set(x, y); fx.addChild(t);
     gsap.fromTo(t.scale, { x: 0.4, y: 0.4 }, { x: 1, y: 1, duration: 0.25, ease: 'back.out(2)' });
     gsap.to(t, { y: y - 80, alpha: 0, duration: 1.1, delay: 0.3, ease: 'power1.out', onComplete: () => t.destroy() });
@@ -1316,7 +1362,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   }
   function flashHint(text: string): void {
     const hx = L.laneX + L.laneW / 2;
-    hint.text = text; hint.style.fill = 0xffb09a;
+    hint.text = text; hint.style.fill = 0xffb09a; fitHint();
     gsap.fromTo(hint, { x: hx - 10 }, { x: hx, duration: 0.4, ease: 'elastic.out(1, 0.3)' });
     setTimeout(() => { if (!alive) return; hint.style.fill = INK.cream; refreshInteractivity(); }, 1600);
   }
@@ -1427,9 +1473,9 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     }
     const bw = ph ? Math.min(980, L.W - 420) : 1000;
     const box = new Container(); box.eventMode = 'none';
-    const name = new Text({ text: 'CHANAKYA', style: { fontFamily: FONT_SERIF, fontSize: ph ? 26 : 22, fontWeight: '700', letterSpacing: 6, fill: INK.gold } });
-    const t = new Text({ text: step.text(), style: { fontFamily: FONT_SERIF, fontSize: ph ? 34 : 30, fontWeight: '700', fill: 0xf8eedc, wordWrap: true, wordWrapWidth: bw - 150, lineHeight: ph ? 40 : 36 } });
-    const more = new Text({ text: step.tap ? 'Tap anywhere to continue ›' : '', style: { fontFamily: FONT_SERIF, fontSize: ph ? 24 : 20, fontStyle: 'italic', fill: INK.gold } });
+    const name = new Text({ text: 'CHANAKYA', style: { fontFamily: FONT_TITLE, fontSize: ph ? 26 : 22, fontWeight: '700', letterSpacing: 6, fill: INK.gold } });
+    const t = new Text({ text: step.text(), style: { fontFamily: FONT_BODY, fontSize: ph ? 34 : 30, fontWeight: '700', fill: 0xf8eedc, wordWrap: true, wordWrapWidth: bw - 150, lineHeight: ph ? 40 : 36 } });
+    const more = new Text({ text: step.tap ? 'Tap anywhere to continue ›' : '', style: { fontFamily: FONT_BODY, fontSize: ph ? 24 : 20, fontStyle: 'italic', fill: INK.gold } });
     const portrait = new Sprite(cardFace('m_chanakya')); portrait.scale.set(ph ? 0.2 : 0.18);
     name.position.set(130, 14); t.position.set(130, name.y + name.height + 4); more.position.set(130, t.y + t.height + 6);
     const bh = Math.max(portrait.height + 24, more.y + (step.tap ? more.height : 0) + 16);
@@ -1450,7 +1496,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const bh = L.phone ? 120 : 140;
     const band = new Graphics().rect(0, -bh / 2, L.W, bh).fill({ color: 0x000000, alpha: 0.75 });
     band.moveTo(0, -bh / 2).lineTo(L.W, -bh / 2).moveTo(0, bh / 2).lineTo(L.W, bh / 2).stroke({ width: 2, color: who === 0 ? INK.gold : 0xe0674a });
-    const t = new Text({ text: who === 0 ? 'YOUR TURN' : `THE ${sc.enemyName.toUpperCase()} MOVES`, style: { fontFamily: FONT_SERIF, fontSize: 72, fontWeight: '700', letterSpacing: 14, fill: who === 0 ? INK.goldPale : 0xffb09a } });
+    const t = new Text({ text: who === 0 ? 'YOUR TURN' : `THE ${sc.enemyName.toUpperCase()} MOVES`, style: { fontFamily: FONT_TITLE, fontSize: 72, fontWeight: '700', letterSpacing: 14, fill: who === 0 ? INK.goldPale : 0xffb09a } });
     t.anchor.set(0.5); t.x = L.W / 2;
     if (t.width > L.W - 100) t.scale.set((L.W - 100) / t.width);
     const c = new Container(); c.addChild(band, t); c.y = L.line.front; fx.addChild(c);
@@ -1514,7 +1560,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.78 });
     dim.eventMode = 'static';
     const face = new Sprite(cardFace(won ? sc.heroCard : sc.defeatCard)); face.anchor.set(0.5); face.scale.set(ph ? 0.46 : 0.75); face.position.set(W / 2, ph ? H * 0.29 : 380);
-    const title = new Text({ text: won ? 'VICTORY' : 'DEFEAT', style: { fontFamily: FONT_SERIF, fontSize: ph ? 104 : 120, fontWeight: '700', letterSpacing: 24, fill: won ? INK.goldPale : 0xffb09a, stroke: { color: 0x000000, width: 8 } } });
+    const title = new Text({ text: won ? 'VICTORY' : 'DEFEAT', style: { fontFamily: FONT_TITLE, fontSize: ph ? 104 : 120, fontWeight: '700', letterSpacing: 24, fill: won ? INK.goldPale : 0xffb09a, stroke: { color: 0x000000, width: 8 } } });
     title.anchor.set(0.5); title.position.set(W / 2, ph ? H * 0.6 : 690);
     if (ph) title.style.fontSize = 92;
     const sub = new Text({
@@ -1545,7 +1591,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const c = new Container();
     const close = () => { overlay = null; destroyTree(c); };
     const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.7 }); dim.eventMode = 'static';
-    const t = new Text({ text: 'Leave the battle?', style: { fontFamily: FONT_SERIF, fontSize: 56, fontWeight: '700', fill: INK.goldPale } });
+    const t = new Text({ text: 'Leave the battle?', style: { fontFamily: FONT_TITLE, fontSize: 56, fontWeight: '700', fill: INK.goldPale } });
     t.anchor.set(0.5); t.position.set(W / 2, H / 2 - 100);
     const bx = L.phone ? 210 : 160;
     const yes = makeButton('Leave', exit, { w: 280 }); yes.position.set(W / 2 - bx, H / 2 + 20);

@@ -2,7 +2,7 @@
 import { Container, Graphics, Sprite, Text, Texture, Ticker } from 'pixi.js';
 import gsap from 'gsap';
 import { CARDS, type Unit } from '../../engine';
-import { FONT_DEVA, FONT_SERIF, INK } from '../theme';
+import { FONT_DEVA, INK, FONT_TITLE } from '../theme';
 import { cardBack, cardFace, durgFace, statBadge, tokenFace } from './paint';
 import { flipSprite, type FlipOptions } from './flip';
 
@@ -17,7 +17,7 @@ function badge(kind: 'atk' | 'hp', value: number, tone: 'base' | 'up' | 'down'):
   cv.width = 140; cv.height = 140;
   const g = cv.getContext('2d')!;
   statBadge(g, 70, 70, 52, kind);
-  g.font = `700 76px ${FONT_SERIF}`;
+  g.font = `700 76px ${FONT_TITLE}`;
   g.textAlign = 'center'; g.textBaseline = 'middle';
   g.lineJoin = 'round'; g.lineWidth = 9; g.strokeStyle = 'rgba(10,4,0,0.95)';
   g.strokeText(String(value), 70, 74);
@@ -45,20 +45,47 @@ export class TokenView extends Container {
   private ringMode: 'none' | 'ready' | 'target' | 'selected' = 'none';
   private tick = (t: Ticker) => { this.pulse += t.deltaTime * 0.06; if (this.ringMode !== 'none') this.ring.alpha = 0.65 + Math.sin(this.pulse) * 0.35; };
 
-  /** `big` draws larger stat badges and marks, for small (phone) screens */
+  /** everything drawn, so a crowded line can shrink the unit without touching the scale the battle animates */
+  private body = new Container();
+  private nameTag: Container | null = null;
+
+  /** `big` (phones): larger stat badges and marks, and the painting fills the token (the name shows when selected) */
   constructor(u: Unit, readonly big = false) {
     super();
     this.uid = u.uid; this.owner = u.owner; this.cardId = u.cardId;
-    const bs = big ? 0.72 : 0.5, inset = big ? 6 : 18;
+    // the badges sit inside the frame's lower corners, so neighbouring units never touch
+    const bs = big ? 0.66 : 0.5, r = 52 * bs;
+    const bx = TOKEN_DW / 2 - r - (big ? 4 : 8), by = big ? TOKEN_DH / 2 - r - 6 : 63 - r + 8;
     const shadow = new Graphics().roundRect(-TOKEN_DW / 2 + 6, -TOKEN_DH / 2 + 10, TOKEN_DW, TOKEN_DH, 12).fill({ color: 0x000000, alpha: 0.5 });
-    this.art = new Sprite(tokenFace(u.cardId, u.owner));
+    this.art = new Sprite(tokenFace(u.cardId, u.owner, !big));
     this.art.anchor.set(0.5); this.art.scale.set(0.5);
-    this.atkB = new Sprite(); this.atkB.anchor.set(0.5); this.atkB.scale.set(bs); this.atkB.position.set(-TOKEN_DW / 2 + inset, TOKEN_DH / 2 - 14);
-    this.hpB = new Sprite(); this.hpB.anchor.set(0.5); this.hpB.scale.set(bs); this.hpB.position.set(TOKEN_DW / 2 - inset, TOKEN_DH / 2 - 14);
-    this.addChild(this.ring, shadow, this.art, this.icons, this.atkB, this.hpB);
+    this.atkB = new Sprite(); this.atkB.anchor.set(0.5); this.atkB.scale.set(bs); this.atkB.position.set(-bx, by);
+    this.hpB = new Sprite(); this.hpB.anchor.set(0.5); this.hpB.scale.set(bs); this.hpB.position.set(bx, by);
+    this.body.addChild(this.ring, shadow, this.art, this.icons, this.atkB, this.hpB);
+    this.addChild(this.body);
     this.eventMode = 'static';
     this.update(u);
     Ticker.shared.add(this.tick);
+  }
+
+  /** shrink (or restore) the unit to fit a crowded line */
+  setFit(f: number, instant = false): void {
+    if (Math.abs(this.body.scale.x - f) < 0.001) return;
+    gsap.to(this.body.scale, { x: f, y: f, duration: instant ? 0 : 0.3, ease: 'power2.out' });
+  }
+
+  /** phones: the unit's name above it while it is selected */
+  private showName(on: boolean): void {
+    if (!this.big) return;
+    if (!on) { if (this.nameTag) { this.nameTag.destroy({ children: true }); this.nameTag = null; } return; }
+    if (this.nameTag) return;
+    const t = new Text({ text: CARDS[this.cardId].name, style: { fontFamily: FONT_TITLE, fontSize: 30, fontWeight: '700', fill: INK.goldPale } });
+    t.anchor.set(0.5);
+    const w = t.width + 28, h = t.height + 10;
+    const c = new Container();
+    c.addChild(new Graphics().roundRect(-w / 2, -h / 2, w, h, 10).fill({ color: 0x140c07, alpha: 0.92 }).stroke({ width: 2, color: INK.gold }), t);
+    c.position.set(0, -TOKEN_DH / 2 - h / 2 - 14);
+    this.nameTag = c; this.body.addChild(c);
   }
 
   update(u: Unit): void {
@@ -89,6 +116,7 @@ export class TokenView extends Container {
   setRing(mode: 'none' | 'ready' | 'target' | 'selected'): void {
     if (mode === this.ringMode) return;
     this.ringMode = mode;
+    this.showName(mode === 'selected');
     this.ring.clear();
     if (mode === 'none') return;
     const col = mode === 'target' ? 0xff5a3c : mode === 'selected' ? 0xffffff : 0x7dff8a;
@@ -100,7 +128,7 @@ export class TokenView extends Container {
   /** exhausted units sit dimmer */
   setSpent(spent: boolean): void { this.art.tint = spent ? 0x9a9088 : 0xffffff; }
 
-  override destroy(): void { Ticker.shared.remove(this.tick); stopTweens(this); super.destroy({ children: true }); }
+  override destroy(): void { Ticker.shared.remove(this.tick); stopTweens(this); gsap.killTweensOf(this.body.scale); super.destroy({ children: true }); }
 }
 
 /** stop every tween on a display object before it is destroyed */
@@ -195,6 +223,8 @@ export class DurgView extends Container {
   private hpText: Text;
   private nameText: Text;
   private subText: Text;
+  private nameSize = 26;
+  private band = new Graphics();   // dark band behind the name, and the bronze badge behind the health
   private ring = new Graphics();
   private embers = new Container();
   private stage = 0;
@@ -206,24 +236,37 @@ export class DurgView extends Container {
     super();
     this.art = new Sprite(durgFace(artId, owner));
     this.art.anchor.set(0.5); this.art.scale.set(0.5);
-    this.hpText = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 64, fontWeight: '700', fill: 0xffffff, stroke: { color: 0x000000, width: 6 } } });
+    this.hpText = new Text({ text: '', style: { fontFamily: FONT_TITLE, fontSize: 64, fontWeight: '700', fill: 0xffffff, stroke: { color: 0x000000, width: 6 } } });
     this.hpText.anchor.set(0.5); this.hpText.position.set(0, 52);
-    this.nameText = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 26, fontWeight: '700', fill: INK.goldPale, align: 'center', stroke: { color: 0x000000, width: 4 }, wordWrap: true, wordWrapWidth: 226, lineHeight: 28 } });
+    this.nameText = new Text({ text: '', style: { fontFamily: FONT_TITLE, fontSize: 26, fontWeight: '700', fill: INK.goldPale, align: 'center', stroke: { color: 0x000000, width: 4 }, wordWrap: true, wordWrapWidth: 226, lineHeight: 28 } });
     this.nameText.anchor.set(0.5, 1); this.nameText.position.set(0, -73);
-    this.subText = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 14, fontWeight: '700', letterSpacing: 4, fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
+    this.subText = new Text({ text: '', style: { fontFamily: FONT_TITLE, fontSize: 14, fontWeight: '700', letterSpacing: 4, fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
     this.subText.anchor.set(0.5); this.subText.position.set(0, -58);
-    this.addChild(this.ring, this.art, this.plate, this.embers, this.nameText, this.subText, this.hpText);
+    this.addChild(this.ring, this.art, this.plate, this.embers, this.band, this.nameText, this.subText, this.hpText);
     this.eventMode = 'static';
     Ticker.shared.add(this.tick);
   }
 
   /** larger lettering for small screens (k = 1 on desktop) */
   setTextScale(k: number): void {
-    this.nameText.style.fontSize = Math.round(26 * k); this.nameText.style.lineHeight = Math.round(28 * k);
+    this.nameSize = Math.round(26 * k); this.nameText.style.fontSize = this.nameSize; this.nameText.style.lineHeight = Math.round(28 * k);
     this.nameText.style.wordWrapWidth = 226;
     this.subText.style.fontSize = Math.round(14 * k); this.subText.style.letterSpacing = k > 1 ? 2 : 4;
     this.hpText.style.fontSize = Math.round(64 * Math.min(k, 1.25));
     this.subText.y = -58 + (k - 1) * 6;
+    this.drawBand();
+  }
+
+  private drawBand(): void {
+    const b = this.band; b.clear();
+    const top = this.nameText.y - this.nameText.height - 6, bottom = this.subText.y + this.subText.height / 2 + 5;
+    b.roundRect(-114, top, 228, bottom - top, 10).fill({ color: 0x0e0804, alpha: 0.78 });
+    b.moveTo(-100, bottom - 1).lineTo(100, bottom - 1).stroke({ width: 1.5, color: this.owner === 0 ? INK.gold : 0xe0674a, alpha: 0.8 });
+    // health in a solid bronze badge
+    const r = Math.max(40, this.hpText.height * 0.62);
+    b.circle(0, this.hpText.y + 2, r + 4).fill({ color: 0x000000, alpha: 0.45 });
+    b.circle(0, this.hpText.y, r).fill(0x6a3c1a).stroke({ width: 3.5, color: 0xe7c46e });
+    b.circle(0, this.hpText.y, r - 7).stroke({ width: 1.5, color: 0xffdcae, alpha: 0.35 });
   }
 
   set(name: string, faction: string, hp: number, max: number): void {
@@ -237,7 +280,11 @@ export class DurgView extends Container {
     // the painting darkens and reddens as the walls fall
     this.art.tint = frac > 0.66 ? 0xffffff : frac > 0.33 ? 0xe8c8b0 : 0xd09080;
     this.nameText.text = name; this.subText.text = `${faction.toUpperCase()} · DURG`;
+    // Cinzel is wide: a long single word (CHANDRAGUPTA'S) would run past the frame, so the name shrinks to fit
+    this.nameText.style.fontSize = this.nameSize;
+    while (this.nameText.width > 222 && +this.nameText.style.fontSize > 14) this.nameText.style.fontSize = +this.nameText.style.fontSize - 1;
     this.hpText.text = String(Math.max(0, hp));
+    this.drawBand();
     this.stage = frac > 0.66 ? 0 : frac > 0.33 ? 1 : 2;
   }
 
@@ -270,8 +317,14 @@ export function drawDiyas(g: Graphics, kosha: number, max: number): void {
   for (let i = 0; i < 12; i++) {
     const x = (i % 6) * 34, y = Math.floor(i / 6) * 34;
     if (i >= max) { g.circle(x, y + 6, 4).fill({ color: 0x3a2a1a, alpha: 0.6 }); continue; }
+    if (i >= kosha) {
+      // an empty lamp you still own: dark clay with a crisp bronze rim, so the maximum is easy to count
+      g.ellipse(x, y + 8, 13, 6).fill(0x3a2010).stroke({ width: 2.5, color: 0xd9a066 });
+      g.moveTo(x, y + 3).lineTo(x, y - 2).stroke({ width: 2, color: 0xd9a066, alpha: 0.7 });
+      continue;
+    }
     g.ellipse(x, y + 8, 13, 6).fill(0x9c5a2a).stroke({ width: 1.5, color: 0x3a1a08 });
-    if (i < kosha) {
+    {
       g.ellipse(x, y - 4, 5, 10).fill({ color: 0xffb040, alpha: 0.95 });
       g.ellipse(x, y - 2, 2.5, 5).fill({ color: 0xfff2c0 });
       g.circle(x, y - 2, 14).fill({ color: 0xff9a30, alpha: 0.12 });

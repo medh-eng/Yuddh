@@ -1,0 +1,12 @@
+{
+  "name": "YUDDH: Rise of the Rajyas",
+  "short_name": "YUDDH",
+  "description": "A tactical card game of ancient India.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#120c08",
+  "theme_color": "#120c08",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

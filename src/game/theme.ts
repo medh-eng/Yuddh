@@ -9,6 +9,10 @@ export const DESIGN_W = 1920;
 export const DESIGN_H = 1080;
 
 export const FONT_SERIF = "'Cormorant Garamond', Georgia, serif";
+/** titles, names and every number: Cinzel's capitals and lining figures stay crisp at phone size */
+export const FONT_TITLE = "'Cinzel', Georgia, serif";
+/** rules text and coaching: a sturdy humanist sans */
+export const FONT_BODY = "'Alegreya Sans', 'Trebuchet MS', sans-serif";
 export const FONT_DEVA = "'Tiro Devanagari Hindi', 'Noto Serif Devanagari', serif";
 
 export const INK = {

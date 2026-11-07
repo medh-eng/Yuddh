@@ -2,7 +2,7 @@
    slowly, with the title in the open sky between them. */
 import { Container, Graphics, Sprite, Text, Texture, Ticker } from 'pixi.js';
 import gsap from 'gsap';
-import { FONT_DEVA, FONT_SERIF, INK } from '../theme';
+import { FONT_DEVA, FONT_SERIF, INK, FONT_TITLE } from '../theme';
 import { view } from '../view';
 import { makeButton } from '../ui/button';
 import { audio } from '../audio';
@@ -33,9 +33,9 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
 
   const deva = new Text({ text: 'युद्ध', style: { fontFamily: FONT_DEVA, fontSize: 64, fill: INK.gold, stroke: { color: 0x1a0d05, width: 4 } } });
   deva.anchor.set(0.5);
-  const title = new Text({ text: 'YUDDH', style: { fontFamily: FONT_SERIF, fontSize: 200, fontWeight: '700', letterSpacing: 30, fill: INK.goldPale, stroke: { color: 0x1a0d05, width: 6 }, dropShadow: { color: 0x000000, blur: 18, distance: 0, alpha: 0.9 } } });
+  const title = new Text({ text: 'YUDDH', style: { fontFamily: FONT_TITLE, fontSize: 200, fontWeight: '700', letterSpacing: 30, fill: INK.goldPale, stroke: { color: 0x1a0d05, width: 6 }, dropShadow: { color: 0x000000, blur: 18, distance: 0, alpha: 0.9 } } });
   title.anchor.set(0.5);
-  const sub = new Text({ text: 'RISE OF THE RAJYAS', style: { fontFamily: FONT_SERIF, fontSize: 30, fontWeight: '700', letterSpacing: 18, fill: INK.gold, stroke: { color: 0x1a0d05, width: 4 } } });
+  const sub = new Text({ text: 'RISE OF THE RAJYAS', style: { fontFamily: FONT_TITLE, fontSize: 30, fontWeight: '700', letterSpacing: 18, fill: INK.gold, stroke: { color: 0x1a0d05, width: 4 } } });
   sub.anchor.set(0.5);
   const rule = new Graphics();
   s.addChild(deva, title, sub, rule);
