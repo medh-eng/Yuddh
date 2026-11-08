@@ -16,12 +16,13 @@ import { Container, FederatedPointerEvent, Graphics, Point, Sprite, Text, Textur
 import gsap from 'gsap';
 import {
   CARDS, EMPIRES, RANK_NAMES, SEASONS, dharmaOf, strikeDamage, actionObservers, findUnit, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
-  drainEvents, type Action, type GameEvent, type Season, type GameState, type PlayerIndex, type Target, type Unit
+  drainEvents, type Action, type AiLevel, type GameEvent, type Season, type GameState, type PlayerIndex, type Target, type Unit
 } from '../../engine';
 import { FIRST_THRONE_SCENARIO } from '../../campaign/firstThrone';
 import type { Scenario } from '../../campaign/scenario';
 import { markTutorialDone } from '../../campaign/tutorial';
 import { markBattleWon } from '../../campaign/campaign';
+import { foeLevel, setVeteranFoe, veteranFoe } from '../../campaign/difficulty';
 import { FONT_SERIF, INK, FONT_TITLE, FONT_BODY } from '../theme';
 import { view, type View } from '../view';
 import { audio, type Sfx, type Track } from '../audio';
@@ -426,8 +427,11 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   }
 
   /* ---------------- start ---------------- */
+  let baseLevel: AiLevel = 'normal';
   function start(): void {
     st = sc.game(Math.floor(Math.random() * 1e9));
+    baseLevel = st.aiLevel;
+    if (!sc.coached) st.aiLevel = foeLevel(baseLevel);
     drainEvents(st);
     shown = snapshot(st);
     intense = false;
@@ -500,6 +504,20 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
       const hb = makeButton('History', () => showHistory(), { w: 190, ui: L.phone ? 0.85 : 1 });
       hb.position.set(L.phone ? W - 118 : W - 190, L.phone ? 40 : 70);
       panel.addChild(hb);
+    }
+    if (!sc.coached) {
+      // the foe: Standard (the heuristic opponent the battle was balanced against) or Veteran (the search AI)
+      const foeButton = (): Container => {
+        const b = makeButton(veteranFoe() ? 'Foe: Veteran' : 'Foe: Standard', () => {
+          setVeteranFoe(!veteranFoe());
+          st.aiLevel = foeLevel(baseLevel);
+          audio.play('click');
+          const nb = foeButton(); panel.addChild(nb); destroyTree(b);
+        }, { w: 270, ui: L.phone ? 0.85 : 1 });
+        b.position.set(L.phone ? W - 138 : W - 215, L.phone ? 104 : 144);
+        return b;
+      };
+      panel.addChild(foeButton());
     }
     s.addChild(panel);
     overlay = { kind: 'briefing', view: panel };
@@ -788,7 +806,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
       if (hc && !hc.faceDown) { id = hc.cardId; cost = hc.cost; key = `c:${id}:${cost}`; coachFlags.selected = true; }
       else if (pick?.kind === 'unit') {
         unit = findUnit(st, 0, pick.uid)?.unit;
-        if (unit) { id = unit.cardId; key = `u:${unit.uid}:${unit.hp}:${unit.atk}:${unit.rank ?? 0}:${unit.moved}:${unit.attacked}`; }
+        if (unit) { id = unit.cardId; key = `u:${unit.uid}:${unit.hp}:${unit.atk}:${unit.rank ?? 0}:${unit.moved}:${unit.attacked}:${unit.routed ?? 0}`; }
       }
     }
     if (key === previewId) return;
@@ -796,7 +814,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     previewLayer.children.forEach(c => stopTweens(c as Container));
     previewLayer.removeChildren().forEach(c => destroyTree(c as Container));
     if (!id) return;
-    const glosses = glossFor(id, unit, cost, st.season, st.turn);
+    const glosses = glossFor(id, unit, cost, st.season, st.turn, st);
     const pw = L.phone ? 470 : 440;
     const maxH = L.phone ? L.handTop - 14 : L.handTop - 60;
     const panel = glossPanel(glosses, pw, maxH, L.phone ? 1.2 : 1);
@@ -1137,6 +1155,19 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
           if (v) await promoteFx(v, e.rank);
           break;
         }
+        case 'rout': {
+          const v = tokens.get(e.uid);
+          if (v) await routFx(v, e.fled);
+          break;
+        }
+        case 'rally': {
+          const v = tokens.get(e.uid);
+          if (v) {
+            audio.play('conch');
+            floatNumber(v.x, v.y - 60 * L.tok, 'RALLIED', 0xffe39a, 34);
+          }
+          break;
+        }
         case 'death':
           break;
       }
@@ -1331,6 +1362,20 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
       gsap.fromTo(d, { tint: 0xff7060 }, { tint: 0xffffff, duration: 0.5 });
     }
   }
+  /** a unit that breaks: a red flash, a banner, and (if it can) it slips back to the Rajya line */
+  async function routFx(v: TokenView, fled: boolean): Promise<void> {
+    audio.play('death');
+    const ring = new Graphics().circle(0, 0, 70).stroke({ width: 8, color: 0xd9463a }); ring.blendMode = 'add';
+    ring.position.set(v.x, v.y); fx.addChild(ring);
+    gsap.fromTo(ring.scale, { x: 0.4, y: 0.4 }, { x: 1.8, y: 1.8, duration: 0.6, ease: 'power2.out' });
+    gsap.to(ring, { alpha: 0, duration: 0.6, onComplete: () => ring.destroy() });
+    const t = new Text({ text: fled ? 'ROUT!' : 'BROKEN!', style: { fontFamily: FONT_TITLE, fontSize: L.phone ? 50 : 44, fontWeight: '700', letterSpacing: 4, fill: 0xff8a74, stroke: { color: 0x2a0804, width: 7 } } });
+    t.anchor.set(0.5); t.position.set(v.x, v.y - 110 * L.tok); fx.addChild(t);
+    gsap.fromTo(t.scale, { x: 0.3, y: 0.3 }, { x: 1, y: 1, duration: 0.3, ease: 'back.out(2)' });
+    gsap.fromTo(v, { rotation: -0.12 }, { rotation: 0, duration: 0.4, ease: 'elastic.out(1, 0.4)' });
+    await gsap.to(t, { y: t.y - 30, alpha: 0, duration: 0.5, delay: 0.6 });
+    t.destroy();
+  }
   /** a unit honoured for valour: a burst of gold and its new rank */
   async function promoteFx(v: TokenView, rank: number): Promise<void> {
     audio.play('conch');
@@ -1459,7 +1504,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
         ? 'Horsemen can CHARGE: deploy the Ashvarohi, then drag it straight onto an enemy, or onto the enemy Durg if you hold the Yudhbhumi.'
         : 'Attack! Drag a ready unit onto an enemy, or onto the enemy Durg if you hold the Yudhbhumi.' },
     { tap: true, focus: () => [laneBox(L.line.enemy)],
-      text: () => 'A unit that destroys an enemy and survives is promoted: Veer, then Mahaveer. A Raksha (shield) on the enemy line guards their Durg: break it first.' },
+      text: () => 'A unit that destroys an enemy and survives is promoted: Veer, then Mahaveer. A badly wounded unit may break and flee, losing its next turn. A Raksha (shield) on the enemy line guards their Durg: break it first.' },
     { tap: true, focus: () => [meterBox(0)],
       text: () => 'Under your Durg is the Dharma–Kuta meter. Win fair fights to climb toward Dharma; traps, poison and spies pull you toward Kuta. Both ends bring a reward.' },
     { tap: true, focus: () => [],

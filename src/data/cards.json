@@ -1,5 +1,5 @@
 {
-"_about": "All card, empire and stat data. Edit numbers here; no code change needed. classic = the prototype's 50 cards (the golden test replays them; do not touch). yuddh = YUDDH cards. pendingArt = designed but unpainted, not loaded (batch 6, The Digvijaya: see art/PROMPTS-BATCH6.md).",
+"_about": "All card, empire and stat data. Edit numbers here; no code change needed. classic = the prototype's 50 cards (the golden test replays them; do not touch). yuddh = YUDDH cards. pendingArt = designed but unpainted, not loaded (batch 8, the Gupta march south: see art/PROMPTS-BATCH8.md).",
 "empires": {
  "maurya": {"id":"maurya","name":"Maurya","capital":"Pataliputra","color":"#d99a2b","glyph":"मौ","passive":"Arthashastra — the first unit costing 3 or more that you deploy each turn costs 1 less Kosha."},
  "gupta": {"id":"gupta","name":"Gupta","capital":"Ujjain","color":"#2f8f74","glyph":"गु","passive":"Golden Age — the first Mantra you cast each turn draws a card."},
@@ -111,6 +111,18 @@
  {"id":"c_narmada_ghat","name":"Narmada Ghat","sub":"The River Crossing","empire":"chalukya","type":"order","cost":3,"damageFront":2,"glyph":"घ","text":"Deal 2 damage to every enemy unit on the Yudhbhumi. A river is the best wall.","rarity":"rare"}
 ],
 "pendingArt": [
-
+ {"id":"mk_vyaghraraja","name":"Vyaghraraja","sub":"King of Mahakantara","empire":"neutral","type":"unit","cost":5,"op":2,"atk":4,"hp":5,"range":"melee","kw":["dhuan"],"glyph":"व्य","text":"Dhuan — hidden in the forest until he strikes. The tiger-king.","rarity":"legendary"},
+ {"id":"mk_atavika","name":"Atavika Gana","sub":"Forest Warriors","empire":"neutral","type":"unit","cost":2,"op":1,"atk":2,"hp":1,"range":"melee","kw":["veg"],"glyph":"अ","text":"Vega. Clansmen who know every path through the sal forest.","rarity":"common"},
+ {"id":"mk_vana_dhanurdhar","name":"Vana Dhanurdhar","sub":"Forest Archer","empire":"neutral","type":"unit","cost":3,"op":1,"atk":2,"hp":2,"range":"ranged","kw":["dhuan"],"glyph":"ध","text":"Ranged. Dhuan — hidden among the trees until he looses his first arrow.","rarity":"common"},
+ {"id":"mk_vana_gaja","name":"Vana Gaja","sub":"Forest Elephants","empire":"neutral","type":"unit","cost":4,"op":2,"atk":4,"hp":4,"range":"melee","kw":["raksha"],"glyph":"ग","text":"Raksha. The wild elephants of the Great Forest, trained for war: they trample.","rarity":"rare"},
+ {"id":"mk_jaal","name":"Vana Jaal","sub":"Forest Snare","empire":"neutral","type":"yantra","kind":"yantra","cost":2,"glyph":"जा","trigger":"onUnitAttack","power":3,"text":"Yantra — when an enemy unit attacks one of yours, deal 3 damage to it. Pits and snares are Kuta: setting it is one step toward Kuta.","rarity":"rare"},
+ {"id":"g_harishena","name":"Harishena","sub":"Court Poet-Minister","empire":"gupta","type":"unit","cost":3,"op":1,"atk":1,"hp":3,"range":"melee","deploy":"draw1","glyph":"ह","text":"Deploy — draw a card. He will carve this war into stone at Prayaga.","rarity":"rare"},
+ {"id":"g_grahana_moksha","name":"Grahana-Moksha","sub":"The Kings Released","empire":"gupta","type":"order","cost":3,"heal":4,"draw":1,"dharma":1,"glyph":"मो","text":"Heal your Durg 4 and draw a card. Capture, then release: one step toward Dharma.","rarity":"epic"},
+ {"id":"g_dakshinapatha","name":"Dakshinapatha","sub":"The Southern March","empire":"gupta","type":"order","cost":3,"buffAtk":1,"kosha":1,"glyph":"द","text":"Your units get +1 attack. Gain 1 Kosha: the long march pays for itself.","rarity":"rare"},
+ {"id":"pk_vishnugopa","name":"Vishnugopa","sub":"King of Kanchi","empire":"neutral","type":"unit","cost":6,"op":2,"atk":4,"hp":6,"range":"melee","kw":["raksha"],"deploy":"drawHeal","glyph":"वि","text":"Raksha. Deploy — draw a card and heal your Durg 2. The Pallava king behind Kanchi's walls.","rarity":"legendary"},
+ {"id":"pk_ghatika","name":"Ghatika Pandit","sub":"Scholar of Kanchi","empire":"neutral","type":"unit","cost":2,"op":1,"atk":1,"hp":3,"range":"melee","deploy":"draw1","glyph":"घ","text":"Deploy — draw a card. The college of Kanchi trained the south's best minds.","rarity":"common"},
+ {"id":"pk_kota_rakshak","name":"Kota Rakshak","sub":"Gate Guard","empire":"neutral","type":"unit","cost":3,"op":1,"atk":2,"hp":5,"range":"melee","kw":["raksha"],"glyph":"को","text":"Raksha. The guard of Kanchi's gate towers.","rarity":"common"},
+ {"id":"pk_ratha","name":"Dakshin Ratha","sub":"Chariot","empire":"neutral","type":"unit","cost":4,"op":1,"atk":3,"hp":3,"range":"melee","glyph":"र","text":"Charges. Southern chariots, quick on the road to Kanchi.","rarity":"rare"},
+ {"id":"pk_gaja_sena","name":"Pallava Gaja","sub":"War Elephants","empire":"neutral","type":"unit","cost":5,"op":2,"atk":4,"hp":6,"range":"melee","kw":["raksha"],"glyph":"गा","text":"Raksha. The elephants of Kanchi, bred for the southern wars: they trample.","rarity":"epic"}
 ]
 }

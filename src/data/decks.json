@@ -53,13 +53,13 @@
 "enemy": [
 "n_padati*2",
 "n_dhanurdhar*3",
-"n_rakshak*2",
+"n_rakshak",
 "n_ashvarohi*2",
 "n_rathi",
 "nd_ratha_dal",
 "n_gaja",
 "nd_gaja_sena",
-"n_maharathi*2",
+"n_maharathi",
 "n_senapati",
 "nd_dhana_nanda",
 "nd_amatya_rakshasa",
@@ -110,9 +110,9 @@
 "enemy": [
 "n_padati",
 "se_toxotai*3",
-"se_phalanx*3",
+"se_phalanx*2",
 "n_rakshak",
-"se_hetairoi*2",
+"se_hetairoi",
 "n_maharathi",
 "n_gaja",
 "se_seleucus",
@@ -201,7 +201,7 @@
 "na_sarpa_vish*2",
 "n_aakraman*2",
 "s_agni",
-"s_chakravyuha",
+"n_aakraman",
 "y_pratikar"
 ]
 },

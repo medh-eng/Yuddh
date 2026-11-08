@@ -10,7 +10,7 @@ A tactical card game of ancient India: Maurya, Gupta, Chalukya, Chola and Rajput
 | --- | --- | --- |
 | 0 | Foundation: TypeScript engine, PixiJS renderer, automatic publishing | Done |
 | 1 | The Look: one battle (Maurya against the Nandas) at KARDS quality | Done: approved at Gate 1 (4 Nov). Some small sounds still to record ([sound list](art/SOUND-LIST.md)) |
-| 2 | Deeper war: formations, promotion, elephant rampage, morale, terrain, Dharma–Kuta, heroes, new AI | In progress: seasons, promotion, trample, Dharma–Kuta, tutorial, campaign map with The Indus Line built |
+| 2 | Deeper war: formations, promotion, elephant rampage, morale, terrain, Dharma–Kuta, heroes, new AI | In progress: seasons, promotion, trample, Dharma–Kuta, morale and rout, search AI, tutorial, campaign map with five battles built. Gate 2 next |
 | 3 | Itihasa campaigns, Digvijaya conquest mode, Chanakya's Puzzles | |
 | 4 | Collection, deck builder, Kirti crafting | |
 | 5 | Polish, Hindi and Marathi, Google Play release | |
@@ -28,12 +28,14 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 | A battle's story, Durgs, AI level, start Kosha / Durg health | `src/campaign/<battle>.ts` (`firstThrone.ts`, `indusLine.ts`, `digvijaya.ts`, `goldenAge.ts`, `tutorial.ts`) |
 | The campaigns, the order of their battles, and win tracking | `src/campaign/campaign.ts` |
 | A new *kind* of rule or order effect | `src/engine/rules.ts` (behind `st.rules === 'yuddh'`), then the AI's value in `src/engine/ai.ts`, then the reading panel in `src/game/ui/glossary.ts` |
+| Morale / rout (who breaks, the line, who is steadfast) | `src/data/rules.json` ("morale"); logic is `checkRout` in `src/engine/rules.ts` |
+| How the Veteran (search) AI thinks and how long | `src/data/rules.json` ("ai": beam, depth, finalists, replies); code in `src/engine/search.ts`; the player's Standard/Veteran choice in `src/campaign/difficulty.ts` |
 | How a screen looks | `src/game/scenes/` (title, campaign, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
 | Art or sound | Drop masters in `art/source/{cards,battlefields,sfx}/`, run `npm run assets`, commit `public/assets/` and `src/assets/*.json` |
 
 ```
 src/data/          cards.json, decks.json, rules.json (all balance), index.ts (typed access)
-src/engine/        rules engine: types, lookups (cards.ts), rules, AI (no screen code)
+src/engine/        rules engine: types, lookups (cards.ts), rules, AI (ai.ts heuristics, search.ts search AI; no screen code)
 src/campaign/      battles (tutorial, firstThrone, indusLine, digvijaya, goldenAge), campaign.ts, the prototype's nine missions (missions.ts, data only)
 src/meta/          Kirti and per-card upgrades (saved in the browser)
 src/game/          PixiJS renderer: stage, screen modes, theme, audio, scenes (title, campaign, battle, gallery, preview)

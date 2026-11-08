@@ -1,8 +1,10 @@
 # YUDDH — tasks
 
-*Updated at the end of each session (last: 7 Nov 2026). Design and rules: `DESIGN.md`.*
+*Updated at the end of each session (last: 8 Nov 2026). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
+- [ ] **Batch 8** (`art/PROMPTS-BATCH8.md`, 17 images: Mahakantara and Kanchi battlefields, 2 Durgs, 13 cards) → Claude builds The Great Forest and The Walls of Kanchi.
+- [ ] Try morale/rout: does a broken unit read clearly (red ROUTED band, flee animation)? Too common or too rare (about 2 per battle now; the break line is in `rules.json`)?
 - [ ] Play The Golden Age (it follows The Indus Line, or open Campaign → The Golden Age).
 - [ ] Play The Indus Line on the phone: is it fun and fair? Tell Claude if the pikes feel too harsh or the Seleucids too weak (balance is a JSON edit).
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
@@ -13,11 +15,15 @@
 - [ ] **Cinematics (proposed, not started):** 8-second illustrated clips (a still painting with slow push-in, short caption, sound) before and between battles; pilot = The First Throne, C01–C03 in `docs/HISTORY-RESEARCH.md`, with a skip button and a short "dramatised" footer.
 - [ ] **Tigers of the South** (Chalukya campaign): battle 1 The Narmada Line (Pulakeshin II vs Harsha). Prompts: `art/PROMPTS-BATCH7.md` (11 images, with Pon). Narmada battlefield already painted.
 - [ ] Pon to read the history notes in `src/data/history.json` for accuracy and tone; add a note for each new battle there (The Narmada Line next).
-- [ ] Morale / rout.
 - [ ] More cards toward ~120.
-- [ ] Search-based AI → **Gate 2**.
+- [ ] **Gate 2**: Pon plays with morale/rout and the Veteran foe (briefing → Foe: Veteran), says whether the AI is strong enough and morale readable.
 - [ ] Phase 3 campaigns: The Golden Age, Tigers of the South; cinematic briefings; original narrator voice.
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
+
+## Done 8 Nov (night)
+- [x] **Morale and rout** (`checkRout` in rules.ts; `morale` in rules.json): see DESIGN.md. Token banner, flee animation, glossary entries, tutorial line. Tests: tests/morale.test.ts. Decks re-balanced (see DESIGN.md decisions).
+- [x] **Search AI** (`src/engine/search.ts`, level `'search'`) with the Foe: Standard / Veteran button on the briefing. Tests: tests/search.test.ts (beats normal ~85%, leaves the game untouched, repeatable, no hidden information).
+- [x] **Batch 8** prompt sheet + 13 cards designed in `pendingArt`.
 
 ## Done 8 Nov
 - [x] **History panels**: `src/data/history.json` (notice + one note per battle: what history says, what the game changes tagged HISTORY / TRADITION / INVENTED, source line, epilogue). Shown by a History button on the briefing and on the victory screen, an epilogue before the next battle after a win, and a first-launch notice (plus a History button on the title). UI in `src/game/ui/historyPanel.ts`.

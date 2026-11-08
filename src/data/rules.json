@@ -2,8 +2,23 @@
 "_about": "Rule constants and wording for the YUDDH ruleset. Edit values here; the engine reads them.",
 "ranks": ["", "Veer", "Mahaveer"],
 "dharmaMax": 3,
+"morale": {
+ "_about": "A unit routs when a blow leaves it at or below 1/lineDivisor of its maximum health (rounded up) and it was above that line before. Routed units flee to the Rajya line and take no action in their owner's next turn.",
+ "lineDivisor": 3,
+ "steadfastKeywords": ["raksha"],
+ "steadfastClasses": ["Legendary Warrior"],
+ "steadfastRank": 2,
+ "rallyCards": ["m_raja_dhwaja"]
+},
 "kutaCards": ["n_visha_baan", "m_gudhchar", "na_sarpa_vish"],
 "chargeClasses": ["Cavalry", "Chariot", "Elite Chariot", "Legendary Warrior"],
+"ai": {
+ "_about": "The search AI (level 'search'): each turn it beam-searches its own action sequences on a copy of the board, with unseen cards re-dealt at random, then plays the opponent's reply and scores where that leaves it. Bigger numbers play better and think longer.",
+ "beam": 24,
+ "maxDepth": 12,
+ "finalists": 16,
+ "replies": 3
+},
 "seasons": {
  "sharad": { "name": "Sharad", "english": "Autumn", "rule": "The campaigning season: clear skies, firm ground. No special rule." },
  "varsha": { "name": "Varsha", "english": "Monsoon", "rule": "Mud: cavalry and chariots cannot charge. Every unit advances or attacks, not both." },

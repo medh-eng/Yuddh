@@ -9,7 +9,7 @@ export type PlayerIndex = 0 | 1;
 export type Keyword = 'veg' | 'raksha' | 'dhuan';
 export type CardType = 'unit' | 'order' | 'yantra';
 export type Range = 'melee' | 'ranged';
-export type AiLevel = 'easy' | 'normal' | 'hard';
+export type AiLevel = 'easy' | 'normal' | 'hard' | 'search';
 export type Line = 'support' | 'front';
 export type DeployEffect = 'draw1' | 'drawKosha' | 'kosha1' | 'buffLine' | 'buffAll' | 'kosha2' | 'setYantra' | 'hillVolley' | 'elephantBuff' | 'drawHeal';
 export type YantraTrigger = 'onEnemyDeploy' | 'onHQAttack' | 'onUnitAttack';
@@ -84,6 +84,8 @@ export interface Unit {
   surge?: number;
   /** Yuddh rules: battle honours won by destroying enemy units (0–2): Veer +1 health, Mahaveer also +1 attack */
   rank?: number;
+  /** Yuddh rules, morale: 1 = just broke and fled (loses its next turn), 2 = resting this turn, rallies at the start of the next */
+  routed?: 1 | 2;
 }
 
 export interface SetYantra { cardId: string; uid: number }
@@ -130,6 +132,8 @@ export type GameEvent =
   | { t: 'promote'; owner: PlayerIndex; uid: number; rank: number }
   | { t: 'trample'; owner: PlayerIndex; uid: number; dmg: number }
   | { t: 'heal'; owner: PlayerIndex; uid: number; amount: number; by: number }
+  | { t: 'rout'; owner: PlayerIndex; uid: number; fled: boolean }
+  | { t: 'rally'; owner: PlayerIndex; uid: number }
   | { t: 'dharma'; owner: PlayerIndex; value: number; delta: number; why: string };
 
 export interface GameState {

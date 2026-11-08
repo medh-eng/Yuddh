@@ -111,6 +111,14 @@ export class TokenView extends Container {
       st.scale.set(k); st.position.set((r - ((u.rank ?? 1) - 1) / 2) * 30 * k, -TOKEN_DH / 2 + 4);
       this.icons.addChild(st);
     }
+    // morale: a broken unit is greyed and wears a banner until it rallies
+    this.art.alpha = u.routed ? 0.55 : 1;
+    if (u.routed) {
+      const band = new Graphics().roundRect(-TOKEN_DW / 2 + 4, -17 * k, TOKEN_DW - 8, 34 * k, 6).fill({ color: 0x1a0805, alpha: 0.86 }).stroke({ width: 2, color: 0xd9463a });
+      const t = new Text({ text: 'ROUTED', style: { fontFamily: FONT_TITLE, fontSize: 24 * k, fontWeight: '700', letterSpacing: 3, fill: 0xff9a84 } });
+      t.anchor.set(0.5);
+      this.icons.addChild(band, t);
+    }
   }
 
   setRing(mode: 'none' | 'ready' | 'target' | 'selected'): void {

@@ -6,8 +6,9 @@
    ============================================================ */
 import { CARDS } from './cards';
 import {
-  allUnits, applyAction, canAttack, canMove, canPlay, findUnit, koshaCost, other
+  allUnits, applyAction, canAttack, canMove, canPlay, findUnit, koshaCost, other, wouldRout
 } from './rules';
+import { searchTurn } from './search';
 import type { AiLevel, CardDef, GameState, PlayerIndex, Target, Unit } from './types';
 
 interface PlayOption { i: number; c: CardDef; target: Target | null; kind: 'unit' | 'removal' | 'order'; victim?: Unit }
@@ -47,11 +48,16 @@ function attackScore(st: GameState, pIdx: PlayerIndex, a: Unit, target: Target, 
   if (!f) return -1;
   const d = f.unit;
   const kills = a.atk >= d.hp;
-  const retaliation = (a.range === 'melee' && d.range === 'melee') ? d.atk : 0;
+  const yuddh = st.rules === 'yuddh';
+  // morale: a routed unit turns its back and strikes no counter-blow
+  const retaliation = (a.range === 'melee' && d.range === 'melee' && !(yuddh && d.routed)) ? d.atk : 0;
   const weDie = retaliation >= a.hp;
   let s = 0;
   if (kills) s += unitValue(d) + 2.5;
   else s += Math.min(a.atk, d.hp) * 0.45;
+  // a blow that breaks them takes them out of the next turn; a blow that breaks us costs us the same
+  if (yuddh && !kills && wouldRout(st, d, d.hp, d.hp - a.atk)) s += unitValue(d) * 0.45 + (f.line === 'front' ? 1.2 : 0);
+  if (yuddh && !weDie && retaliation && wouldRout(st, a, a.hp, a.hp - retaliation) && !kills) s -= unitValue(a) * 0.35;
   if (retaliation) s -= Math.min(retaliation, a.hp) * 0.7;
   if (weDie) s -= unitValue(a) * 0.85;
   if (kills && !weDie) s += 2;
@@ -264,6 +270,7 @@ function hardCombatPhase(st: GameState, pIdx: PlayerIndex): void {
 export function aiTurn(st: GameState, pIdx: PlayerIndex, level?: AiLevel): void {
   if (st.over) return;
   const lvl = level || st.aiLevel || 'normal';
+  if (lvl === 'search') { searchTurn(st, pIdx); return; }
   if (lvl === 'hard') {
     aiPlayPhase(st, pIdx, 'normal');
     hardCombatPhase(st, pIdx);

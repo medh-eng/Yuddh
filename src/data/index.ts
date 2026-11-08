@@ -33,7 +33,15 @@ export function decksOf(scenarioId: string): { player: string[]; enemy: string[]
 export const RULES = {
   ranks: rulesJson.ranks as string[],
   dharmaMax: rulesJson.dharmaMax,
+  morale: {
+    lineDivisor: rulesJson.morale.lineDivisor,
+    steadfastKeywords: new Set<string>(rulesJson.morale.steadfastKeywords),
+    steadfastClasses: new Set<string>(rulesJson.morale.steadfastClasses),
+    steadfastRank: rulesJson.morale.steadfastRank,
+    rallyCards: new Set<string>(rulesJson.morale.rallyCards)
+  },
   kutaCards: new Set<string>(rulesJson.kutaCards),
+  ai: rulesJson.ai as { beam: number; maxDepth: number; finalists: number; replies: number },
   chargeClasses: new Set<string>(rulesJson.chargeClasses),
   seasons: rulesJson.seasons as Record<Season, { name: string; english: string; rule: string }>
 };

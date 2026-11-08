@@ -157,8 +157,51 @@ function destroyUnit(st: GameState, owner: PlayerIndex, uid: number): void {
 function damageUnit(st: GameState, owner: PlayerIndex, uid: number, amount: number): void {
   const f = findUnit(st, owner, uid);
   if (!f) return;
+  const before = f.unit.hp;
   f.unit.hp -= amount;
   if (f.unit.hp <= 0) destroyUnit(st, owner, uid);
+  else checkRout(st, f.unit, before);
+}
+
+/* ---------------- Morale and rout ----------------
+   Yuddh rules. A blow that leaves a unit at or below a third of its health (rounded up),
+   when it was above that line before, breaks it: it flees to the Rajya line and takes no
+   action in its owner's next turn, then rallies. A routed unit strikes no counter-blow, and
+   destroying one earns no Dharma (cutting down a fleeing man is no fair fight). Never
+   routed: Raksha shield-walls, Legendary Warriors, Mahaveer (twice-honoured) units, and
+   every unit of an army whose standard-bearer still stands, and every unit of an army at full Dharma. */
+const MORALE = RULES.morale;
+/** the health at or below which a blow breaks this unit */
+export const routLine = (u: { maxHp: number }): number => Math.ceil(u.maxHp / MORALE.lineDivisor);
+export function isSteadfast(st: GameState, u: Unit): boolean {
+  if (u.kw.some(k => MORALE.steadfastKeywords.has(k))) return true;
+  if (MORALE.steadfastClasses.has(CARDS[u.cardId]?.sub ?? '')) return true;
+  if ((u.rank ?? 0) >= MORALE.steadfastRank) return true;
+  // the army of a Dharma Yuddha believes in its cause
+  if (dharmaOf(st.players[u.owner]) >= DHARMA_MAX) return true;
+  return allUnits(st, u.owner).some(x => MORALE.rallyCards.has(x.unit.cardId));
+}
+/** would a blow that leaves `u` with `hpAfter` (from `hpBefore`) break it? */
+export function wouldRout(st: GameState, u: Unit, hpBefore: number, hpAfter: number): boolean {
+  if (st.rules !== 'yuddh' || u.routed || hpAfter <= 0) return false;
+  const line = routLine(u);
+  return hpBefore > line && hpAfter <= line && !isSteadfast(st, u);
+}
+function checkRout(st: GameState, u: Unit, hpBefore: number): void {
+  if (!wouldRout(st, u, hpBefore, u.hp)) return;
+  const owner = u.owner, p = st.players[owner];
+  u.routed = 1;
+  u.canAct = false;
+  let fled = false;
+  const fi = st.front.owner === owner ? st.front.units.indexOf(u) : -1;
+  if (fi >= 0 && p.support.length < 4) {
+    st.front.units.splice(fi, 1);
+    p.support.push(u);
+    if (st.front.units.length === 0) st.front.owner = null;
+    fled = true;
+  }
+  log(st, fled ? `${u.name} breaks and flees to the Rajya line.` : `${u.name} breaks, but has nowhere to flee.`, owner);
+  pushEvent(st, { t: 'rout', owner, uid: u.uid, fled });
 }
 
 function damageAll(st: GameState, owner: PlayerIndex, amount: number): void {
@@ -282,6 +325,15 @@ function startTurn(st: GameState, idx: PlayerIndex, first?: boolean): void {
     x.unit.canAct = true;
     x.unit.moved = false;
     x.unit.attacked = false;
+    // a routed unit loses this turn, and rallies at the start of the next
+    if (x.unit.routed === 2) {
+      delete x.unit.routed;
+      log(st, `${x.unit.name} rallies.`, idx);
+      pushEvent(st, { t: 'rally', owner: idx, uid: x.unit.uid });
+    } else if (x.unit.routed === 1) {
+      x.unit.routed = 2;
+      x.unit.canAct = false;
+    }
   });
   if (!first) draw(st, idx, 1 + (p.drawBonus || 0));
   log(st, `${EMPIRES[p.empire].name} — turn begins.`, idx);
@@ -518,7 +570,7 @@ export function applyAction(st: GameState, action: Action): Check {
   return res;
 }
 
-function applyActionCore(st: GameState, action: Action): Check {
+export function applyActionCore(st: GameState, action: Action): Check {
   if (st.over) return { ok: false, reason: 'Game over' };
   const pIdx = st.active;
   const p = st.players[pIdx];
@@ -599,13 +651,15 @@ function applyActionCore(st: GameState, action: Action): Check {
     log(st, `${a.name} attacks ${d.name}.`, pIdx);
     const hit = strikeDamage(st, a);
     pushEvent(st, { t: 'attack', owner: pIdx, uid: a.uid, target: { owner: tgt.owner, uid: d.uid }, dmg: hit });
+    const dHpBefore = d.hp, aHpBefore = a.hp;
     d.hp -= hit;
-    let dmgBack = (a.range === 'melee' && d.range === 'melee') ? d.atk : 0;
+    // a routed unit has turned its back: no counter-blow
+    let dmgBack = (a.range === 'melee' && d.range === 'melee' && !(st.rules === 'yuddh' && d.routed)) ? d.atk : 0;
     // Yuddh rules: pikes punish a melee unit that advanced this turn and struck them
     if (st.rules === 'yuddh' && a.range === 'melee' && a.moved) dmgBack += CARDS[d.cardId]?.reprisal ?? 0;
     if (dmgBack > 0) a.hp -= dmgBack;
     if (d.hp <= 0) { pushEvent(st, { t: 'death', owner: tgt.owner, uid: d.uid }); destroyUnit(st, tgt.owner, d.uid); }
-    if (d.hp <= 0 && a.range === 'melee') shiftDharma(st, pIdx, 1, 'a fair fight won');
+    if (d.hp <= 0 && a.range === 'melee' && !(st.rules === 'yuddh' && d.routed)) shiftDharma(st, pIdx, 1, 'a fair fight won');
     // Yuddh rules: a war elephant that crushes a unit tramples on; the blow it did not need falls on the enemy Durg
     if (st.rules === 'yuddh' && d.hp < 0 && a.range === 'melee' && isElephant(a)) {
       const over = -d.hp;
@@ -620,6 +674,9 @@ function applyActionCore(st: GameState, action: Action): Check {
       log(st, `${a.name} is honoured for valour (${RANK_NAMES[a.rank]}).`, pIdx);
       pushEvent(st, { t: 'promote', owner: pIdx, uid: a.uid, rank: a.rank });
     }
+    // morale: the defender may break under the blow; the attacker too, unless it destroyed its foe
+    if (d.hp > 0) checkRout(st, d, dHpBefore);
+    if (a.hp > 0 && d.hp > 0) checkRout(st, a, aHpBefore);
     // a Pratikar Yantra punishes the attacker
     const reprisal = fireYantra(st, tgt.owner, 'onUnitAttack');
     if (reprisal) damageUnit(st, pIdx, a.uid, reprisal.power);

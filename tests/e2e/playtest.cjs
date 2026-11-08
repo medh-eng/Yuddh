@@ -32,6 +32,8 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
     await p.waitForTimeout(80); await p.mouse.up();
   };
   await shot('01-title');
+  // the first-launch history notice sits over the title until it is dismissed
+  if ((await p.evaluate(() => window.__yuddhButtons())).some(x => x.label === 'Understood')) { await press('Understood'); await p.waitForTimeout(800); }
 
   // the card gallery: one empire, another, a card read at full size
   await press('Card gallery'); await p.waitForTimeout(2200); await shot('02-gallery-maurya');
