@@ -3,7 +3,7 @@
 Two battles of the Gupta campaign, after **The Digvijaya** (batch 6). Around 340 CE Samudragupta, having broken the Naga kings, turned south down the **Dakshinapatha**, the southern road. His court poet and minister **Harishena** carved the record on the Allahabad (Prayaga) Pillar, and it names twelve southern kings he defeated. Two of them are our battles:
 
 - **Vyaghraraja of Mahakantara.** *Vyaghra* means tiger, *Mahakantara* means the Great Forest. Where that forest was is argued (the forest country of Odisha and central India is the usual guess), so the game paints it as a country, not a map point.
-- **Vishnugopa of Kanchi.** Kanchi (Kanchipuram) was the Pallava capital, far down the east coast, the furthest point the inscription reaches. Kanchi was already famous as a city of learning.
+- **Vishnugopa of Kanchi.** Kanchi (Kanchipuram) was the Pallava capital, far down the east coast, the far end of the inscription's list. Kanchi later became famous as a city of learning (its Ghatika college), and the game lets it be one already: that is the game's licence, not the inscription's claim.
 
 The inscription also records Samudragupta's policy: he captured these kings and then **released them and gave their kingdoms back** as vassals. The Gupta card of this batch is built on that.
 
