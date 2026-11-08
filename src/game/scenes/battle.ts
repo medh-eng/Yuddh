@@ -71,7 +71,7 @@ function battleLayout(v: View): Layout {
       endY: 448, endS: 1, koshaLabelY: 766, koshaY: 800, myDiyas: { x: 1584, y: 846, s: 1 },
       deck: { x: 1852, y: 905, s: 0.2 },
       yantraX: 1486, yantraS: 0.22, yantraGap: 80,
-      roundY: 1040, roundX: [1660, 1720, 1780, 1840], roundR: 26, hintY: 22,
+      roundY: 1032, roundX: [1552, 1648, 1744, 1840], roundR: 42, hintY: 22,
       reveal: { x: 860, y: 448, s: 1.15 }, preview: null
     };
   }
@@ -92,7 +92,7 @@ function battleLayout(v: View): Layout {
     endY: line.front, endS: 0.8, koshaLabelY: 400, koshaY: 438, myDiyas: { x: rightX - 100, y: 482, s: 1 },
     deck: { x: W - 48, y: 600, s: 0.18 },
     yantraX: laneX + laneW + 40, yantraS: 0.15, yantraGap: 58,
-    roundY: H - 36, roundX: [rightX - 180, rightX - 110, rightX - 40, rightX + 30], roundR: 28, hintY: 6,
+    roundY: H - 42, roundX: [W - 300, W - 216, W - 132, W - 48], roundR: 38, hintY: 6,
     reveal: { x: laneX + laneW / 2, y: line.front, s: 1.45 },
     preview: { x: W - 8 - 240 * ((H * 0.7) / 672), y: (L_HANDTOP(H)) / 2 + 4, s: (H * 0.7) / 672 }
   };
@@ -117,7 +117,10 @@ function snapshot(st: GameState): Snap {
   return copy;
 }
 
-export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST_THRONE_SCENARIO, next?: () => void): Scene {
+/** where the pause menu and the end screen can lead: the campaign map (if the battle came from there) and the title */
+export interface BattleNav { map?: () => void; title: () => void }
+
+export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST_THRONE_SCENARIO, next?: () => void, nav?: BattleNav): Scene {
   const s: Scene = new Container();
   let L = battleLayout(view);
   let st: GameState;
@@ -226,21 +229,23 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   // must opt out, or a passing spark or the turn banner swallows a press on the unit beneath it.
   for (const deco of [lanes, frontGlow, zoneGlow, arrow, previewLayer, fx, combatFx]) deco.eventMode = 'none';
 
-  // small round buttons: menu, full screen, music, sound
+  // round buttons, bottom right: pause menu, full screen, music, sound effects
   const rounds = [
-    { label: '✕', fn: () => confirmLeave() },
-    { label: '', fn: () => { void toggleFullscreen(); } },
-    { label: '♪', fn: () => { roundT[2].alpha = audio.toggleMusic() ? 1 : 0.35; } },
-    { label: '◈', fn: () => { roundT[3].alpha = audio.toggleSfx() ? 1 : 0.35; } }
-  ].map(r => {
+    { fn: () => pauseMenu() },
+    { fn: () => { void toggleFullscreen(); } },
+    { fn: () => { setDim(2, audio.toggleMusic()); } },
+    { fn: () => { setDim(3, audio.toggleSfx()); } }
+  ].map((r, i) => {
     const c = new Container();
-    const g = new Graphics();
-    const t = new Text({ text: r.label, style: { fontFamily: FONT_TITLE, fontSize: 20, fontWeight: '700', fill: INK.goldPale } }); t.anchor.set(0.5);
-    c.addChild(g, t); c.eventMode = 'static'; c.cursor = 'pointer'; c.on('pointertap', r.fn);
-    s.addChild(c); return { c, g, t };
+    const g = new Graphics();      // the button's disc
+    const ic = new Graphics();     // its drawn icon (phone fonts lack many symbols)
+    const t = new Text({ text: i === 2 ? '♪' : '', style: { fontFamily: FONT_TITLE, fontSize: 20, fontWeight: '700', fill: INK.goldPale } }); t.anchor.set(0.5);
+    c.addChild(g, ic, t); c.eventMode = 'static'; c.cursor = 'pointer'; c.on('pointertap', r.fn);
+    s.addChild(c); return { c, g, ic, t };
   });
-  const roundT = rounds.map(r => r.t);
-  roundT[2].alpha = audio.music ? 1 : 0.35; roundT[3].alpha = audio.sfx ? 1 : 0.35;
+  /** music (2) and sound (3) show dimmed while off */
+  function setDim(i: number, on: boolean): void { rounds[i].t.alpha = rounds[i].ic.alpha = on ? 1 : 0.35; }
+  setDim(2, audio.music); setDim(3, audio.sfx);
   rounds[1].c.visible = canFullscreen();
 
   /** put every fixed part of the board where the current layout says */
@@ -261,13 +266,25 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     endT.style.fontSize = L.phone ? 28 : 26;
     hint.style.fontSize = fsz(24); hint.position.set(L.laneX + L.laneW / 2, L.hintY); fitHint();
     rounds.forEach((r, i) => {
-      r.g.clear().circle(0, 0, L.roundR).fill({ color: 0x140c07, alpha: 0.85 }).stroke({ width: 2, color: INK.gold });
-      r.t.style.fontSize = Math.round(L.roundR * 0.78);
-      if (i === 1) {
-        // full screen: four corner brackets (the ⛶ glyph is missing from many phone fonts)
-        const a = L.roundR * 0.42, b = L.roundR * 0.2;
-        for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) r.g.moveTo(sx * a, sy * (a - b)).lineTo(sx * a, sy * a).lineTo(sx * (a - b), sy * a);
-        r.g.stroke({ width: 2.5, color: INK.goldPale, cap: 'round', join: 'round' });
+      const R = L.roundR;
+      r.g.clear().circle(0, 0, R).fill({ color: 0x140c07, alpha: 0.88 }).stroke({ width: 3, color: INK.gold });
+      r.ic.clear();
+      r.t.style.fontSize = Math.round(R * 0.95);
+      const a = R * 0.46;
+      if (i === 0) {
+        // pause: two bars
+        r.ic.roundRect(-a * 0.7, -a, a * 0.55, a * 2, 2).roundRect(a * 0.15, -a, a * 0.55, a * 2, 2).fill(INK.goldPale);
+      } else if (i === 1) {
+        // full screen: four corner brackets
+        const b = R * 0.24;
+        for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) r.ic.moveTo(sx * a, sy * (a - b)).lineTo(sx * a, sy * a).lineTo(sx * (a - b), sy * a);
+        r.ic.stroke({ width: 3.5, color: INK.goldPale, cap: 'round', join: 'round' });
+      } else if (i === 3) {
+        // sound effects: a loudspeaker with two sound waves
+        r.ic.poly([-a * 1.0, -a * 0.38, -a * 0.4, -a * 0.38, a * 0.2, -a * 0.9, a * 0.2, a * 0.9, -a * 0.4, a * 0.38, -a * 1.0, a * 0.38]).fill(INK.goldPale);
+        r.ic.arc(a * 0.2, 0, a * 0.55, -0.9, 0.9).stroke({ width: 3, color: INK.goldPale, cap: 'round' });
+        r.ic.arc(a * 0.2, 0, a * 1.0, -0.9, 0.9).stroke({ width: 3, color: INK.goldPale, cap: 'round' });
+        r.ic.position.x = -a * 0.1;
       }
       r.c.position.set(L.roundX[i], L.roundY);
     });
@@ -1582,31 +1599,41 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const again = won && next
       ? makeButton(sc.nextLabel ?? 'Next battle', next, { primary: true, w: 320 })
       : makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 320 });
-    const bx = ph ? 230 : 180;
-    again.position.set(W / 2 - bx, ph ? H * 0.87 : 880);
-    const leave = makeButton('Title screen', exit, { w: 320 });
-    leave.position.set(W / 2 + bx, ph ? H * 0.87 : 880);
-    c.addChild(dim, face, title, sub, again, leave);
+    const btns: Container[] = [again];
+    if (nav?.map) btns.push(makeButton('Campaign map', nav.map, { w: 320 }));
+    btns.push(makeButton('Title screen', nav ? nav.title : exit, { w: 320 }));
+    const bstep = btns.length === 3 ? 350 : 360;
+    btns.forEach((b, i) => b.position.set(W / 2 + (i - (btns.length - 1) / 2) * bstep, ph ? H * 0.87 : 880));
+    c.addChild(dim, face, title, sub, ...btns);
     s.addChild(c);
     overlay = { kind: 'end', view: c, won };
     if (animate) {
       gsap.from(face.scale, { x: 0.3, y: 0.3, duration: 0.6, ease: 'back.out(1.4)' });
-      gsap.from([title, sub, again, leave], { alpha: 0, y: '+=30', duration: 0.6, stagger: 0.12, delay: 0.3 });
+      gsap.from([title, sub, ...btns], { alpha: 0, y: '+=30', duration: 0.6, stagger: 0.12, delay: 0.3 });
     }
   }
 
-  function confirmLeave(): void {
+  function pauseMenu(): void {
     if (overlay) return;
-    const W = L.W, H = L.H;
+    const W = L.W, H = L.H, ph = L.phone;
     const c = new Container();
     const close = () => { overlay = null; destroyTree(c); };
-    const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.7 }); dim.eventMode = 'static';
-    const t = new Text({ text: 'Leave the battle?', style: { fontFamily: FONT_TITLE, fontSize: 56, fontWeight: '700', fill: INK.goldPale } });
-    t.anchor.set(0.5); t.position.set(W / 2, H / 2 - 100);
-    const bx = L.phone ? 210 : 160;
-    const yes = makeButton('Leave', exit, { w: 280 }); yes.position.set(W / 2 - bx, H / 2 + 20);
-    const no = makeButton('Keep fighting', close, { primary: true, w: 280 }); no.position.set(W / 2 + bx, H / 2 + 20);
-    c.addChild(dim, t, yes, no); s.addChild(c);
+    const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.72 }); dim.eventMode = 'static';
+    const t = new Text({ text: 'PAUSED', style: { fontFamily: FONT_TITLE, fontSize: ph ? 72 : 88, fontWeight: '700', letterSpacing: 16, fill: INK.goldPale, stroke: { color: 0x000000, width: 6 } } });
+    t.anchor.set(0.5); t.position.set(W / 2, ph ? H * 0.2 : H * 0.22);
+    const sub = new Text({ text: sc.title, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * L.ui), fontStyle: 'italic', fill: INK.cream } });
+    sub.anchor.set(0.5); sub.position.set(W / 2, t.y + (ph ? 62 : 74));
+    c.addChild(dim, t, sub);
+    const items: [string, () => void, boolean][] = [['Resume', close, true]];
+    if (nav?.map) items.push(['Campaign map', nav.map, false]);
+    items.push(['Title screen', nav ? nav.title : exit, false]);
+    const step = (ph ? 84 : 92) * (ph ? 1 : 1);
+    const y0 = H * (ph ? 0.4 : 0.42);
+    items.forEach(([label, fn, primary], i) => {
+      const b = makeButton(label, fn, { primary, w: 360, ui: ph ? 1.2 : 1.15 });
+      b.position.set(W / 2, y0 + i * step); c.addChild(b);
+    });
+    s.addChild(c);
     overlay = { kind: 'confirm', view: c };
   }
 

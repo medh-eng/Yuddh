@@ -14,6 +14,9 @@
 - [ ] Phase 3 campaigns: The Golden Age, Tigers of the South; cinematic briefings; original narrator voice.
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
 
+## Done 8 Nov
+- [x] Battle: pause button (❚❚) opens a Paused menu (Resume / Campaign map / Title screen); end screen also offers Campaign map; the campaign map lets you open any battle. Corner round buttons enlarged (pause, full screen, music, sound) with drawn icons (speaker for sound effects).
+
 ## Done (7 Nov 2026)
 - [x] **The Golden Age** (Gupta campaign, battle 1): Chandragupta II vs Rudrasimha III at Ujjain. 11 batch-5 paintings in (Ujjain and Satrap Durgs, 5 Satrap cards, 4 Gupta cards); Marubhumi Toofan (damage every enemy unit), Silver Mudra (Kosha + card), Navaratna, Kalidasa, Iron Pillar, Vikramaditya; second campaign on the map (tabs), The Indus Line now leads into it; Gupta music (3 pieces, ~3 min each) and the horse-gallop and sand-gust sounds delivered and converted (the game uses them in The Golden Age). Balance ~53%.
 - [x] Batch 4 complete: the four Maurya cards arrived mid-session and are in the game and in the Indus Line player deck: Sindhu Nauka (ferries 2 units across free, they may strike), Takshashila Scholars (draw + heal 2), Gaja Sandhi (draw + heal 6), Ashva Dhanurdhara (Vega mounted archer). Balance ~50%.

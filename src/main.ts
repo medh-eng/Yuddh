@@ -75,11 +75,11 @@ async function boot(): Promise<void> {
     audio.unlock();
     const next = sc.nextId ? scenarioById(sc.nextId) : undefined;
     void loading(preloadBattle(sc)).then(() =>
-      stage.show(battleScene(stage, back, sc, next ? () => play(next, back) : undefined)));
+      stage.show(battleScene(stage, back, sc, next ? () => play(next, back) : undefined, { map: campaign, title })));
   };
   const campaign = (): void => stage.show(campaignScene(stage, sc => play(sc, campaign), title));
   const title = (): void => stage.show(titleScene(stage, {
-    battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title, undefined, () => play(scenarioById('indus_line')!, title)))); },
+    battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title, undefined, () => play(scenarioById('indus_line')!, title), { map: campaign, title }))); },
     tutorial: () => play(TUTORIAL, title),
     campaign,
     gallery: () => { audio.unlock(); stage.show(galleryScene(stage, title)); },
