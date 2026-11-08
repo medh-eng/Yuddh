@@ -3,6 +3,18 @@
    tutorial are both scenarios; later campaign missions will be too. */
 import type { GameState } from '../engine/types';
 
+/** the history pages: shown under the briefing, and the epilogue after a victory */
+export interface History {
+  /** what the sources say happened (2–4 sentences) */
+  happened: string;
+  /** what the game bends or invents, said plainly */
+  changes: string;
+  /** one line: the main sources */
+  sources: string;
+  /** after a win: what came next in history */
+  epilogue: string;
+}
+
 export interface Scenario {
   id: string;
   title: string;
@@ -31,6 +43,7 @@ export interface Scenario {
   nextLabel?: string;
   /** this battle's own music (files named music_<x> in art/source/sfx); any piece not delivered falls back to the standard one */
   music?: { briefing?: string; calm?: string; intense?: string };
+  history?: History;
   /** a guided battle: the coach explains each step */
   coached?: boolean;
 }

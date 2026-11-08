@@ -51,6 +51,10 @@ export interface CardDef {
   kosha?: number;
   /** damage to every enemy unit (orders) */
   damageAll?: number;
+  /** damage to every enemy unit on the Yudhbhumi */
+  damageFront?: number;
+  /** +attack for all your units */
+  buffAtk?: number;
   dharma?: number;
   /** Pikes: a melee unit that advanced this turn and strikes this unit takes this much damage (Yuddh rules) */
   reprisal?: number;

@@ -9,6 +9,7 @@ import { TUTORIAL, tutorialDone } from './tutorial';
 import { FIRST_THRONE_SCENARIO } from './firstThrone';
 import { INDUS_LINE_SCENARIO } from './indusLine';
 import { DIGVIJAYA_SCENARIO } from './digvijaya';
+import { NARMADA_LINE_SCENARIO } from './narmada';
 import { GOLDEN_AGE_SCENARIO } from './goldenAge';
 
 export interface CampaignNode {
@@ -39,9 +40,14 @@ export const GUPTA_CAMPAIGN: CampaignNode[] = [
   { scenario: GOLDEN_AGE_SCENARIO, face: 'sa_rudrasimha', blurb: 'Take Ujjain from the Satraps.' }
 ];
 
+export const CHALUKYA_CAMPAIGN: CampaignNode[] = [
+  { scenario: NARMADA_LINE_SCENARIO, face: 'c_pulakeshin', blurb: 'Stop Harsha of Kanauj on the Narmada.' }
+];
+
 export const CAMPAIGNS: Campaign[] = [
   { id: 'maurya', kicker: 'THE MAURYA CAMPAIGN', title: 'Rise of Magadha', ground: 'pataliputra', nodes: MAURYA_CAMPAIGN },
-  { id: 'gupta', kicker: 'THE GUPTA CAMPAIGN', title: 'The Golden Age', ground: 'ujjain', nodes: GUPTA_CAMPAIGN }
+  { id: 'gupta', kicker: 'THE GUPTA CAMPAIGN', title: 'The Golden Age', ground: 'ujjain', nodes: GUPTA_CAMPAIGN },
+  { id: 'chalukya', kicker: 'THE CHALUKYA CAMPAIGN', title: 'Tigers of the South', ground: 'narmada', nodes: CHALUKYA_CAMPAIGN }
 ];
 
 export const scenarioById = (id: string): Scenario | undefined =>
