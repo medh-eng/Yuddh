@@ -36,6 +36,8 @@ function build(spec: Spec): Container {
   const btnY = H - (ph ? 54 : 78);
   btn.position.set(W - (ph ? 190 : 270), btnY);
   const src = new Text({ text: spec.source, style: { fontFamily: FONT_BODY, fontSize: Math.round(21 * k), fontStyle: 'italic', fill: INK.cream, wordWrap: true, wordWrapWidth: wrap - (ph ? 330 : 360), lineHeight: Math.round(27 * k) } });
+  // the source line gets at most three short lines beside the button: shrink the type until it does
+  for (let f = Math.round(21 * k); f >= 13 && src.height > 3 * f * 1.25; f--) { src.style.fontSize = f; src.style.lineHeight = Math.round(f * 1.25); }
   src.anchor.set(0, 0.5); src.position.set(tx, btnY);
   kick.position.set(tx, ph ? 22 : 70); title.position.set(tx, kick.y + kick.height + 4);
   c.addChild(kick, title, src, btn);

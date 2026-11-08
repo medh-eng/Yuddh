@@ -1,6 +1,6 @@
 # YUDDH art prompts: batch 7, "The Narmada Line"
 
-First battle of the third campaign, **Tigers of the South** (Chalukya). You play **Pulakeshin II** of Badami; the enemy is **Harsha of Kanauj**, the great northern emperor. Around 618–630 CE Harsha marched south with his elephant armies and was halted on the Narmada river. The Chalukya court poet **Ravikirti** recorded it in the Aihole inscription (634 CE), so the main source is the winner's own stone record; Harsha's side is known from his court poet **Bana** and the Chinese pilgrim Xuanzang. The date and the details of the fight are not known: the game uses creative freedom and says so.
+First battle of the third campaign, **Tigers of the South** (Chalukya). You play **Pulakeshin II** of Badami; the enemy is **Harsha of Kanauj**, the great northern emperor. Harsha marched south and, the Chalukyas claim, was halted at the Narmada river, sometime before 634 CE. The Chalukya court poet **Ravikirti** recorded it in the Aihole inscription (634–635 CE), so the main source is the winner's own praise-poem, and it must not be read as neutral; Harsha's side is known from his court poet **Bana** and the Chinese pilgrim Xuanzang. The exact date, place and fighting are not known, so the game uses creative freedom and says so. Paint Harsha with dignity: he is a great emperor, not a fool.
 
 Pulakeshin's side is the fast, clever hill kingdom (cavalry, a river ford, a banner everyone follows). Harsha's side is wide and heavy (a huge elephant corps, many spearmen, a generous and literary court).
 

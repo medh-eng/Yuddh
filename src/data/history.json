@@ -1,53 +1,97 @@
 {
   "notice": {
     "title": "History and imagination",
-    "text": "YUDDH is inspired by real history. Its battles, names and numbers are adapted to make a game, and some of the stories come from tradition rather than proof. Where the game invents something, it says so. Every battle has a History note with its sources, and each victory ends with a short epilogue.",
-    "source": "Tags used in the notes: HISTORY (recorded in sources), TRADITION (remembered in later stories, debated), INVENTED (added by the game)."
+    "text": "YUDDH is inspired by real history. Its battles, names and numbers are adapted to make a game, and some stories come from tradition rather than proof. Dates, battle sites, alliances and sequences of events are sometimes uncertain, debated, combined or invented for play, and where the game invents something it says so. Inscriptions and court chronicles show the view of the people who ordered them. Every battle has a History note with its sources, and each victory ends with a short epilogue.",
+    "source": "Tags: HISTORY (recorded in surviving sources), TRADITION (later stories, or readings historians debate), INVENTED (added by the game)."
   },
   "battles": {
     "first_throne": {
       "kicker": "THE FIRST THRONE · c. 321 BCE",
-      "happened": "Around 321 BCE Chandragupta Maurya overthrew the Nanda dynasty of Magadha and took its capital, Pataliputra, founding the Maurya empire. The Nandas were remembered for their wealth and their huge army: Greek writers of Alexander's time describe thousands of elephants, figures that are probably exaggerated.",
+      "happened": "Chandragupta Maurya founded the Maurya dynasty by displacing the Nandas of Magadha, conventionally dated around 322–321 BCE. How he did it is not securely known: the Greek and Roman writers say almost nothing about it, and the dramatic stories come from Indian texts written much later. The Nandas were remembered as rich and powerful; Plutarch repeats reports of a vast army with thousands of elephants, figures no historian trusts.",
       "changed": [
-        { "basis": "TRADITION", "text": "Chanakya (Kautilya) as Chandragupta's adviser comes from later Indian stories: the Puranas, Buddhist chronicles and the play Mudrarakshasa. Who wrote the Arthashastra is still debated." },
-        { "basis": "INVENTED", "text": "One battle at the gates of Pataliputra. The sources do not describe the fighting at all. The four seasons and every card's power are game rules." },
-        { "basis": "TRADITION", "text": "Dhana Nanda as the last Nanda king is the name given in the later tradition." }
+        {
+          "basis": "HISTORY",
+          "text": "The Nanda dynasty ended and Chandragupta's dynasty ruled Magadha. That change of power is the firm part of the story."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "Chanakya (Kautilya) as Chandragupta's adviser comes from later Indian stories. Amatya Rakshasa and Parvataka are characters from the later play Mudrarakshasa, not proven participants."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "One battle at the gates of Pataliputra. Its date, site and fighting are not recorded, and the seasons and every card's power are game rules."
+        }
       ],
-      "source": "Sources: Greek accounts (Diodorus, Plutarch, Curtius); the Puranas; Buddhist chronicles; Vishakhadatta's Mudrarakshasa (a later drama).",
+      "source": "Sources: Plutarch, Life of Alexander 62; Justin 15.4; the Puranas and Buddhist and Jain traditions; Vishakhadatta's Mudrarakshasa (a later drama); Jansari, Chandragupta Maurya (UCL Press).",
       "epilogue": "Chandragupta held Pataliputra and went on to bring most of the north under one rule. A few years later he would meet the Greek-ruled lands at the Indus."
     },
     "indus_line": {
       "kicker": "THE INDUS LINE · c. 305 BCE",
-      "happened": "Around 305 BCE Seleucus I, one of Alexander's successors, marched east to win back the Indus lands. Ancient writers say the two rulers made a treaty: Seleucus gave up lands west of the Indus and received 500 war elephants, and a Greek envoy, Megasthenes, lived at Chandragupta's court.",
+      "happened": "Around 305–303 BCE Seleucus I, one of Alexander's successors, crossed toward the Indus and dealt with Chandragupta until they made an agreement. Ancient writers record its terms: Seleucus gave up some eastern lands, the two courts were joined by a marriage arrangement, and Chandragupta sent 500 war elephants. Which lands, and who had the better of the fighting, nobody knows; no ancient writer shows either king as the clear winner.",
       "changed": [
-        { "basis": "INVENTED", "text": "A battle on the Indus. The sources record a treaty and say nothing certain about any fighting." },
-        { "basis": "HISTORY", "text": "Macedonian pikes (the phalanx), Companion cavalry and Cretan archers are how Hellenistic armies really fought." },
-        { "basis": "HISTORY", "text": "Megasthenes wrote an account of India (the Indica). Only fragments survive, quoted by later writers." }
+        {
+          "basis": "HISTORY",
+          "text": "A treaty with territory, elephants and a marriage tie is recorded by Strabo, Justin and Appian, writing long after the event."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "A battle on the Indus with a winner. The sources do not say where the armies met or how the fighting went."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "The figure of 500 elephants is the ancient one, and round numbers may be exaggerated. The story of Seleucus's daughter Helena is a later popular addition."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Macedonian pikes (the phalanx), Companion cavalry and Cretan archers are how Hellenistic armies fought. Megasthenes was a Greek envoy at Pataliputra; his Indica survives only in fragments."
+        }
       ],
-      "source": "Sources: Strabo; Justin; Appian; fragments of Megasthenes' Indica.",
-      "epilogue": "The treaty settled the frontier. Seleucus turned west with his 500 elephants and used them at the battle of Ipsus in 301 BCE."
+      "source": "Sources: Strabo 15.2.9; Justin 15.4; Appian, Syrian Wars 55; Plutarch; fragments of Megasthenes; Jansari, Chandragupta Maurya (UCL Press).",
+      "epilogue": "The treaty settled the frontier for a generation. Seleucus turned west, where tradition says his elephants served him at the battle of Ipsus in 301 BCE, and Chandragupta's empire held the north-west."
     },
     "digvijaya": {
       "kicker": "THE DIGVIJAYA · c. 340 CE",
-      "happened": "The Allahabad Pillar, carved by Samudragupta's court poet Harishena, lists the kings he defeated. Achyuta, Nagasena and Ganapati Naga are named among the kings of the Ganges country he \"uprooted\". After them he marched south, defeated kings, and gave them back their lands as vassals. His gold coins show him playing the veena.",
+      "happened": "The Allahabad (Prayaga) Pillar carries a praise-poem for Samudragupta by his court poet Harishena. It names northern kings it says he \"uprooted\", among them Ganapatinaga, Nagasena and Achyutanandin, and twelve southern kings who were captured and then released and restored. Forest rulers, frontier kingdoms and distant powers are said to have paid tribute or sent envoys. His gold coins show him playing the veena.",
       "changed": [
-        { "basis": "INVENTED", "text": "One battle at Padmavati against all three kings together. The pillar lists the kings but does not describe the fighting. The date is rounded." },
-        { "basis": "INVENTED", "text": "Poisoned arrows (Sarpa Vish). The cobra is the Naga's symbol; the venom is the game's own idea." },
-        { "basis": "HISTORY", "text": "The veena coin is real. The pillar is a royal praise-poem, so it is the king's own account of his wars." }
+        {
+          "basis": "INVENTED",
+          "text": "One battle at Padmavati against three Naga kings together. The pillar names the kings but gives no site, date or account of the fighting. Whether the Nagas fell once or twice is debated."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "Poisoned arrows (Sarpa Vish). The cobra is the Naga symbol; the venom is the game's own idea."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "The veena coin is real. The pillar is the winner's own account, so the defeated kings' side is missing."
+        }
       ],
-      "source": "Sources: Allahabad Pillar inscription (Harishena); Gupta gold coins (veena type); excavations at Padmavati (Pawaya).",
-      "epilogue": "Samudragupta marched across India and, as his coins proclaim, performed the Ashvamedha horse sacrifice. His son Chandragupta II would take the empire to its height."
+      "source": "Sources: Allahabad (Prayaga) Pillar inscription by Harishena, as edited in Corpus Inscriptionum Indicarum vol. III; Gupta lyrist gold coins (Indian Museum, Kolkata).",
+      "epilogue": "After the north and the south, his gold coins proclaim an Ashvamedha, the horse sacrifice of a sovereign. He did not rule everywhere directly: some kings were removed, some restored, and others only sent tribute and envoys. His son Chandragupta II would carry Gupta power west."
     },
     "golden_age": {
       "kicker": "THE GOLDEN AGE · c. 409 CE",
-      "happened": "Chandragupta II, who ruled from about 375 to 415 CE, defeated the Western Kshatrapas (Sakas) of Malwa and Gujarat. His silver coins, struck in the Kshatrapa style, show the conquest. Historians place it around 395 to 410 CE; Rudrasimha III is named as the last Kshatrapa king.",
+      "happened": "Chandragupta II (ruled about 375–415 CE) ended the rule of the Western Kshatrapas, Saka kings who had ruled Malwa, Gujarat and Saurashtra for centuries. A cave inscription at Udayagiri, dated about 401 CE, records his minister travelling with the king as he sought to conquer the whole earth. The Kshatrapa silver coins stop, and Gupta silver coins in the same style appear, around 409 CE. When and where the last fighting happened is not recorded.",
       "changed": [
-        { "basis": "TRADITION", "text": "Vikramaditya and the \"nine gems\" (Navaratna) at one court, with the poet Kalidasa among them, are a later legend. Historians debate who Vikramaditya was." },
-        { "basis": "TRADITION", "text": "The Iron Pillar of Delhi is often linked to Chandragupta II, but its king is only named \"Chandra\"." },
-        { "basis": "INVENTED", "text": "A battle at Ujjain itself and the desert storm (Marubhumi Toofan) are the game's own." }
+        {
+          "basis": "INVENTED",
+          "text": "One battle at Ujjain against Rudrasimha III, and his fall in it. The coins show a change of rule, not a battle; \"c. 409 CE\" is the coin date, not a battle date."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "Vikramaditya and the nine gems (Navaratna), with the poet Kalidasa among them, are a later legend. Historians debate who Vikramaditya was."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "The Iron Pillar of Delhi is often linked to Chandragupta II, but its king is only named \"Chandra\", and nothing says it defended Ujjain."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "The desert storm (Marubhumi Toofan) is the game's own."
+        }
       ],
-      "source": "Sources: Gupta silver coins; Udayagiri cave inscription; later Sanskrit tradition of Vikramaditya; Delhi Iron Pillar inscription.",
-      "epilogue": "With the Satraps gone, Gupta power reached the western sea and its trading ports. The Chinese monk Faxian travelled through the empire in these years and wrote of a prosperous, peaceful land."
+      "source": "Sources: Udayagiri cave inscriptions (Gupta year 82, about 401 CE); Western Kshatrapa and Gupta silver coins; later Sanskrit tradition of Vikramaditya; Delhi Iron Pillar inscription.",
+      "epilogue": "With the west won, Gupta rule reached the Arabian Sea and its trading ports, and its coins carried a new image in a familiar silver style. The Chinese monk Faxian travelled through the empire around these years."
     }
   }
 }

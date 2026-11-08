@@ -8,6 +8,9 @@
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
 
 ## Next for Claude
+- [ ] **Decide (Pon):** relabel The Golden Age from "c. 409 CE" (a coin date, not a battle date) to "c. 400 CE"; the research brief (`docs/HISTORY-RESEARCH.md`) recommends it.
+- [ ] **Chola prototype fix:** the old mission "The Sea Road" (c. 1014, Rajaraja I at Kadaram) merges two kings; the Kadaram expedition is Rajendra I, about 1025. Retitle when that battle is built.
+- [ ] **Cinematics (proposed, not started):** 8-second illustrated clips (a still painting with slow push-in, short caption, sound) before and between battles; pilot = The First Throne, C01–C03 in `docs/HISTORY-RESEARCH.md`, with a skip button and a short "dramatised" footer.
 - [ ] **Tigers of the South** (Chalukya campaign): battle 1 The Narmada Line (Pulakeshin II vs Harsha). Prompts: `art/PROMPTS-BATCH7.md` (11 images, with Pon). Narmada battlefield already painted.
 - [ ] Pon to read the history notes in `src/data/history.json` for accuracy and tone; add a note for each new battle there (The Narmada Line next).
 - [ ] Morale / rout.
