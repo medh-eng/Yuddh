@@ -8,6 +8,8 @@
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
 
 ## Next for Claude
+- [ ] **Tigers of the South** (Chalukya campaign): battle 1 The Narmada Line (Pulakeshin II vs Harsha). Prompts: `art/PROMPTS-BATCH7.md` (11 images, with Pon). Narmada battlefield already painted.
+- [ ] History panels: a short "What happened / What the game changes" note with a source line on each briefing, an epilogue after each victory, and a one-time "inspired by history" notice (proposed 8 Nov, awaiting Pon's go-ahead).
 - [ ] Morale / rout.
 - [ ] More cards toward ~120.
 - [ ] Search-based AI → **Gate 2**.
