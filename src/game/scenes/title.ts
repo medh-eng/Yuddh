@@ -23,6 +23,13 @@ function shadePool(): Texture {
   return shadeTex;
 }
 
+import { noticePanel } from '../ui/historyPanel';
+import { destroyTree } from '../stage';
+
+const NOTICE_KEY = 'yuddh.notice.v1';
+const noticeSeen = (): boolean => { try { return localStorage.getItem(NOTICE_KEY) === '1'; } catch { return true; } };
+const markNotice = (): void => { try { localStorage.setItem(NOTICE_KEY, '1'); } catch { /* private mode */ } };
+
 export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void; campaign(): void; gallery(): void; preview(): void; prototype(): void }): Scene {
   const s: Scene = new Container();
   const painting = Texture.from(battlefieldUrl('title'));
@@ -45,6 +52,14 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
   const note = new Text({ text: 'Phase 2 build · The Maurya campaign: Pataliputra to the Indus', style: { fontFamily: FONT_SERIF, fontSize: 20, fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 3 } } });
   note.anchor.set(0.5);
   s.addChild(note);
+  const about = new Container();
+  s.addChild(about);
+  let noticeUp: Container | null = null;
+  function openNotice(): void {
+    if (noticeUp) return;
+    const p = noticePanel(() => { markNotice(); destroyTree(p); noticeUp = null; });
+    noticeUp = p; s.addChild(p);
+  }
 
   // dust motes drifting in the sunlight
   const motes = new Container();
@@ -89,6 +104,10 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
       else b.position.set(W / 2, 620 + i * 80);
       buttons.addChild(b);
     });
+    about.removeChildren().forEach(c => c.destroy({ children: true }));
+    const ab = makeButton('History', openNotice, { w: 170, ui: ph ? 0.85 : 1 });
+    ab.position.set(ph ? W - 106 : W - 140, ph ? 40 : 56);
+    about.addChild(ab);
     pool2.position.set(W / 2, ph ? 530 : 800); pool2.width = ph ? 1400 : 900; pool2.height = ph ? 400 : 640;
     note.style.fontSize = Math.round(20 * k); note.position.set(W / 2, H - (ph ? 34 : 40));
     specks.forEach(p => p.g.position.set(Math.random() * W, Math.random() * H));
@@ -106,6 +125,7 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
   s.enter = () => {
     stage.setBackdrop(painting, 0.35);
     audio.playMusic('music_title');
+    if (!noticeSeen()) openNotice();
     Ticker.shared.add(tick);
     gsap.from([deva, title, sub], { y: '+=30', alpha: 0, duration: 1.2, stagger: 0.15, ease: 'power3.out' });
     gsap.from(buttons.children, { alpha: 0, duration: 0.8, delay: 0.7, stagger: 0.12 });

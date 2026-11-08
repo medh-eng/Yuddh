@@ -7,6 +7,7 @@ import type { CardDef, Empire, EmpireId, Season } from '../engine/types';
 import cardsJson from './cards.json';
 import decksJson from './decks.json';
 import rulesJson from './rules.json';
+import historyJson from './history.json';
 
 export const EMPIRE_DATA = cardsJson.empires as unknown as Record<EmpireId, Empire>;
 export const EMPIRE_ORDER_DATA = cardsJson.empireOrder as EmpireId[];
@@ -36,3 +37,17 @@ export const RULES = {
   chargeClasses: new Set<string>(rulesJson.chargeClasses),
   seasons: rulesJson.seasons as Record<Season, { name: string; english: string; rule: string }>
 };
+
+/* ---- the history notes (history.json) ---- */
+export type HistoryBasis = 'HISTORY' | 'TRADITION' | 'INVENTED';
+export interface HistoryNote {
+  kicker: string;
+  happened: string;
+  changed: { basis: HistoryBasis; text: string }[];
+  source: string;
+  epilogue: string;
+}
+export const HISTORY_NOTICE = historyJson.notice;
+/** the History note of a battle, if it has one (the Training Ground has none) */
+export const historyOf = (scenarioId: string): HistoryNote | undefined =>
+  (historyJson.battles as unknown as Record<string, HistoryNote>)[scenarioId];

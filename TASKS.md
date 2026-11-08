@@ -9,7 +9,7 @@
 
 ## Next for Claude
 - [ ] **Tigers of the South** (Chalukya campaign): battle 1 The Narmada Line (Pulakeshin II vs Harsha). Prompts: `art/PROMPTS-BATCH7.md` (11 images, with Pon). Narmada battlefield already painted.
-- [ ] History panels: a short "What happened / What the game changes" note with a source line on each briefing, an epilogue after each victory, and a one-time "inspired by history" notice (proposed 8 Nov, awaiting Pon's go-ahead).
+- [ ] Pon to read the history notes in `src/data/history.json` for accuracy and tone; add a note for each new battle there (The Narmada Line next).
 - [ ] Morale / rout.
 - [ ] More cards toward ~120.
 - [ ] Search-based AI → **Gate 2**.
@@ -17,6 +17,7 @@
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
 
 ## Done 8 Nov
+- [x] **History panels**: `src/data/history.json` (notice + one note per battle: what history says, what the game changes tagged HISTORY / TRADITION / INVENTED, source line, epilogue). Shown by a History button on the briefing and on the victory screen, an epilogue before the next battle after a win, and a first-launch notice (plus a History button on the title). UI in `src/game/ui/historyPanel.ts`.
 - [x] Battle: pause button (❚❚) opens a Paused menu (Resume / Campaign map / Title screen); end screen also offers Campaign map; the campaign map lets you open any battle. Corner round buttons enlarged (pause, full screen, music, sound) with drawn icons (speaker for sound effects).
 
 ## Done (7 Nov 2026)

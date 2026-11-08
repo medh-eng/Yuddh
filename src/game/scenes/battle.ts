@@ -31,6 +31,8 @@ import { DurgView, HandCard, TOKEN_DH, TOKEN_DW, TokenView, drawDiyas, stopTween
 import { makeButton } from '../ui/button';
 import { glossPanel, inspectOverlay, type InspectExtra } from '../ui/inspect';
 import { glossFor } from '../ui/glossary';
+import { epiloguePanel, historyPanel } from '../ui/historyPanel';
+import { historyOf } from '../../data';
 import { battlefieldUrl, loadArt, loadBattlefield, orTimeout } from '../../assets/manifest';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
@@ -494,6 +496,11 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     }, { primary: true, w: 340 });
     go.position.set(L.phone ? tx + 215 : 1030, Math.min(H - (L.phone ? 56 : 90), t5.y + t5.height + (L.phone ? 70 : 80)));
     panel.addChild(dim, art, t1, t2, t3, t4, t5, go);
+    if (historyOf(sc.id)) {
+      const hb = makeButton('History', () => showHistory(), { w: 190, ui: L.phone ? 0.85 : 1 });
+      hb.position.set(L.phone ? W - 118 : W - 190, L.phone ? 40 : 70);
+      panel.addChild(hb);
+    }
     s.addChild(panel);
     overlay = { kind: 'briefing', view: panel };
     if (animate) {
@@ -1597,7 +1604,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     if (won && sc.coached) markTutorialDone();
     if (won) markBattleWon(sc.id);
     const again = won && next
-      ? makeButton(sc.nextLabel ?? 'Next battle', next, { primary: true, w: 320 })
+      ? makeButton(sc.nextLabel ?? 'Next battle', () => showEpilogue(next), { primary: true, w: 320 })
       : makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 320 });
     const btns: Container[] = [again];
     if (nav?.map) btns.push(makeButton('Campaign map', nav.map, { w: 320 }));
@@ -1605,12 +1612,31 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const bstep = btns.length === 3 ? 350 : 360;
     btns.forEach((b, i) => b.position.set(W / 2 + (i - (btns.length - 1) / 2) * bstep, ph ? H * 0.87 : 880));
     c.addChild(dim, face, title, sub, ...btns);
+    if (won && historyOf(sc.id)) {
+      const hb = makeButton('History', () => showHistory(), { w: 190, ui: ph ? 0.85 : 1 });
+      hb.position.set(ph ? W - 118 : W - 190, ph ? 40 : 70);
+      c.addChild(hb);
+    }
     s.addChild(c);
     overlay = { kind: 'end', view: c, won };
     if (animate) {
       gsap.from(face.scale, { x: 0.3, y: 0.3, duration: 0.6, ease: 'back.out(1.4)' });
       gsap.from([title, sub, ...btns], { alpha: 0, y: '+=30', duration: 0.6, stagger: 0.12, delay: 0.3 });
     }
+  }
+
+  /** the battle's History note, drawn over whatever screen is open */
+  function showHistory(): void {
+    let p: Container | null = null;
+    p = historyPanel(sc.id, sc.title, sc.heroCard, () => { if (p) destroyTree(p); });
+    if (p) s.addChild(p);
+  }
+
+  /** after a victory: the epilogue, then on to `then` */
+  function showEpilogue(then: () => void): void {
+    let p: Container | null = null;
+    p = epiloguePanel(sc.id, sc.title, sc.heroCard, () => { if (p) destroyTree(p); then(); }, sc.nextLabel ?? 'Next battle');
+    if (p) s.addChild(p); else then();
   }
 
   function pauseMenu(): void {
