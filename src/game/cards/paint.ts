@@ -8,6 +8,8 @@ import { Texture } from 'pixi.js';
 import { CARDS, type CardDef, type EmpireId } from '../../engine';
 import { artImage, hasArt, whenArt } from '../../assets/manifest';
 import { EMPIRE_STYLE } from '../theme';
+import RANKS from '../../data/ranks.json';
+import { standing } from '../../meta/standing';
 
 const TITLE = "'Cinzel', Georgia, serif";
 const BODY = "'Alegreya Sans', 'Trebuchet MS', sans-serif";
@@ -41,10 +43,10 @@ function shade(n: number, f: number): string {
 }
 
 /* ---------- materials: the frame each empire is carved from ---------- */
-function material(g: CanvasRenderingContext2D, empire: EmpireId, w: number, h: number): void {
-  const st = EMPIRE_STYLE[empire];
+function material(g: CanvasRenderingContext2D, empire: EmpireId, w: number, h: number, gilded = false): void {
+  const st = gilded ? { ...EMPIRE_STYLE[empire], frame: 0xd8aa3a, frameLight: 0xf8e08e } : EMPIRE_STYLE[empire];
   const lin = g.createLinearGradient(0, 0, w, h);
-  const metal = empire === 'gupta' || empire === 'chola' || empire === 'rajput';
+  const metal = gilded || empire === 'gupta' || empire === 'chola' || empire === 'rajput';
   if (metal) {
     // polished metal: bright bands
     lin.addColorStop(0, shade(st.frameLight, 1.05));
@@ -218,10 +220,13 @@ const typeLabel = (c: CardDef) =>
 
 /* ============================================================ card face */
 const faceCache = new Map<string, Texture>();
+/** a gilded frame: earned at the Senapati rank of that empire (cosmetic only) */
+const isGilded = (e: EmpireId): boolean => e !== 'neutral' && standing().view(e).level >= RANKS.rewards.gildedLevel;
 
 /** `cost`: what the card costs right now (a discount shows as a green coin); defaults to the printed cost */
 export function cardFace(id: string, upgrade = 0, cost?: number): Texture {
-  const key = `${id}:${upgrade}:${cost ?? ''}`;
+  const gilded = isGilded(CARDS[id].empire);
+  const key = `${id}:${upgrade}:${cost ?? ''}${gilded ? ':g' : ''}`;
   const hit = faceCache.get(key);
   if (hit) return hit;
   const c = CARDS[id];
@@ -232,7 +237,7 @@ export function cardFace(id: string, upgrade = 0, cost?: number): Texture {
 
   // frame
   roundRect(g, 0, 0, W, H, 26);
-  material(g, c.empire, W, H);
+  material(g, c.empire, W, H, gilded);
   g.lineWidth = 4; g.strokeStyle = 'rgba(20,10,4,0.9)'; g.stroke();
   roundRect(g, 9, 9, W - 18, H - 18, 20);
   g.lineWidth = 2; g.strokeStyle = 'rgba(255,240,200,0.45)'; g.stroke();

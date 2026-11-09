@@ -73,3 +73,7 @@
 ## Done 7 Nov (night): The Digvijaya built
 - Gupta campaign battle 1 (Samudragupta vs the Naga kings at Padmavati, c. 340 CE; ~50% simulated). New cards na_* (Naga, own gallery tab) and g_veena; na_sarpa_vish is a Kuta card. Campaign order: Indus Line → Digvijaya → Golden Age. Tests: tests/digvijaya.test.ts. History notes: project doc / Claude Doc "Samudragupta's Digvijaya".
 - Next: more Gupta/South battles (the march to Mahakantara and Kanchi; second Aryavarta war), morale/rout, more cards, search AI → Gate 2.
+
+## Done 9 Nov (night): rank rewards
+- War Council chronicle (Nayaka), gilded frame (Senapati), regalia medallions + `art/PROMPTS-REGALIA.md` (24 prompts, Maurya first). tests/rewards.test.ts. Fixed: a custom hitArea on a column pruned buttons outside it.
+- Next: profile portrait wearing the regalia; Pon paints regalia; The Crossing to Lanka when batch 11 arrives.

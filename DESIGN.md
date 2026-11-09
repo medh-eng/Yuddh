@@ -76,3 +76,9 @@ Each empire's campaign earns **Yash** (renown) on its own, and Yash sets a rank 
 
 ## Campaign maps (built 9 Nov 2026)
 The campaign screen draws a winding dashed route between battles (nodes sit on a gentle wave), a milestone diamond on each leg, a double gold frame and a compass, over the campaign's battlefield. Painted maps are optional: `Campaign.map` (e.g. 'map_chola') swaps the backdrop for a painting delivered in `art/source/battlefields/`; prompts in `art/PROMPTS-MAPS.md`.
+
+## Rank rewards: chronicle, gilded frame, regalia (built 9 Nov 2026, night)
+All cosmetic; none changes a battle (data in `ranks.json` "rewards", "chronicles").
+- **Nayaka (level 2): War Council chronicle**, a short sourced text per empire (Megasthenes, Allahabad pillar, Aihole, Chola inscriptions), opened from the Roll of Renown (`chroniclePanel`).
+- **Senapati (level 4): gilded card frame** for that empire's cards (`isGilded` in paint.ts; `:g` in the face-cache key).
+- **Regalia**: six medallions per empire (levels 1–6) on the Roll of Renown; painted piece `rg_<empire>_<n>` if delivered, else a numbered stand-in (`ui/regalia.ts`). Prompts in `art/PROMPTS-REGALIA.md`. Later: a profile portrait ringed with the earned pieces.

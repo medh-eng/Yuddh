@@ -74,3 +74,5 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 - Phase 1 approved (Gate 1, 4 Nov). Phase 2 so far: rules panels, damage shields, promotion, trample, seasons, tutorial, bigger numbers, batch 3 cards, Dharma–Kuta meter (tug-of-war bar, dagger and lotus), UI polish round (fonts, tokens, Durg labels, fullscreen, lamps, keywords; plan in the project: claude/yuddh-ui-polish-plan.md).
 - First Throne balance (firstThrone.test.ts wants 55–80%): ~57% over the four seasons, ~16 turns (Raja Dhwaja now costs 2). Both sides reach +3 Dharma in ~64% of battles; Kuta −3 is rare (~5% player, ~14% Nanda).
 - Next: morale/rout; more cards; Phase 3 campaigns; search AI → Gate 2. Full plan: https://claude.ai/artifact/GXWYv5rFMrBzsoqt3X456s
+## Status (9 Nov 2026, last)
+- **Rank rewards** (cosmetic): War Council chronicle at Nayaka, gilded card frame at Senapati (`isGilded`), regalia medallions (`ui/regalia.ts`, art `rg_<empire>_<n>`, prompts `art/PROMPTS-REGALIA.md`). **Pixi: a container's custom `hitArea` prunes its children outside it** (buttons there never fired).

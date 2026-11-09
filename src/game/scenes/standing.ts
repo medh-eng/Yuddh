@@ -4,7 +4,7 @@
    empire's campaign. Ranks are titles only (data/ranks.json).
    ============================================================ */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { FONT_BODY, FONT_DEVA, FONT_SERIF, FONT_TITLE, INK } from '../theme';
+import { FONT_BODY, FONT_DEVA, FONT_TITLE, INK } from '../theme';
 import { view } from '../view';
 import { cardFace, FACE_H } from '../cards/paint';
 import { makeButton } from '../ui/button';
@@ -12,6 +12,9 @@ import { audio } from '../audio';
 import { loadArt, loadBattlefield, orTimeout } from '../../assets/manifest';
 import { battlesWon, CAMPAIGNS, type Campaign } from '../../campaign/campaign';
 import { EMPIRES, LADDER, standing } from '../../meta/standing';
+import { medallion, regaliaArt } from '../ui/regalia';
+import { chroniclePanel } from '../ui/historyPanel';
+import RANKS from '../../data/ranks.json';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
 export function standingScene(stage: Stage, back: () => void, open: (c: Campaign) => void): Scene {
@@ -21,7 +24,7 @@ export function standingScene(stage: Stage, back: () => void, open: (c: Campaign
   let alive = true;
 
   async function draw(): Promise<void> {
-    await orTimeout(loadArt(CAMPAIGNS.map(c => EMPIRES[c.id]?.hero).filter(Boolean)), 4000);
+    await orTimeout(loadArt([...CAMPAIGNS.map(c => EMPIRES[c.id]?.hero).filter(Boolean), ...CAMPAIGNS.flatMap(c => regaliaArt(c.id))]), 4000);
     if (!alive) return;
     body.removeChildren().forEach(c => destroyTree(c as Container));
     const W = view.w, H = view.h, ph = view.phone, k = view.ui;
@@ -38,7 +41,7 @@ export function standingScene(stage: Stage, back: () => void, open: (c: Campaign
 
     const won = battlesWon();
     const n = CAMPAIGNS.length, margin = ph ? 50 : 90, colW = (W - 2 * margin) / n;
-    const sc0 = ph ? 0.26 : 0.46, ch = FACE_H * sc0;
+    const sc0 = ph ? 0.19 : 0.40, ch = FACE_H * sc0;
     const cardCy = hdr + (ph ? 14 : 36) + ch / 2;
     const st = standing();
     CAMPAIGNS.forEach((camp, i) => {
@@ -64,19 +67,36 @@ export function standingScene(stage: Stage, back: () => void, open: (c: Campaign
       const cleared = camp.nodes.filter(nd => !nd.scenario.coached && won.includes(nd.scenario.id)).length, total = camp.nodes.filter(nd => !nd.scenario.coached).length;
       add(new Text({ text: `Battles cleared ${cleared}/${total} · won ${s0.wins} of ${s0.played}`, style: { fontFamily: FONT_BODY, fontSize: Math.round(20 * k), fill: INK.cream, stroke: { color: 0x000000, width: 3 } } }));
       if (s0.vetWins) add(new Text({ text: `Veteran wins ${s0.vetWins}`, style: { fontFamily: FONT_BODY, fontSize: Math.round(20 * k), fontWeight: '700', fill: INK.gold, stroke: { color: 0x000000, width: 3 } } }));
+      // regalia: one medallion per rank step, bright once earned; rows sit at fixed heights so columns line up
+      const mr = ph ? 15 : 20, mgap = mr * 2 + (ph ? 6 : 10), mx0 = -(mgap * 5) / 2;
+      const bu = ph ? 0.62 : 0.7;
+      const btnY = H - (ph ? 62 : 112), medY = btnY - 32 * bu - mr - (ph ? 6 : 12);
+      for (let l = 1; l <= 6; l++) { const m = medallion(camp.id, l, mr, v.level >= l); m.position.set(mx0 + (l - 1) * mgap, medY); col.addChild(m); }
+      // war-council chronicle (opens at Nayaka)
+      const chron = (RANKS.chronicles as Record<string, { title: string; text: string; source: string }>)[camp.id];
+      const open2 = v.level >= RANKS.rewards.chronicleLevel;
+      const blockY: [number, number] = [btnY - 32 * bu - 4, btnY + 32 * bu + 4];
+      if (chron) {
+        const cb = makeButton(open2 ? 'War Council' : `War Council · ${LADDER[RANKS.rewards.chronicleLevel].name}`, () => {
+          if (!open2) return;
+          const p = chroniclePanel(chron.title, chron.text, chron.source, e.hero, () => { s.removeChild(p); destroyTree(p); });
+          s.addChild(p);
+        }, { w: (colW - 24) / bu, ui: bu });
+        cb.position.set(0, btnY); if (!open2) cb.alpha = 0.5;
+        col.addChild(cb);
+      }
       col.eventMode = 'static'; col.cursor = 'pointer';
-      col.hitArea = { contains: (x: number, yy: number) => Math.abs(x) < colW / 2 && yy > hdr && yy < H - 120 };
-      col.on('pointertap', () => { audio.unlock(); audio.play('click'); open(camp); });
+      col.hitArea = { contains: (x: number, yy: number) => Math.abs(x) < colW / 2 && yy > hdr && yy < H };
+      col.on('pointertap', ev => { const ly = ev.getLocalPosition(col).y; if (ly >= blockY[0] && ly <= blockY[1]) return; audio.unlock(); audio.play('click'); open(camp); });
       body.addChild(col);
     });
-    // the ladder and the rules of earning Yash
-    const ladder = new Text({ text: LADDER.map(r => r.name).join('  ·  '), style: { fontFamily: FONT_TITLE, fontSize: Math.round(20 * k), fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 4 }, align: 'center' } });
-    const gloss = new Text({ text: LADDER.map(r => r.gloss).join('  ·  '), style: { fontFamily: FONT_SERIF, fontSize: Math.round(20 * k), fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 3 }, align: 'center' } });
-    const rule = new Text({ text: 'Yash: +80 for a win, +120 more for your first win in a battle, +20 for a defeat, ×1.5 against the Veteran foe. Ranks are titles; they never change a battle.', style: { fontFamily: FONT_BODY, fontSize: Math.round(19 * k), fill: INK.cream, stroke: { color: 0x000000, width: 3 }, align: 'center', wordWrap: true, wordWrapWidth: W - 160 } });
-    [ladder, gloss, rule].forEach(t => { t.anchor.set(0.5, 1); t.eventMode = 'none'; if (t.width > W - 120 && t !== rule) t.scale.set((W - 120) / t.width); body.addChild(t); });
-    rule.position.set(W / 2, H - (ph ? 12 : 30));
-    gloss.position.set(W / 2, rule.y - rule.height - (ph ? 4 : 8));
-    ladder.position.set(W / 2, gloss.y - gloss.height * gloss.scale.y - (ph ? 2 : 4));
+    // the ladder (desktop only) and the rules of earning Yash
+    const rule = new Text({ text: ph ? 'Yash: +80 a win, +120 first win of a battle, +20 a defeat, ×1.5 vs the Veteran foe. Ranks never change a battle.' : 'Yash: +80 for a win, +120 more for your first win in a battle, +20 for a defeat, ×1.5 against the Veteran foe. Ranks are titles; they never change a battle.', style: { fontFamily: FONT_BODY, fontSize: Math.round(19 * k), fill: INK.cream, stroke: { color: 0x000000, width: 3 }, align: 'center' } });
+    const foot: Text[] = [rule];
+    if (!ph) foot.unshift(new Text({ text: LADDER.map(r => r.name).join('  ·  '), style: { fontFamily: FONT_TITLE, fontSize: Math.round(20 * k), fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 4 }, align: 'center' } }));
+    foot.forEach(t => { t.anchor.set(0.5, 1); t.eventMode = 'none'; if (t.width > W - 60) t.scale.set((W - 60) / t.width); body.addChild(t); });
+    rule.position.set(W / 2, H - (ph ? 8 : 24));
+    if (!ph) foot[0].position.set(W / 2, rule.y - rule.height - 6);
   }
 
   s.relayout = () => { void draw(); };

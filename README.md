@@ -37,7 +37,7 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 src/data/          cards.json, decks.json, rules.json (all balance), index.ts (typed access)
 src/engine/        rules engine: types, lookups (cards.ts), rules, AI (ai.ts heuristics, search.ts search AI; no screen code)
 src/campaign/      battles (tutorial, firstThrone, indusLine, digvijaya, mahakantara, kanchi, goldenAge, narmada, kadaram), campaign.ts, the prototype's nine missions (missions.ts, data only)
-src/meta/          progress.ts (Kirti and per-card upgrades) · standing.ts (Yash, rank per empire; data/ranks.json) — saved in the browser
+src/meta/          progress.ts (Kirti and per-card upgrades) · standing.ts (Yash, rank per empire; data/ranks.json incl. chronicles and reward levels); game/ui/regalia.ts (rank medallions, art rg_<empire>_<n>) — saved in the browser
 src/game/          PixiJS renderer: stage, screen modes, theme, audio, scenes (title, campaign, battle, gallery, preview)
 src/game/cards/    card painter (frames, arch window, coins, badges), board views, 3D card flips
 src/assets/        art manifest (which cards have paintings)

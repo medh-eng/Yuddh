@@ -88,3 +88,8 @@ export function epiloguePanel(scenarioId: string, title: string, card: string, o
 export function noticePanel(onClose: () => void, button = 'Understood'): Container {
   return build({ kicker: 'ABOUT THE GAME', title: HISTORY_NOTICE.title, button, onClose, source: HISTORY_NOTICE.source, blocks: [{ head: 'A NOTE BEFORE YOU BEGIN', text: HISTORY_NOTICE.text }] });
 }
+
+/** a rank reward: the war-council chronicle of an empire */
+export function chroniclePanel(title: string, text: string, source: string, card: string, onClose: () => void): Container {
+  return build({ kicker: 'WAR COUNCIL · CHRONICLE', title, card, button: 'Close', onClose, source, blocks: [{ head: 'FROM THE RECORD', text }] });
+}
