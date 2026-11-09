@@ -38,7 +38,7 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   const nodes = await p.evaluate(() => window.__yuddhCampaign());
   console.log('map nodes', JSON.stringify(nodes));
   const target = process.env.SCENARIO || 'indus_line';
-  if (['golden_age','digvijaya','mahakantara','kanchi','narmada_line','kadaram'].includes(target)) { const tab = nodes.find(n => n.id === (target === 'narmada_line' ? 'tab:chalukya' : target === 'kadaram' ? 'tab:chola' : 'tab:gupta')); await p.mouse.click(tab.x, tab.y); await p.waitForTimeout(2500); await shot('02b-gupta-map'); }
+  if (['golden_age','digvijaya','mahakantara','kanchi','narmada_line','kadaram','ganga'].includes(target)) { const tab = nodes.find(n => n.id === (target === 'narmada_line' ? 'tab:chalukya' : ['kadaram','ganga'].includes(target) ? 'tab:chola' : 'tab:gupta')); await p.mouse.click(tab.x, tab.y); await p.waitForTimeout(2500); await shot('02b-gupta-map'); }
   const indus = (await p.evaluate(() => window.__yuddhCampaign())).find(n => n.id === target);
   await p.mouse.click(indus.x, indus.y);
   await p.waitForFunction(() => !!window.__yuddh && !window.__yuddhButtons().some(b => b.label === 'Campaign'), null, { timeout: 90000 }); await p.waitForTimeout(1800); await shot('03-indus-briefing');

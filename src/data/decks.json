@@ -326,5 +326,35 @@
 "n_senapati",
 "y_pratikar"
 ]
+},
+"ganga": {
+"player": [
+"ch_archer*3",
+"ch_navik*3",
+"ch_pot*2",
+"ch_velaikkarar*2",
+"ch_araiyan",
+"ch_vanigar",
+"ch_vyapari*2",
+"ch_sena",
+"ch_ganga_jal*2",
+"ch_marg",
+"n_rakshak",
+"n_aakraman*2",
+"n_sena_bhojan",
+"y_kavach"
+],
+"enemy": [
+"pl_dhanurdhar*4",
+"pl_acharya*2",
+"pl_nauka*3",
+"pl_gaja*2",
+"pl_mahipala",
+"pl_baadh*2",
+"n_padati*2",
+"n_rakshak*2",
+"n_senapati",
+"y_pratikar"
+]
 }
 }

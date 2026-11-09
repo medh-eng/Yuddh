@@ -4,7 +4,8 @@
 
 ## Waiting on Pon
 - [ ] Play **Rajendra's Sea Road** (Campaign → Chola tab): are the boat wall (Perahu, Raksha) and fire boats (Pelita Api) fair? Balance ~63% sim, a JSON edit in decks.json.
-- [ ] Paint **batch 10** (`art/PROMPTS-BATCH10.md`, 12 images: The Ganga Road: Araiyan Rajarajan vs Mahipala I) and upload to `art/source/`.
+- [ ] Play **The Ganga Road** (Chola tab, battle 2; ~58% sim).
+- [ ] Paint **batch 11** (`art/PROMPTS-BATCH11.md`, 11 images: The Crossing to Lanka, c. 993: Rajaraja's army vs Mahinda V at Anuradhapura) and upload to `art/source/`.
 - [ ] Decide: campaign map art (see below) and whether to add faction levels (see `DESIGN.md`, "Faction mastery").
 - [ ] Play **The Great Forest** and **The Walls of Kanchi** (Campaign → Gupta tab); say if Dhuan archers or the Kanchi gate line feel unfair. Balance is a JSON edit in decks.json.
 - [ ] Try morale/rout: does a broken unit read clearly (red ROUTED band, flee animation)? Too common or too rare (about 2 per battle now; the break line is in `rules.json`)?
@@ -52,7 +53,8 @@
 
 ## Next campaign work (9 Nov)
 - [x] **Chola: Rajendra's Sea Road, c. 1025 CE** (Kadaram) built 9 Nov: see Done 9 Nov.
-- [ ] **The Ganga Road** (Chola battle 2, c. 1019–22; the general Araiyan Rajarajan led it, Rajendra waited on the Godavari): build when batch 10 arrives (`ganga.ts`; Chola player deck reuses ch_* plus the four new cards).
+- [x] **The Ganga Road** (Chola battle 2) built 9 Nov evening: `ganga.ts`, pl_* Pala cards (gallery tab Pala), ch_araiyan / ch_velaikkarar / ch_ganga_jal / ch_marg; ~58%.
+- [ ] **The Crossing to Lanka** (Chola battle 3, c. 993): build when batch 11 arrives (`lanka.ts`; hero card is the existing ch_rajaraja; Sinhalese cards si_*, enemy starts with 0 Kosha).
 - [ ] Campaign map: a painted route and milestones (code) and/or one painted map per campaign (prompts when Pon agrees).
 - [ ] Later: Chalukya Pullalur (c. 618) and Badami; Rajput Tarain 1191/1192 (source-critical).
 

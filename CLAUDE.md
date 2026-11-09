@@ -59,6 +59,8 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 ## Status (8 Nov 2026)
 - **Morale and rout, search AI, Foe toggle, batch 8 sheet** done 8 Nov (see TASKS.md). Balance now (200 normal-vs-normal games): First Throne ~62%, Indus Line ~56%, Digvijaya ~56%, Golden Age ~51%, Narmada ~56%; decks trimmed to compensate for rout (decks.json). Next: Gate 2, then build the two battles of batch 8 when the art arrives.
 
+## Status (9 Nov 2026, evening)
+- **The Ganga Road built** (Chola battle 2, `ganga.ts`, pl_* cards, gallery tab Pala; ~58%; Kadaram → Ganga via nextId). Next: The Crossing to Lanka when batch 11 arrives (`art/PROMPTS-BATCH11.md`).
 ## Status (9 Nov 2026, later)
 - **Rajendra's Sea Road built** (Chola campaign, `kadaram.ts`, `CHOLA_CAMPAIGN`, map tab `tab:chola`; `SCENARIO=kadaram` for tests/e2e/campaign.cjs). Player is `empire: 'chola'` (ranged +1), enemy neutral with sv_* cards (gallery tab Kadaram). ~63% (200 normal-vs-normal). End screen re-laid out for phones (fixed design-space positions, buttons 1.1×); `window.__yuddh.showEnd(won)` shows it without playing. Next: The Ganga Road when batch 10 arrives (`art/PROMPTS-BATCH10.md`).
 ## Status (9 Nov 2026)

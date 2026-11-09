@@ -113,6 +113,26 @@
       "source": "Sources: Allahabad (Prayaga) Pillar inscription by Harishena, as edited in Corpus Inscriptionum Indicarum vol. III.",
       "epilogue": "Vishnugopa was released and restored. Kanchi stayed Pallava for centuries; its kings would one day capture Badami, the Chalukya capital."
     },
+    "ganga": {
+      "kicker": "THE GANGA ROAD · c. 1019–1022 CE",
+      "happened": "Rajendra I's inscriptions say a Chola army marched north from the Godavari through Kalinga and Odisha into Bengal, beat several kings on the way and then Mahipala I of the Pala empire, and carried Ganga water back south. Rajendra did not lead it: the general Araiyan Rajarajan did, and the emperor waited on the Godavari and met the army on its return. He then founded a new capital, Gangaikonda Cholapuram (\"the city of the Chola who took the Ganga\"), with a great tank his record calls a \"liquid pillar of victory\".",
+      "changed": [
+        {
+          "basis": "INVENTED",
+          "text": "The battle itself: the river line, the elephants and the boats. The inscription names the kings beaten, not how they were beaten."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "Mahipala's Buddhist monasteries are real, and the Palas were patrons of Bihar and Bengal's great vihara schools; the game gives him a teacher card as a nod to that. The size of the armies is not known."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Many popular accounts say Rajendra marched to the Ganga himself. His own inscriptions give the march to his general. The game follows the inscriptions."
+        }
+      ],
+      "source": "Sources: Rajendra I's Tamil prasasti and the Tiruvalangadu plates; K. A. Nilakanta Sastri, The Colas; summaries of the Chola expedition to the Ganges in standard histories.",
+      "epilogue": "The Cholas did not keep Bengal. The army went home with the water, the tribute and the prestige, and the Palas ruled on. What stayed behind was a new capital in the south named for the river."
+    },
     "kadaram": {
       "kicker": "RAJENDRA'S SEA ROAD · c. 1025 CE",
       "happened": "Rajendra I (ruled about 1014–1044), son of Rajaraja, sent a fleet across the Bay of Bengal in about 1025. His own Tamil inscriptions, from about his fourteenth regnal year (c. 1026), list the cities taken: Kadaram (usually identified with Kedah on the Malay coast), Srivijaya itself and other ports, and say its king, Sangrama Vijayottungavarman, was captured. Why is argued: Chola merchant guilds traded across the Bay, and a quarrel over trade, a show of prestige and a wish to open the sea routes have all been suggested.",
