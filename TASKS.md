@@ -43,6 +43,10 @@
 - [x] Campaign map (Training Ground → First Throne → Indus Line) with wins remembered; a victory leads to the next battle.
 - [x] Removed a duplicate `indus.png` that had been uploaded into `art/source/cards/` (identical to the battlefield).
 
+## Next campaign work (9 Nov)
+- [ ] **Chola: Rajendra's Sea Road, c. 1025 CE** (Kadaram). Pon paints batch 9 (`art/PROMPTS-BATCH9.md`, 12 images); Claude then builds kadaram.ts, cards, history note, tests.
+- [ ] Later: Chalukya Pullalur (c. 618) and Badami; Rajput Tarain 1191/1192 (source-critical).
+
 ## Next ideas
 - [ ] Next Gupta battles from the nine missions (Samudragupta's Digvijaya); Gupta passive in the reading panel.
 
