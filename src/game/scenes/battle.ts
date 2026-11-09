@@ -21,7 +21,8 @@ import {
 import { FIRST_THRONE_SCENARIO } from '../../campaign/firstThrone';
 import type { Scenario } from '../../campaign/scenario';
 import { markTutorialDone } from '../../campaign/tutorial';
-import { markBattleWon } from '../../campaign/campaign';
+import { battlesWon, empireOfBattle, markBattleWon } from '../../campaign/campaign';
+import { EMPIRES as RENOWN_EMPIRES, standing, type Gain } from '../../meta/standing';
 import { foeLevel, setVeteranFoe, veteranFoe } from '../../campaign/difficulty';
 import { FONT_SERIF, INK, FONT_TITLE, FONT_BODY } from '../theme';
 import { view, type View } from '../view';
@@ -428,7 +429,10 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
 
   /* ---------------- start ---------------- */
   let baseLevel: AiLevel = 'normal';
+  /** Yash earned by the battle just finished (recorded once per game) */
+  let yashNote: { empire: string; gain: Gain } | null = null, yashDone = false;
   function start(): void {
+    yashNote = null; yashDone = false;
     st = sc.game(Math.floor(Math.random() * 1e9));
     baseLevel = st.aiLevel;
     if (!sc.coached) st.aiLevel = foeLevel(baseLevel);
@@ -1647,6 +1651,11 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     });
     sub.anchor.set(0.5); sub.position.set(W / 2, ph ? 442 : 775);
     if (won && sc.coached) markTutorialDone();
+    if (!yashDone) {
+      yashDone = true;
+      const emp = empireOfBattle(sc.id);
+      if (emp) yashNote = { empire: emp, gain: standing().record(emp, won, won && !battlesWon().includes(sc.id), veteranFoe()) };
+    }
     if (won) markBattleWon(sc.id);
     // the victory button carries a battle's name, so it is the widest; the rest share what is left
     const kk = ph ? 1.1 : 1, wMain = 340, wSide = ph ? 230 : 300;
@@ -1660,6 +1669,15 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     let bx = W / 2 - (widths.reduce((a, v) => a + v, 0) + gap * (btns.length - 1)) / 2;
     btns.forEach((b, i) => { b.position.set(bx + widths[i] / 2, ph ? 580 : 885); bx += widths[i] + gap; });
     c.addChild(dim, face, title, sub, ...btns);
+    if (yashNote) {
+      const { empire, gain } = yashNote, v = standing().view(empire), e = RENOWN_EMPIRES[empire];
+      const k = ph ? 1.1 : 1;
+      const l1 = new Text({ text: `+${gain.yash} Yash · ${e.name}`, style: { fontFamily: FONT_TITLE, fontSize: Math.round(24 * k), fontWeight: '700', letterSpacing: 2, fill: INK.goldPale, stroke: { color: 0x000000, width: 4 } } });
+      const l2 = new Text({ text: gain.rankedUp ? `RANK UP: ${v.rank.name} · ${v.rank.gloss}${gain.kirti ? `  (+${gain.kirti} Kirti)` : ''}` : `${v.rank.name}${v.next ? ` · ${v.next.from - gain.after} to ${v.next.name}` : ' · highest rank'}`, style: { fontFamily: FONT_BODY, fontSize: Math.round(22 * k), fontWeight: gain.rankedUp ? '800' : '700', fill: gain.rankedUp ? INK.gold : INK.cream, stroke: { color: 0x000000, width: 3 } } });
+      l1.position.set(26, ph ? 18 : 26); l2.position.set(26, l1.y + l1.height + 2);
+      l1.eventMode = 'none'; l2.eventMode = 'none';
+      c.addChild(l1, l2);
+    }
     if (won && historyOf(sc.id)) {
       const hb = makeButton('History', () => showHistory(), { w: 190, ui: ph ? 0.85 : 1 });
       hb.position.set(ph ? W - 118 : W - 190, ph ? 40 : 70);

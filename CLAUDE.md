@@ -59,6 +59,8 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 ## Status (8 Nov 2026)
 - **Morale and rout, search AI, Foe toggle, batch 8 sheet** done 8 Nov (see TASKS.md). Balance now (200 normal-vs-normal games): First Throne ~62%, Indus Line ~56%, Digvijaya ~56%, Golden Age ~51%, Narmada ~56%; decks trimmed to compensate for rout (decks.json). Next: Gate 2, then build the two battles of batch 8 when the art arrives.
 
+## Status (9 Nov 2026, night)
+- **Rank and renown** (`src/meta/standing.ts`, `src/data/ranks.json`, `scenes/standing.ts`; title button "Rank & Renown"; the battle end screen records Yash once per game (`yashDone`) and shows the chip top-left; tests/standing.test.ts). **Campaign map** now has a winding route, frame and compass (campaign.ts); optional `Campaign.map` painting. Chola campaign = "The Tiger Banner", order Ganga → Kadaram (`empireOfBattle(id)` maps a battle to its campaign; the coached tutorial belongs to none). Campaign tabs are laid out by their own widths.
 ## Status (9 Nov 2026, evening)
 - **The Ganga Road built** (Chola battle 2, `ganga.ts`, pl_* cards, gallery tab Pala; ~58%; Kadaram → Ganga via nextId). Next: The Crossing to Lanka when batch 11 arrives (`art/PROMPTS-BATCH11.md`).
 ## Status (9 Nov 2026, later)

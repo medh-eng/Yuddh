@@ -56,6 +56,8 @@ export const GANGA_SCENARIO: Scenario = {
   durgArt: ['durg_gangaikonda', 'durg_pala'],
   winText: turn => `Mahipala is beaten in turn ${turn}. The pots are filled at the Ganga, and the army turns south with the water. The inscription names no more than that.`,
   loseText: 'The elephants hold the bank and the monsoon closes the river. The army turns back with empty pots.',
+  nextId: 'kadaram',
+  nextLabel: "Rajendra's Sea Road",
   goLabel: 'To battle',
   game: seed => gangaGame(seed, 'normal')
 };

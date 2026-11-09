@@ -30,7 +30,7 @@ const NOTICE_KEY = 'yuddh.notice.v1';
 const noticeSeen = (): boolean => { try { return localStorage.getItem(NOTICE_KEY) === '1'; } catch { return true; } };
 const markNotice = (): void => { try { localStorage.setItem(NOTICE_KEY, '1'); } catch { /* private mode */ } };
 
-export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void; campaign(): void; gallery(): void; preview(): void; prototype(): void }): Scene {
+export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void; campaign(): void; standing(): void; gallery(): void; preview(): void; prototype(): void }): Scene {
   const s: Scene = new Container();
   const painting = Texture.from(battlefieldUrl('title'));
   const art = new Sprite(painting); art.anchor.set(0.5);
@@ -94,14 +94,14 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
     // new players are pointed at the training ground first
     const fresh = !tutorialDone();
     const list: [string, () => void, boolean][] = fresh
-      ? [['Learn to play', go.tutorial, true], ['To battle', go.battle, false], ['Campaign', go.campaign, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]]
-      : [['Campaign', go.campaign, true], ['To battle', go.battle, false], ['Learn to play', go.tutorial, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]];
+      ? [['Learn to play', go.tutorial, true], ['To battle', go.battle, false], ['Campaign', go.campaign, false], ['Rank & Renown', go.standing, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]]
+      : [['Campaign', go.campaign, true], ['To battle', go.battle, false], ['Rank & Renown', go.standing, false], ['Learn to play', go.tutorial, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]];
     list.forEach(([label, fn, primary], i) => {
       // one choice per visit: a second tap while a battle's paintings load would start a second scene
       const b = makeButton(label, () => { if (chosen) return; chosen = true; fn(); }, { primary, w: ph ? 380 : 400 });
       // phones: two columns, the odd last button centred; desktop: one column
       if (ph) b.position.set(i === list.length - 1 && list.length % 2 ? W / 2 : W / 2 + (i % 2 ? 1 : -1) * 270, 440 + Math.floor(i / 2) * 92);
-      else b.position.set(W / 2, 620 + i * 80);
+      else b.position.set(W / 2, 598 + i * 72);
       buttons.addChild(b);
     });
     about.removeChildren().forEach(c => c.destroy({ children: true }));

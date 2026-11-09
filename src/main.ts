@@ -19,7 +19,8 @@ import { battlePreviewScene } from './game/scenes/battlePreview';
 import { battleScene, preloadBattle } from './game/scenes/battle';
 import { galleryScene } from './game/scenes/gallery';
 import { campaignScene } from './game/scenes/campaign';
-import { scenarioById } from './campaign/campaign';
+import { standingScene } from './game/scenes/standing';
+import { scenarioById, type Campaign } from './campaign/campaign';
 import type { Scenario } from './campaign/scenario';
 import { audio } from './game/audio';
 import { TUTORIAL } from './campaign/tutorial';
@@ -77,11 +78,13 @@ async function boot(): Promise<void> {
     void loading(preloadBattle(sc)).then(() =>
       stage.show(battleScene(stage, back, sc, next ? () => play(next, back) : undefined, { map: campaign, title })));
   };
-  const campaign = (): void => stage.show(campaignScene(stage, sc => play(sc, campaign), title));
+  const campaign = (start?: Campaign): void => stage.show(campaignScene(stage, sc => play(sc, campaign), title, start));
+  const standing = (): void => stage.show(standingScene(stage, title, c => campaign(c)));
   const title = (): void => stage.show(titleScene(stage, {
     battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title, undefined, () => play(scenarioById('indus_line')!, title), { map: campaign, title }))); },
     tutorial: () => play(TUTORIAL, title),
-    campaign,
+    campaign: () => campaign(),
+    standing,
     gallery: () => { audio.unlock(); stage.show(galleryScene(stage, title)); },
     preview: () => { void loading(loadArt(CARD_ART)).then(() => { stage.setBackdrop(null); stage.show(battlePreviewScene(title)); }); },
     prototype: () => { window.location.href = `${import.meta.env.BASE_URL}prototype/`; }

@@ -30,14 +30,14 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 | A new *kind* of rule or order effect | `src/engine/rules.ts` (behind `st.rules === 'yuddh'`), then the AI's value in `src/engine/ai.ts`, then the reading panel in `src/game/ui/glossary.ts` |
 | Morale / rout (who breaks, the line, who is steadfast) | `src/data/rules.json` ("morale"); logic is `checkRout` in `src/engine/rules.ts` |
 | How the Veteran (search) AI thinks and how long | `src/data/rules.json` ("ai": beam, depth, finalists, replies); code in `src/engine/search.ts`; the player's Standard/Veteran choice in `src/campaign/difficulty.ts` |
-| How a screen looks | `src/game/scenes/` (title, campaign, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
+| How a screen looks | `src/game/scenes/` (title, campaign, standing, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
 | Art or sound | Drop masters in `art/source/{cards,battlefields,sfx}/`, run `npm run assets`, commit `public/assets/` and `src/assets/*.json` |
 
 ```
 src/data/          cards.json, decks.json, rules.json (all balance), index.ts (typed access)
 src/engine/        rules engine: types, lookups (cards.ts), rules, AI (ai.ts heuristics, search.ts search AI; no screen code)
 src/campaign/      battles (tutorial, firstThrone, indusLine, digvijaya, mahakantara, kanchi, goldenAge, narmada, kadaram), campaign.ts, the prototype's nine missions (missions.ts, data only)
-src/meta/          Kirti and per-card upgrades (saved in the browser)
+src/meta/          progress.ts (Kirti and per-card upgrades) · standing.ts (Yash, rank per empire; data/ranks.json) — saved in the browser
 src/game/          PixiJS renderer: stage, screen modes, theme, audio, scenes (title, campaign, battle, gallery, preview)
 src/game/cards/    card painter (frames, arch window, coins, badges), board views, 3D card flips
 src/assets/        art manifest (which cards have paintings)

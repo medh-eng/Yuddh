@@ -56,8 +56,6 @@ export const KADARAM_SCENARIO: Scenario = {
   durgArt: ['durg_gangaikonda', 'durg_kadaram'],
   winText: turn => `Kadaram falls in turn ${turn}. The Chola inscriptions will say the king was taken with his elephants and his treasure; Kadaram's own voice is silent.`,
   loseText: 'The fire boats find the fleet. The Chola ships turn back across the Bay, and the sea road stays closed.',
-  nextId: 'ganga',
-  nextLabel: 'The Ganga Road',
   goLabel: 'To battle',
   game: seed => kadaramGame(seed, 'normal')
 };

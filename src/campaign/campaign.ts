@@ -31,6 +31,8 @@ export interface Campaign {
   title: string;
   /** battlefield painted behind the map */
   ground: string;
+  /** a painted campaign map (art/PROMPTS-MAPS.md), used instead of the battlefield once delivered: name of a file in art/source/battlefields, e.g. 'map_chola' */
+  map?: string;
   nodes: CampaignNode[];
 }
 
@@ -51,15 +53,15 @@ export const CHALUKYA_CAMPAIGN: CampaignNode[] = [
 ];
 
 export const CHOLA_CAMPAIGN: CampaignNode[] = [
-  { scenario: KADARAM_SCENARIO, face: 'sv_sangrama', blurb: 'Sail to Kadaram and break the harbour of the sea kings.' },
-  { scenario: GANGA_SCENARIO, face: 'pl_mahipala', blurb: 'March north to the Ganga and beat the Pala elephants on its bank.' }
+  { scenario: GANGA_SCENARIO, face: 'pl_mahipala', blurb: 'March north to the Ganga and beat the Pala elephants on its bank.' },
+  { scenario: KADARAM_SCENARIO, face: 'sv_sangrama', blurb: 'Sail to Kadaram and break the harbour of the sea kings.' }
 ];
 
 export const CAMPAIGNS: Campaign[] = [
   { id: 'maurya', kicker: 'THE MAURYA CAMPAIGN', title: 'Rise of Magadha', ground: 'pataliputra', nodes: MAURYA_CAMPAIGN },
   { id: 'gupta', kicker: 'THE GUPTA CAMPAIGN', title: 'The Golden Age', ground: 'ujjain', nodes: GUPTA_CAMPAIGN },
   { id: 'chalukya', kicker: 'THE CHALUKYA CAMPAIGN', title: 'Tigers of the South', ground: 'narmada', nodes: CHALUKYA_CAMPAIGN },
-  { id: 'chola', kicker: 'THE CHOLA CAMPAIGN', title: "Rajendra's Sea Road", ground: 'kadaram', nodes: CHOLA_CAMPAIGN }
+  { id: 'chola', kicker: 'THE CHOLA CAMPAIGN', title: 'The Tiger Banner', ground: 'ganga', nodes: CHOLA_CAMPAIGN }
 ];
 
 export const scenarioById = (id: string): Scenario | undefined =>
@@ -85,4 +87,9 @@ export function markBattleWon(id: string): void {
   if (won.includes(id)) return;
   won.push(id);
   try { localStorage.setItem(KEY, JSON.stringify(won)); } catch { /* private mode */ }
+}
+
+/** which empire's campaign a battle belongs to (the coached training ground belongs to none) */
+export function empireOfBattle(id: string): string | undefined {
+  return CAMPAIGNS.find(c => c.nodes.some(n => n.scenario.id === id && !n.scenario.coached))?.id;
 }

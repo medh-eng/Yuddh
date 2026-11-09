@@ -1,0 +1,76 @@
+{
+ "_about": "Rank and renown (Yash). Each empire's campaign earns Yash separately. Edit numbers here. Ranks are titles and bragging rights only: they never change a battle's rules or balance.",
+ "yash": {
+  "win": 80,
+  "firstClear": 120,
+  "loss": 20,
+  "veteranMultiplier": 1.5,
+  "kirtiPerRankUp": 25
+ },
+ "ranks": [
+  {
+   "name": "Padati",
+   "hindi": "पदाति",
+   "gloss": "Foot soldier",
+   "from": 0
+  },
+  {
+   "name": "Gulmapati",
+   "hindi": "गुल्मपति",
+   "gloss": "Captain",
+   "from": 150
+  },
+  {
+   "name": "Nayaka",
+   "hindi": "नायक",
+   "gloss": "Major",
+   "from": 400
+  },
+  {
+   "name": "Dandanayaka",
+   "hindi": "दण्डनायक",
+   "gloss": "Colonel",
+   "from": 800
+  },
+  {
+   "name": "Senapati",
+   "hindi": "सेनापति",
+   "gloss": "General",
+   "from": 1400
+  },
+  {
+   "name": "Mahasenapati",
+   "hindi": "महासेनापति",
+   "gloss": "Commander-in-Chief",
+   "from": 2200
+  },
+  {
+   "name": "Chakravartin",
+   "hindi": "चक्रवर्ती",
+   "gloss": "Emperor",
+   "from": 3200
+  }
+ ],
+ "empires": {
+  "maurya": {
+   "name": "Maurya",
+   "hindi": "मौर्य",
+   "hero": "m_chandragupta"
+  },
+  "gupta": {
+   "name": "Gupta",
+   "hindi": "गुप्त",
+   "hero": "g_samudragupta"
+  },
+  "chalukya": {
+   "name": "Chalukya",
+   "hindi": "चालुक्य",
+   "hero": "c_pulakeshin"
+  },
+  "chola": {
+   "name": "Chola",
+   "hindi": "चोल",
+   "hero": "ch_rajendra"
+  }
+ }
+}
