@@ -1637,28 +1637,28 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const c = new Container();
     const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.78 });
     dim.eventMode = 'static';
-    const face = new Sprite(cardFace(won ? sc.heroCard : sc.defeatCard)); face.anchor.set(0.5); face.scale.set(ph ? 0.46 : 0.75); face.position.set(W / 2, ph ? H * 0.29 : 380);
+    const face = new Sprite(cardFace(won ? sc.heroCard : sc.defeatCard)); face.anchor.set(0.5); face.scale.set(ph ? 0.4 : 0.75); face.position.set(W / 2, ph ? 160 : 365);
     const title = new Text({ text: won ? 'VICTORY' : 'DEFEAT', style: { fontFamily: FONT_TITLE, fontSize: ph ? 104 : 120, fontWeight: '700', letterSpacing: 24, fill: won ? INK.goldPale : 0xffb09a, stroke: { color: 0x000000, width: 8 } } });
-    title.anchor.set(0.5); title.position.set(W / 2, ph ? H * 0.6 : 690);
-    if (ph) title.style.fontSize = 92;
+    title.anchor.set(0.5); title.position.set(W / 2, ph ? 345 : 675);
+    if (ph) title.style.fontSize = 80;
     const sub = new Text({
       text: won ? sc.winText(st.turn) : sc.loseText,
-      style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * L.ui), fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - 200 }
+      style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * (ph ? 1.1 : L.ui)), fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - (ph ? 260 : 200) }
     });
-    sub.anchor.set(0.5); sub.position.set(W / 2, ph ? H * 0.72 : 780);
+    sub.anchor.set(0.5); sub.position.set(W / 2, ph ? 442 : 775);
     if (won && sc.coached) markTutorialDone();
     if (won) markBattleWon(sc.id);
     // the victory button carries a battle's name, so it is the widest; the rest share what is left
-    const kk = ph ? view.ui : 1, wMain = 340, wSide = ph ? 230 : 300;
+    const kk = ph ? 1.1 : 1, wMain = 340, wSide = ph ? 230 : 300;
     const again = won && next
-      ? makeButton(sc.nextLabel ?? 'Next battle', () => showEpilogue(next), { primary: true, w: wMain })
-      : makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: wMain });
+      ? makeButton(sc.nextLabel ?? 'Next battle', () => showEpilogue(next), { primary: true, w: wMain, ui: kk })
+      : makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: wMain, ui: kk });
     const btns: Container[] = [again];
-    if (nav?.map) btns.push(makeButton('Campaign map', nav.map, { w: wSide }));
-    btns.push(makeButton('Title screen', nav ? nav.title : exit, { w: wSide }));
+    if (nav?.map) btns.push(makeButton('Campaign map', nav.map, { w: wSide, ui: kk }));
+    btns.push(makeButton('Title screen', nav ? nav.title : exit, { w: wSide, ui: kk }));
     const widths = btns.map((_, i) => (i === 0 ? wMain : wSide) * kk), gap = 24 * kk;
     let bx = W / 2 - (widths.reduce((a, v) => a + v, 0) + gap * (btns.length - 1)) / 2;
-    btns.forEach((b, i) => { b.position.set(bx + widths[i] / 2, ph ? H * 0.87 : 880); bx += widths[i] + gap; });
+    btns.forEach((b, i) => { b.position.set(bx + widths[i] / 2, ph ? 580 : 885); bx += widths[i] + gap; });
     c.addChild(dim, face, title, sub, ...btns);
     if (won && historyOf(sc.id)) {
       const hb = makeButton('History', () => showHistory(), { w: 190, ui: ph ? 0.85 : 1 });
@@ -1738,6 +1738,8 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   const scr = (x: number, y: number) => { const g = s.toGlobal(new Point(x, y)); return { x: g.x, y: g.y }; };
   (window as unknown as { __yuddh: unknown }).__yuddh = {
     state: () => st, busy: () => busy || dealing(), phone: () => L.phone,
+    /** shows the end screen without playing to it (layout checks) */
+    showEnd: (won: boolean) => { if (!overlay) endScreen(won, false); },
     hand: () => hand.map(h => ({ id: h.cardId, ...scr(h.x, h.y) })),
     tokens: () => [...tokens.values()].map(v => ({ uid: v.uid, owner: v.owner, ...scr(v.x, v.y) })),
     durg: () => scr(durg[1].x, durg[1].y),

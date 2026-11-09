@@ -1,6 +1,6 @@
 # YUDDH art prompts: batch 9, "Rajendra's Sea Road" (Chola campaign, battle 1)
 
-The next campaign to open is the **Chola** one. In about **1025 CE** the Chola emperor **Rajendra I** sent a fleet across the Bay of Bengal against **Sangrama Vijayottungavarman, king of Kadaram** (Kedah, on the Malay coast), the Srivijaya realm's port power. Chola inscriptions (the Tiruvalangadu plates and Rajendra's own records) say Kadaram was taken and its king captured. Why it happened is argued (trade routes, a quarrel over Chola merchants, prestige), and Srivijaya's own side of the story is hardly recorded, so the game paints both sides with dignity and says in its History panel that the battle itself is invented.
+The next campaign to open is the **Chola** one. In about **1025 CE** the Chola emperor **Rajendra I** sent a fleet across the Bay of Bengal against **Sangrama Vijayottungavarman, king of Kadaram** (Kedah, on the Malay coast), the Srivijaya realm's port power. Rajendra's own Tamil inscriptions (from about his 14th regnal year, c. 1026) say Kadaram was taken and its king captured. Why it happened is argued (trade routes, a quarrel over Chola merchants, prestige), and Srivijaya's own side of the story is hardly recorded, so the game paints both sides with dignity and says in its History panel that the battle itself is invented.
 
 Fixes to our old prototype: the old mission said Rajaraja, 1014. It was **Rajendra I** (son of Rajaraja), **c. 1025**. The Rajaraja card stays for later.
 
@@ -64,4 +64,4 @@ The port stronghold of Kadaram: a walled harbour town with a tiered stone-and-br
 
 ## After the pictures arrive
 
-Claude then builds the battle (`kadaram.ts`), adds the cards to `cards.json`, history note ("c. 1025 CE", Tiruvalangadu plates, debated motive, battle invented), tests balance, and opens the **Chola** tab on the campaign map. Later: Rajaraja's Lanka war, then Tarain (Rajput) with Pon's pick of sources.
+Claude then builds the battle (`kadaram.ts`), adds the cards to `cards.json`, history note ("c. 1025 CE", Rajendra's Tamil prasasti, debated motive, battle invented; built 9 Nov 2026), tests balance, and opens the **Chola** tab on the campaign map. Later: Rajaraja's Lanka war, then Tarain (Rajput) with Pon's pick of sources.

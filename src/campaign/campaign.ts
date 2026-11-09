@@ -13,6 +13,7 @@ import { NARMADA_LINE_SCENARIO } from './narmada';
 import { MAHAKANTARA_SCENARIO } from './mahakantara';
 import { KANCHI_SCENARIO } from './kanchi';
 import { GOLDEN_AGE_SCENARIO } from './goldenAge';
+import { KADARAM_SCENARIO } from './kadaram';
 
 export interface CampaignNode {
   scenario: Scenario;
@@ -48,10 +49,15 @@ export const CHALUKYA_CAMPAIGN: CampaignNode[] = [
   { scenario: NARMADA_LINE_SCENARIO, face: 'c_pulakeshin', blurb: 'Stop Harsha of Kanauj on the Narmada.' }
 ];
 
+export const CHOLA_CAMPAIGN: CampaignNode[] = [
+  { scenario: KADARAM_SCENARIO, face: 'sv_sangrama', blurb: 'Sail to Kadaram and break the harbour of the sea kings.' }
+];
+
 export const CAMPAIGNS: Campaign[] = [
   { id: 'maurya', kicker: 'THE MAURYA CAMPAIGN', title: 'Rise of Magadha', ground: 'pataliputra', nodes: MAURYA_CAMPAIGN },
   { id: 'gupta', kicker: 'THE GUPTA CAMPAIGN', title: 'The Golden Age', ground: 'ujjain', nodes: GUPTA_CAMPAIGN },
-  { id: 'chalukya', kicker: 'THE CHALUKYA CAMPAIGN', title: 'Tigers of the South', ground: 'narmada', nodes: CHALUKYA_CAMPAIGN }
+  { id: 'chalukya', kicker: 'THE CHALUKYA CAMPAIGN', title: 'Tigers of the South', ground: 'narmada', nodes: CHALUKYA_CAMPAIGN },
+  { id: 'chola', kicker: 'THE CHOLA CAMPAIGN', title: "Rajendra's Sea Road", ground: 'kadaram', nodes: CHOLA_CAMPAIGN }
 ];
 
 export const scenarioById = (id: string): Scenario | undefined =>

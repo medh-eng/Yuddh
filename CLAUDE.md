@@ -59,6 +59,8 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 ## Status (8 Nov 2026)
 - **Morale and rout, search AI, Foe toggle, batch 8 sheet** done 8 Nov (see TASKS.md). Balance now (200 normal-vs-normal games): First Throne ~62%, Indus Line ~56%, Digvijaya ~56%, Golden Age ~51%, Narmada ~56%; decks trimmed to compensate for rout (decks.json). Next: Gate 2, then build the two battles of batch 8 when the art arrives.
 
+## Status (9 Nov 2026, later)
+- **Rajendra's Sea Road built** (Chola campaign, `kadaram.ts`, `CHOLA_CAMPAIGN`, map tab `tab:chola`; `SCENARIO=kadaram` for tests/e2e/campaign.cjs). Player is `empire: 'chola'` (ranged +1), enemy neutral with sv_* cards (gallery tab Kadaram). ~63% (200 normal-vs-normal). End screen re-laid out for phones (fixed design-space positions, buttons 1.1×); `window.__yuddh.showEnd(won)` shows it without playing. Next: The Ganga Road when batch 10 arrives (`art/PROMPTS-BATCH10.md`).
 ## Status (9 Nov 2026)
 - **The Great Forest and The Walls of Kanchi built** (batch 8 paintings in; Gupta campaign now Digvijaya → Great Forest → Kanchi → Golden Age; mahakantara.ts, kanchi.ts; mk_* gallery tab Forest, pk_* tab Kanchi; mk_jaal is a Kuta card; pendingArt is empty). Balance (200 normal-vs-normal): Great Forest ~49%, Kanchi ~53%. The Golden Age is labelled c. 400 CE (Pon, 9 Nov; coins are c. 409). All History notes are in history.json (one source: the unused `Scenario.history` model was removed).
 ## Status (7 Nov 2026)

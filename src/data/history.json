@@ -113,6 +113,26 @@
       "source": "Sources: Allahabad (Prayaga) Pillar inscription by Harishena, as edited in Corpus Inscriptionum Indicarum vol. III.",
       "epilogue": "Vishnugopa was released and restored. Kanchi stayed Pallava for centuries; its kings would one day capture Badami, the Chalukya capital."
     },
+    "kadaram": {
+      "kicker": "RAJENDRA'S SEA ROAD · c. 1025 CE",
+      "happened": "Rajendra I (ruled about 1014–1044), son of Rajaraja, sent a fleet across the Bay of Bengal in about 1025. His own Tamil inscriptions, from about his fourteenth regnal year (c. 1026), list the cities taken: Kadaram (usually identified with Kedah on the Malay coast), Srivijaya itself and other ports, and say its king, Sangrama Vijayottungavarman, was captured. Why is argued: Chola merchant guilds traded across the Bay, and a quarrel over trade, a show of prestige and a wish to open the sea routes have all been suggested.",
+      "changed": [
+        {
+          "basis": "INVENTED",
+          "text": "The battle itself: the boat wall, the fire boats and the fight in the harbour. The inscriptions list what was taken, not how."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "The identification of Kadaram with Kedah, and the size of the Chola fleet, are scholars' readings of sparse evidence. The game gives the Ainnurruvar guild an armed guard; the guild's part in the venture is its own licence."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Our old prototype set this under Rajaraja in 1014. The Kadaram expedition belongs to his son Rajendra, c. 1025. Srivijaya's own side is hardly recorded, so the game paints it as a rich, dignified trading realm, not a nest of pirates."
+        }
+      ],
+      "source": "Sources: Rajendra I's Tamil prasasti of his 14th regnal year (South Indian Inscriptions); Kenneth Hall, Maritime Trade and State Development in Early Southeast Asia; Nilakanta Sastri, The Colas.",
+      "epilogue": "The inscriptions record no lasting Chola rule overseas. Within a few years Srivijaya's ports traded again, and the Cholas went back to the Ganga and the Deccan: a raid of prestige and trade, not a conquest."
+    },
     "golden_age": {
       "kicker": "THE GOLDEN AGE · c. 400 CE",
       "happened": "Chandragupta II (ruled about 375–415 CE) ended the rule of the Western Kshatrapas, Saka kings who had ruled Malwa, Gujarat and Saurashtra for centuries. A cave inscription at Udayagiri, dated about 401 CE, records his minister travelling with the king as he sought to conquer the whole earth. The Kshatrapa silver coins stop, and Gupta silver coins in the same style appear, around 409 CE. When and where the last fighting happened is not recorded.",

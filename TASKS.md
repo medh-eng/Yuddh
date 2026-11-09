@@ -1,8 +1,11 @@
 # YUDDH — tasks
 
-*Updated at the end of each session (last: 8 Nov 2026). Design and rules: `DESIGN.md`.*
+*Updated at the end of each session (last: 9 Nov 2026). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
+- [ ] Play **Rajendra's Sea Road** (Campaign → Chola tab): are the boat wall (Perahu, Raksha) and fire boats (Pelita Api) fair? Balance ~63% sim, a JSON edit in decks.json.
+- [ ] Paint **batch 10** (`art/PROMPTS-BATCH10.md`, 12 images: The Ganga Road: Araiyan Rajarajan vs Mahipala I) and upload to `art/source/`.
+- [ ] Decide: campaign map art (see below) and whether to add faction levels (see `DESIGN.md`, "Faction mastery").
 - [ ] Play **The Great Forest** and **The Walls of Kanchi** (Campaign → Gupta tab); say if Dhuan archers or the Kanchi gate line feel unfair. Balance is a JSON edit in decks.json.
 - [ ] Try morale/rout: does a broken unit read clearly (red ROUTED band, flee animation)? Too common or too rare (about 2 per battle now; the break line is in `rules.json`)?
 - [ ] Play The Golden Age (it follows The Indus Line, or open Campaign → The Golden Age).
@@ -10,7 +13,6 @@
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
 
 ## Next for Claude
-- [ ] **Chola prototype fix:** the old mission "The Sea Road" (c. 1014, Rajaraja I at Kadaram) merges two kings; the Kadaram expedition is Rajendra I, about 1025. Retitle when that battle is built.
 - [ ] **Cinematics (proposed, not started):** 8-second illustrated clips (a still painting with slow push-in, short caption, sound) before and between battles; pilot = The First Throne, C01–C03 in `docs/HISTORY-RESEARCH.md`, with a skip button and a short "dramatised" footer.
 - [ ] **Tigers of the South** (Chalukya campaign): battle 1 The Narmada Line (Pulakeshin II vs Harsha). Prompts: `art/PROMPTS-BATCH7.md` (11 images, with Pon). Narmada battlefield already painted.
 - [ ] Pon to read the history notes in `src/data/history.json` for accuracy and tone; add a note for each new battle there (The Narmada Line next).
@@ -18,6 +20,11 @@
 - [ ] **Gate 2**: Pon plays with morale/rout and the Veteran foe (briefing → Foe: Veteran), says whether the AI is strong enough and morale readable.
 - [ ] Phase 3 campaigns: more of Tigers of the South (Chola and Rajput battles after the Chola chronology is fixed); cinematic briefings (waiting for Pon); original narrator voice.
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
+
+## Done 9 Nov (Kadaram)
+- [x] **Rajendra's Sea Road** (Chola campaign battle 1, `kadaram.ts`): batch 9 converted; Chola cards ch_rajendra (deploy +1 attack to all), ch_vanigar (Raksha, +1 Kosha), ch_kalam (ranged warship); Kadaram cards sv_* (own gallery tab "Kadaram"): Sangrama (Raksha, +2 Kosha), Nakhoda, Pemanah, Perahu Wall (Raksha 1/8), Penjaga, Pelita Api (3 damage + 1 to all). Chola passive (ranged +1) applies. Balance ~63% (band 45–70%). History note written from Rajendra's Tamil prasasti (c. 1026); the Tiruvalangadu plates are earlier and are not cited for Kadaram. The old "Chola prototype fix" is done (title now Rajendra, c. 1025).
+- [x] **End screen on phones:** the title, line and three buttons no longer touch each other or the round corner buttons (battle.ts `endScreen`). `__yuddh.showEnd(won)` opens it for layout checks.
+- [x] Batch 10 sheet written (The Ganga Road).
 
 ## Done 9 Nov
 - [x] **The Great Forest** (Vyaghraraja of Mahakantara) and **The Walls of Kanchi** (Vishnugopa): batch 8 converted, 13 cards live (Forest and Kanchi gallery tabs; Harishena, Grahana-Moksha, Dakshinapatha for the Gupta side), decks tuned (~49% and ~53%), chain Digvijaya → Great Forest → Kanchi → Golden Age, history notes for both and for The Narmada Line.
@@ -44,7 +51,9 @@
 - [x] Removed a duplicate `indus.png` that had been uploaded into `art/source/cards/` (identical to the battlefield).
 
 ## Next campaign work (9 Nov)
-- [ ] **Chola: Rajendra's Sea Road, c. 1025 CE** (Kadaram). Pon paints batch 9 (`art/PROMPTS-BATCH9.md`, 12 images); Claude then builds kadaram.ts, cards, history note, tests.
+- [x] **Chola: Rajendra's Sea Road, c. 1025 CE** (Kadaram) built 9 Nov: see Done 9 Nov.
+- [ ] **The Ganga Road** (Chola battle 2, c. 1019–22; the general Araiyan Rajarajan led it, Rajendra waited on the Godavari): build when batch 10 arrives (`ganga.ts`; Chola player deck reuses ch_* plus the four new cards).
+- [ ] Campaign map: a painted route and milestones (code) and/or one painted map per campaign (prompts when Pon agrees).
 - [ ] Later: Chalukya Pullalur (c. 618) and Badami; Rajput Tarain 1191/1192 (source-critical).
 
 ## Next ideas

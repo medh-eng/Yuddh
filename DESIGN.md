@@ -1,6 +1,6 @@
 # YUDDH: Rise of the Rajyas — design
 
-*What the game is, how it plays, and why it is built this way. Updated at the end of each session (last: 8 Nov 2026). Tasks live in `TASKS.md`; technical working notes for Claude live in `CLAUDE.md`.*
+*What the game is, how it plays, and why it is built this way. Updated at the end of each session (last: 9 Nov 2026). Tasks live in `TASKS.md`; technical working notes for Claude live in `CLAUDE.md`.*
 
 ## Vision
 A KARDS-style tactical card game of ancient Indian empires, for **web now and Google Play later (landscape only)**. History, not mythology: real armies with epic unit names (Rathi, Maharathi, Atirathi), no gods as units. Tone: a "living miniature": Indian miniature painting, each empire's card frame carved from its own material (Maurya sandstone, Gupta gold, Chalukya red sandstone, Chola bronze, Rajput silver).
@@ -65,3 +65,9 @@ Two Gupta battles from Samudragupta's southern expedition (Allahabad Pillar, Har
 - 5–6 Nov: KARDS-style reading panels and damage shields; seasons; Dharma–Kuta; tutorial; batch 3 cards.
 - 7 Nov: UI polish (11 items); board units stay in straight lines (any unit can attack any enemy, so a zig-zag would teach the wrong rule); data moved out of code into `src/data/*.json`; The Indus Line + campaign map built; Seleucid cards use the neutral (teak) frame and their own gallery tab.
 - 8 Nov: **Morale and rout** (Yuddh rules only; the classic ruleset and golden traces are untouched). Rebalanced by decks: Nanda lose one Rakshak and one Maharathi, Seleucids one Hetairoi, Naga one Chakravyuha (+ an Aakraman). **Search AI** and the Standard/Veteran foe choice. Batch 8 prompts for the march south.
+
+## Chola campaign: Rajendra's Sea Road (built 9 Nov 2026)
+Battle 1, **Kadaram** (c. 1025 CE): Rajendra I's fleet against Sangrama Vijayottungavarman, a Srivijaya port king. The Chola player has the Naval Supremacy passive (ranged units +1 attack), archers, marines, the Kalam warship, a merchant-guild guard that pays for itself and Rajendra (+1 attack to all). Kadaram answers with Raksha walls (Perahu Wall, harbour guards), harbour archers, a captain who rallies his line, a rich king and fire boats. About 63% for the player over 200 normal-vs-normal games. The History note says the battle is invented; the inscriptions only list what was taken. Next: **The Ganga Road** (c. 1019–22; the general Araiyan Rajarajan led it while Rajendra waited on the Godavari; Mahipala I of the Pala empire; conquests not kept), prompts in `art/PROMPTS-BATCH10.md`.
+
+## Faction mastery (proposal, not built)
+KARDS levels each nation with play. For YUDDH the same idea would be a light **empire rank**: wins and battles played with an empire's cards earn "Yash" (renown); at set levels the empire unlocks cosmetic card frames and a title, one extra starting card choice in its campaign and a Kirti bonus. Not stat boosts (they would break the balance bands) and no pay-to-win currency. See the answer in the session notes before building.

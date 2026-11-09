@@ -299,5 +299,32 @@
 "n_aakraman*2",
 "y_pratikar"
 ]
+},
+"kadaram": {
+"player": [
+"ch_archer*3",
+"ch_navik*3",
+"ch_pot*2",
+"ch_kalam*2",
+"ch_vanigar*2",
+"ch_sena",
+"ch_rajendra",
+"ch_vyapari*2",
+"n_rakshak",
+"n_aakraman*2",
+"n_sena_bhojan",
+"y_kavach"
+],
+"enemy": [
+"sv_penjaga*3",
+"sv_perahu*2",
+"sv_dhanurdhar*4",
+"sv_nakhoda*2",
+"sv_sangrama",
+"sv_api*2",
+"n_padati*2",
+"n_senapati",
+"y_pratikar"
+]
 }
 }
