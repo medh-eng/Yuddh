@@ -10,7 +10,7 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   const p = await b.newPage({ viewport: { width: +W, height: +H } });
   // the sandbox's software GPU draws a few frames a second at desktop size; a drag can take longer
   // than the 0.48 s hold that opens a card, so the bot holds that off (real devices are unaffected)
-  await p.addInitScript(() => { window.__yuddhLongPressMs = 4000; });
+  await p.addInitScript(() => { window.__yuddhLongPressMs = 4000; try { localStorage.setItem('yuddh.notice.v1', '1'); } catch (e) { /* the first-launch history notice would cover the title */ } });
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   await p.goto(url); await p.waitForTimeout(2500);
   const shot = n => p.screenshot({ path: `${out}/${n}.png` });

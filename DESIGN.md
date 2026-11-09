@@ -56,8 +56,8 @@ Battle 1 (built 7 Nov): Chandragupta II (Vikramaditya) against the Western Satra
 - The First Throne: player side 55–80% (now ~62%, ~16 turns).
 - The Indus Line: player side 45–70% (now ~55%, ~16 turns). Deliberately harder than the first battle; a human beats the AI more often than the AI beats itself.
 
-## Third campaign: Gupta march south (designed, waiting for art)
-Two more Gupta battles from Samudragupta's southern expedition (Allahabad Pillar, Harishena): **The Great Forest** (Vyaghraraja of Mahakantara: Dhuan ambushers, forest elephants, a Kuta snare) and **The Walls of Kanchi** (Vishnugopa, Pallava: Raksha walls, elephants, chariots, scholars). 13 cards are designed in `cards.json` "pendingArt"; prompts in `art/PROMPTS-BATCH8.md` (17 images).
+## Gupta march south (built 9 Nov 2026)
+Two Gupta battles from Samudragupta's southern expedition (Allahabad Pillar, Harishena): **The Great Forest** (Vyaghraraja of Mahakantara: Dhuan ambushers, forest elephants, a Kuta snare, ~49%) and **The Walls of Kanchi** (Vishnugopa, Pallava: Raksha walls, elephants, chariots, scholars, ~53%). The Gupta side adds Harishena (draw), Dakshinapatha (+1 attack, Kosha) and Grahana-Moksha (heal, draw, Dharma: "captured, then released"). Campaign order: Digvijaya, Great Forest, Kanchi, Golden Age. Where the Pillar is silent (battle sites, fights) the History notes say the game invents them.
 
 ## Decisions log
 - 3 Nov 2026: web + TypeScript + Vite + PixiJS + GSAP; Google Play via wrapper in Phase 5; name "YUDDH: Rise of the Rajyas"; repo public.

@@ -69,13 +69,57 @@
       "source": "Sources: Allahabad (Prayaga) Pillar inscription by Harishena, as edited in Corpus Inscriptionum Indicarum vol. III; Gupta lyrist gold coins (Indian Museum, Kolkata).",
       "epilogue": "After the north and the south, his gold coins proclaim an Ashvamedha, the horse sacrifice of a sovereign. He did not rule everywhere directly: some kings were removed, some restored, and others only sent tribute and envoys. His son Chandragupta II would carry Gupta power west."
     },
+    "mahakantara": {
+      "kicker": "THE GREAT FOREST · mid-4th century CE",
+      "happened": "The Allahabad (Prayaga) Pillar names twelve southern kings that Samudragupta took captive and then released, restoring their kingdoms. Vyaghraraja of Mahakantara, \"the Great Forest\", is one of them. The Pillar also says the forest rulers (the Atavikas) were made servants of his service. Where Mahakantara lay is argued; the forest country of central India and Odisha is the usual guess.",
+      "changed": [
+        {
+          "basis": "INVENTED",
+          "text": "The battle. The Pillar names Vyaghraraja but gives no site, date or fight. Hidden archers, forest elephants and snares are the game's picture of a forest war."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "The forest people are shown as an organised kingdom with its own stockades, not as primitives. The Pillar says only that they were subdued."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Capture, then release, is how the Pillar describes the southern kings. The card Grahana-Moksha is built on it."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "Harishena, who composed the Pillar, serves in the game as a minister with the army; that he marched with it is the game's picture."
+        }
+      ],
+      "source": "Sources: Allahabad (Prayaga) Pillar inscription by Harishena, as edited in Corpus Inscriptionum Indicarum vol. III.",
+      "epilogue": "Vyaghraraja was set free and his forest country given back to him, as the Pillar says of all twelve. The Gupta column turned toward the eastern coast and the south."
+    },
+    "kanchi": {
+      "kicker": "THE WALLS OF KANCHI · mid-4th century CE",
+      "happened": "Vishnugopa of Kanchi is the seventh of the twelve southern kings named on the Prayaga Pillar, which says he was captured and released like the rest. Kanchi (Kanchipuram) was a Pallava city on the south-east coast, the far end of the Pillar's list. How far south Samudragupta's march really went is debated.",
+      "changed": [
+        {
+          "basis": "INVENTED",
+          "text": "The siege, the walls and the fight. The Pillar gives no account of any battle at Kanchi, and says nothing of Gupta rule being set up there."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "Which Pallava ruler Vishnugopa was is debated. Kanchi's Ghatika college is known from later inscriptions; the game lets the city be a place of scholars already, its own licence."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Capture and release is the Pillar's claim. It is the victor's own record, so Kanchi's side of the story is missing."
+        }
+      ],
+      "source": "Sources: Allahabad (Prayaga) Pillar inscription by Harishena, as edited in Corpus Inscriptionum Indicarum vol. III.",
+      "epilogue": "Vishnugopa was released and restored. Kanchi stayed Pallava for centuries; its kings would one day capture Badami, the Chalukya capital."
+    },
     "golden_age": {
-      "kicker": "THE GOLDEN AGE · c. 409 CE",
+      "kicker": "THE GOLDEN AGE · c. 400 CE",
       "happened": "Chandragupta II (ruled about 375–415 CE) ended the rule of the Western Kshatrapas, Saka kings who had ruled Malwa, Gujarat and Saurashtra for centuries. A cave inscription at Udayagiri, dated about 401 CE, records his minister travelling with the king as he sought to conquer the whole earth. The Kshatrapa silver coins stop, and Gupta silver coins in the same style appear, around 409 CE. When and where the last fighting happened is not recorded.",
       "changed": [
         {
           "basis": "INVENTED",
-          "text": "One battle at Ujjain against Rudrasimha III, and his fall in it. The coins show a change of rule, not a battle; \"c. 409 CE\" is the coin date, not a battle date."
+          "text": "One battle at Ujjain against Rudrasimha III, and his fall in it. The coins show a change of rule, not a battle. The game labels the war \"c. 400 CE\" to fit the Udayagiri date; the silver coins are about 409."
         },
         {
           "basis": "TRADITION",
@@ -92,6 +136,26 @@
       ],
       "source": "Sources: Udayagiri cave inscriptions (Gupta year 82, about 401 CE); Western Kshatrapa and Gupta silver coins; later Sanskrit tradition of Vikramaditya; Delhi Iron Pillar inscription.",
       "epilogue": "With the west won, Gupta rule reached the Arabian Sea and its trading ports, and its coins carried a new image in a familiar silver style. The Chinese monk Faxian travelled through the empire around these years."
+    },
+    "narmada_line": {
+      "kicker": "THE NARMADA LINE · before 634 CE",
+      "happened": "Harsha of Kanauj (reigned 606–647 CE) was the strongest ruler of the north. At some point before 634 CE he marched south against Pulakeshin II of Badami and was stopped at the Narmada. The Chalukya poet Ravikirti recorded it in the Aihole inscription of 634–635 CE, and the Chinese pilgrim Xuanzang, who knew Harsha's court, also describes Harsha's failure in the south. The river stayed the border between the two empires.",
+      "changed": [
+        {
+          "basis": "HISTORY",
+          "text": "The clash, and the Chalukya claim of success, are recorded. The Aihole inscription is a praise-poem written by the winner's poet."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "The ford, the armies, the turns of the fight and the date. Nobody knows where or when it happened, and dates from c. 612 to c. 630 CE are argued."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Harsha is shown as an emperor of wide reach, a poet and a giver: Bana's biography and Xuanzang describe his five-yearly giving at Prayaga."
+        }
+      ],
+      "source": "Sources: Aihole inscription of Ravikirti (634–635 CE); Bana, Harshacharita; Xuanzang, Records of the Western World.",
+      "epilogue": "Pulakeshin II took the title Parameshvara and ruled a Deccan empire from the Narmada to the Kaveri. Harsha never marched south again; he died in 647 CE and his empire broke apart within a generation. In 642 CE the Pallava king Narasimhavarman captured Badami."
     }
   }
 }

@@ -10,7 +10,7 @@
  "steadfastRank": 2,
  "rallyCards": ["m_raja_dhwaja"]
 },
-"kutaCards": ["n_visha_baan", "m_gudhchar", "na_sarpa_vish"],
+"kutaCards": ["n_visha_baan", "m_gudhchar", "na_sarpa_vish", "mk_jaal"],
 "chargeClasses": ["Cavalry", "Chariot", "Elite Chariot", "Legendary Warrior"],
 "ai": {
  "_about": "The search AI (level 'search'): each turn it beam-searches its own action sequences on a copy of the board, with unseen cards re-dealt at random, then plays the opponent's reply and scores where that leaves it. Bigger numbers play better and think longer.",

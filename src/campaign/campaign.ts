@@ -10,6 +10,8 @@ import { FIRST_THRONE_SCENARIO } from './firstThrone';
 import { INDUS_LINE_SCENARIO } from './indusLine';
 import { DIGVIJAYA_SCENARIO } from './digvijaya';
 import { NARMADA_LINE_SCENARIO } from './narmada';
+import { MAHAKANTARA_SCENARIO } from './mahakantara';
+import { KANCHI_SCENARIO } from './kanchi';
 import { GOLDEN_AGE_SCENARIO } from './goldenAge';
 
 export interface CampaignNode {
@@ -37,6 +39,8 @@ export const MAURYA_CAMPAIGN: CampaignNode[] = [
 ];
 export const GUPTA_CAMPAIGN: CampaignNode[] = [
   { scenario: DIGVIJAYA_SCENARIO, face: 'na_ganapati_naga', blurb: 'Break the Naga kings of the Ganges plain.' },
+  { scenario: MAHAKANTARA_SCENARIO, face: 'mk_vyaghraraja', blurb: 'March into the Great Forest of the tiger-king.' },
+  { scenario: KANCHI_SCENARIO, face: 'pk_vishnugopa', blurb: 'Take the walls of Kanchi, far down the coast.' },
   { scenario: GOLDEN_AGE_SCENARIO, face: 'sa_rudrasimha', blurb: 'Take Ujjain from the Satraps.' }
 ];
 

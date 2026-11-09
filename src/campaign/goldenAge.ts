@@ -1,7 +1,7 @@
 /* ============================================================
    Battle 1 of the Gupta campaign — "The Golden Age": Chandragupta II
    (Vikramaditya) against the last Western Kshatrapa king, Rudrasimha III,
-   at Ujjain, c. 409 CE. Decks are in src/data/decks.json ("golden_age").
+   at Ujjain, c. 400 CE. Decks are in src/data/decks.json ("golden_age").
    The Satraps are cheap, fast and fragile (horse-archers, lancers, silver
    for Kosha, a desert storm that hits every unit); the Gupta win with
    court and craft (Navaratna and Swarn Yug draw cards, Kalidasa and the
@@ -20,7 +20,7 @@ export const GOLDEN_AGE = {
   id: 'golden_age',
   title: 'The Golden Age',
   place: 'Ujjain',
-  year: 'c. 409 CE',
+  year: 'c. 400 CE',
   battlefield: 'ujjain',
   briefing: 'The Western Satraps have raided the Malwa border for three hundred years, and their horse-archers are faster than any levy. But this is an age of academies and endowments: your court draws cards where theirs draws silver. Weather the arrows, hold the line, and make Ujjain the second capital of the empire.',
   playerDeck: decks.player,

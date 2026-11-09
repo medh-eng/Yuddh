@@ -233,5 +233,71 @@
 "n_senapati",
 "y_pratikar"
 ]
+},
+"mahakantara": {
+"player": [
+"g_dhanurdhar*3",
+"g_harishena*2",
+"g_pandit",
+"g_mandir",
+"g_ashvarohi*3",
+"n_rakshak*2",
+"n_padati*2",
+"n_senapati",
+"n_gaja*2",
+"g_samudragupta",
+"g_dakshinapatha*2",
+"g_grahana_moksha",
+"g_veena",
+"g_swarn_yug",
+"y_kavach",
+"n_aakraman*2",
+"n_sena_bhojan"
+],
+"enemy": [
+"mk_atavika*4",
+"mk_vana_dhanurdhar*4",
+"mk_vana_gaja*3",
+"mk_vyaghraraja",
+"mk_jaal*2",
+"n_rakshak*2",
+"n_padati*2",
+"n_aakraman*2",
+"n_senapati",
+"y_pratikar"
+]
+},
+"kanchi": {
+"player": [
+"g_dhanurdhar*3",
+"g_harishena*2",
+"g_pandit",
+"g_dhanurdhar",
+"g_ashvarohi*3",
+"n_rakshak*2",
+"n_padati*2",
+"n_senapati",
+"n_gaja*2",
+"g_samudragupta",
+"g_dakshinapatha*2",
+"g_grahana_moksha*2",
+"g_veena",
+"g_swarn_yug",
+"y_kavach",
+"n_aakraman*2",
+"n_sena_bhojan"
+],
+"enemy": [
+"pk_kota_rakshak*3",
+"pk_ghatika*2",
+"pk_ratha*4",
+"pk_gaja_sena",
+"pk_vishnugopa",
+"n_dhanurdhar*3",
+"n_padati*2",
+"n_senapati",
+"n_aakraman*2",
+"y_pratikar"
+]
 }
 }

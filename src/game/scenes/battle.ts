@@ -1648,14 +1648,17 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     sub.anchor.set(0.5); sub.position.set(W / 2, ph ? H * 0.72 : 780);
     if (won && sc.coached) markTutorialDone();
     if (won) markBattleWon(sc.id);
+    // the victory button carries a battle's name, so it is the widest; the rest share what is left
+    const kk = ph ? view.ui : 1, wMain = 340, wSide = ph ? 230 : 300;
     const again = won && next
-      ? makeButton(sc.nextLabel ?? 'Next battle', () => showEpilogue(next), { primary: true, w: 320 })
-      : makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 320 });
+      ? makeButton(sc.nextLabel ?? 'Next battle', () => showEpilogue(next), { primary: true, w: wMain })
+      : makeButton('Fight again', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: wMain });
     const btns: Container[] = [again];
-    if (nav?.map) btns.push(makeButton('Campaign map', nav.map, { w: 320 }));
-    btns.push(makeButton('Title screen', nav ? nav.title : exit, { w: 320 }));
-    const bstep = btns.length === 3 ? 350 : 360;
-    btns.forEach((b, i) => b.position.set(W / 2 + (i - (btns.length - 1) / 2) * bstep, ph ? H * 0.87 : 880));
+    if (nav?.map) btns.push(makeButton('Campaign map', nav.map, { w: wSide }));
+    btns.push(makeButton('Title screen', nav ? nav.title : exit, { w: wSide }));
+    const widths = btns.map((_, i) => (i === 0 ? wMain : wSide) * kk), gap = 24 * kk;
+    let bx = W / 2 - (widths.reduce((a, v) => a + v, 0) + gap * (btns.length - 1)) / 2;
+    btns.forEach((b, i) => { b.position.set(bx + widths[i] / 2, ph ? H * 0.87 : 880); bx += widths[i] + gap; });
     c.addChild(dim, face, title, sub, ...btns);
     if (won && historyOf(sc.id)) {
       const hb = makeButton('History', () => showHistory(), { w: 190, ui: ph ? 0.85 : 1 });

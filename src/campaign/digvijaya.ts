@@ -53,8 +53,8 @@ export const DIGVIJAYA_SCENARIO: Scenario = {
   music: { briefing: 'music_gupta_briefing', calm: 'music_gupta_calm', intense: 'music_gupta_intense' },
   winText: turn => `Ganapati Naga falls in turn ${turn}. The Allahabad Pillar will say the kings of Aryavarta were uprooted, and Samudragupta will turn south.`,
   loseText: 'The Naga clans close ranks in the forest. The march of conquest is put off for a generation.',
-  nextId: 'golden_age',
-  nextLabel: 'The Golden Age',
+  nextId: 'mahakantara',
+  nextLabel: 'The Great Forest',
   goLabel: 'To battle',
   game: seed => digvijayaGame(seed, 'normal')
 };

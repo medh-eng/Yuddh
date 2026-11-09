@@ -10,7 +10,7 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   const p = await b.newPage({ viewport: { width: +W, height: +H } });
   // the sandbox's software GPU draws a few frames a second at desktop size; a drag can take longer
   // than the 0.48 s hold that opens a card, so the bot holds that off (real devices are unaffected)
-  await p.addInitScript(() => { window.__yuddhLongPressMs = 4000; });
+  await p.addInitScript(() => { window.__yuddhLongPressMs = 4000; try { localStorage.setItem('yuddh.notice.v1', '1'); } catch (e) { /* the first-launch history notice would cover the title */ } });
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   await p.goto(url); await p.waitForTimeout(2500);
   const shot = n => p.screenshot({ path: `${out}/${n}.png` });
@@ -38,7 +38,7 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   const nodes = await p.evaluate(() => window.__yuddhCampaign());
   console.log('map nodes', JSON.stringify(nodes));
   const target = process.env.SCENARIO || 'indus_line';
-  if (['golden_age','digvijaya','narmada_line'].includes(target)) { const tab = nodes.find(n => n.id === (target === 'narmada_line' ? 'tab:chalukya' : 'tab:gupta')); await p.mouse.click(tab.x, tab.y); await p.waitForTimeout(2500); await shot('02b-gupta-map'); }
+  if (['golden_age','digvijaya','mahakantara','kanchi','narmada_line'].includes(target)) { const tab = nodes.find(n => n.id === (target === 'narmada_line' ? 'tab:chalukya' : 'tab:gupta')); await p.mouse.click(tab.x, tab.y); await p.waitForTimeout(2500); await shot('02b-gupta-map'); }
   const indus = (await p.evaluate(() => window.__yuddhCampaign())).find(n => n.id === target);
   await p.mouse.click(indus.x, indus.y);
   await p.waitForFunction(() => !!window.__yuddh && !window.__yuddhButtons().some(b => b.label === 'Campaign'), null, { timeout: 90000 }); await p.waitForTimeout(1800); await shot('03-indus-briefing');

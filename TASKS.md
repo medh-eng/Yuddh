@@ -3,22 +3,26 @@
 *Updated at the end of each session (last: 8 Nov 2026). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
-- [ ] **Batch 8** (`art/PROMPTS-BATCH8.md`, 17 images: Mahakantara and Kanchi battlefields, 2 Durgs, 13 cards) → Claude builds The Great Forest and The Walls of Kanchi.
+- [ ] Play **The Great Forest** and **The Walls of Kanchi** (Campaign → Gupta tab); say if Dhuan archers or the Kanchi gate line feel unfair. Balance is a JSON edit in decks.json.
 - [ ] Try morale/rout: does a broken unit read clearly (red ROUTED band, flee animation)? Too common or too rare (about 2 per battle now; the break line is in `rules.json`)?
 - [ ] Play The Golden Age (it follows The Indus Line, or open Campaign → The Golden Age).
 - [ ] Play The Indus Line on the phone: is it fun and fair? Tell Claude if the pikes feel too harsh or the Seleucids too weak (balance is a JSON edit).
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
 
 ## Next for Claude
-- [ ] **Decide (Pon):** relabel The Golden Age from "c. 409 CE" (a coin date, not a battle date) to "c. 400 CE"; the research brief (`docs/HISTORY-RESEARCH.md`) recommends it.
 - [ ] **Chola prototype fix:** the old mission "The Sea Road" (c. 1014, Rajaraja I at Kadaram) merges two kings; the Kadaram expedition is Rajendra I, about 1025. Retitle when that battle is built.
 - [ ] **Cinematics (proposed, not started):** 8-second illustrated clips (a still painting with slow push-in, short caption, sound) before and between battles; pilot = The First Throne, C01–C03 in `docs/HISTORY-RESEARCH.md`, with a skip button and a short "dramatised" footer.
 - [ ] **Tigers of the South** (Chalukya campaign): battle 1 The Narmada Line (Pulakeshin II vs Harsha). Prompts: `art/PROMPTS-BATCH7.md` (11 images, with Pon). Narmada battlefield already painted.
 - [ ] Pon to read the history notes in `src/data/history.json` for accuracy and tone; add a note for each new battle there (The Narmada Line next).
 - [ ] More cards toward ~120.
 - [ ] **Gate 2**: Pon plays with morale/rout and the Veteran foe (briefing → Foe: Veteran), says whether the AI is strong enough and morale readable.
-- [ ] Phase 3 campaigns: The Golden Age, Tigers of the South; cinematic briefings; original narrator voice.
+- [ ] Phase 3 campaigns: more of Tigers of the South (Chola and Rajput battles after the Chola chronology is fixed); cinematic briefings (waiting for Pon); original narrator voice.
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
+
+## Done 9 Nov
+- [x] **The Great Forest** (Vyaghraraja of Mahakantara) and **The Walls of Kanchi** (Vishnugopa): batch 8 converted, 13 cards live (Forest and Kanchi gallery tabs; Harishena, Grahana-Moksha, Dakshinapatha for the Gupta side), decks tuned (~49% and ~53%), chain Digvijaya → Great Forest → Kanchi → Golden Age, history notes for both and for The Narmada Line.
+- [x] The Golden Age relabelled c. 400 CE (Pon's decision).
+- [x] Removed the duplicate, unused `Scenario.history` model; history.json is the single source. The e2e bots now skip the first-launch notice.
 
 ## Done 8 Nov (night)
 - [x] **Morale and rout** (`checkRout` in rules.ts; `morale` in rules.json): see DESIGN.md. Token banner, flee animation, glossary entries, tutorial line. Tests: tests/morale.test.ts. Decks re-balanced (see DESIGN.md decisions).
