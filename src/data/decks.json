@@ -327,6 +327,33 @@
 "y_pratikar"
 ]
 },
+"tarain1": {
+"player": [
+"r_yoddha*3",
+"r_archer*3",
+"r_sawar*3",
+"r_durgapala*2",
+"r_govindaraja",
+"r_gaja*2",
+"r_sena",
+"r_prithviraj",
+"r_samanta*2",
+"n_aakraman*2",
+"n_sena_bhojan*2"
+],
+"enemy": [
+"gh_horse_archer*3",
+"gh_ghori*3",
+"gh_ghulam*2",
+"gh_muizz",
+"gh_naqqara",
+"gh_tabarhinda*2",
+"n_padati*4",
+"n_rakshak",
+"n_aakraman*2",
+"y_pratikar"
+]
+},
 "lanka": {
 "player": [
 "ch_archer*3",

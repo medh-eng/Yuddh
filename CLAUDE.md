@@ -79,3 +79,5 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 
 ## Status (10 Nov 2026)
 - **The Crossing to Lanka built** (Chola battle 1 by date, `lanka.ts`, si_* Sinhalese cards, gallery tab `sinhala`, ~54%); Chola campaign order Lanka → Ganga → Kadaram (nextId lanka→ganga→kadaram). `startKosha: 0` is read as 1 (`cfg.startKosha || 1` in rules.ts), so a side cannot start poorer than the default; the tutorial passes 0 and relies on that, so it was left alone. Next: batch 12 (`art/PROMPTS-BATCH12.md`, First Tarain, Rajput campaign). Campaign maps and Maurya regalia delivered and wired 10 Nov.
+
+- **Rajput campaign opened 10 Nov** (`tarain1.ts`, `gh_*` Ghurid cards, gallery tab `ghurid`, `rajput` in ranks.json empires and chronicles, CAMPAIGNS has 5 tabs). Fixed season Sharad. A new campaign needs: a ranks.json empires + chronicles entry, a CAMPAIGNS tab, and updating tests/seleucid.test.ts's campaign list. Briefing titles shrink to fit (battle.ts). Next: batch 13 (`art/PROMPTS-BATCH13.md`).

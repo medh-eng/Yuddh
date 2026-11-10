@@ -1,4 +1,4 @@
-# YUDDH art prompts: campaign maps (4 images, optional, any time)
+# YUDDH art prompts: campaign maps (4 delivered, a 5th for the Rajput campaign, optional)
 
 A painted map behind each campaign's row of battles on the campaign screen. The game already draws a winding route, a gold frame and a compass over whatever is behind it, so these paintings must be **calm, decorative landscapes**, not labelled maps: not to scale, no route, no border, no compass, no text, no place names, no watermark.
 
@@ -13,4 +13,8 @@ Upload to `art/source/battlefields/` with the exact names below. Tell Claude whe
 | `map_chalukya.png` | Chalukya, Tigers of the South | Painted cloth map of the Deccan plateau: red-brown hills and a broad river (the Narmada) crossing the top third, rock-cut cave temples and a stone fort on a hill at one corner, golden fields and boulders at the edges, the open middle band calm with only a faint road, a boar-banner on a small camp tent in a far corner. |
 | `map_chola.png` | Chola, The Tiger Banner | Painted cloth map of the Bay of Bengal in the Chola age: the green coast of the Tamil country with a tall temple tower in the lower left, a delta of river mouths with bathing ghats and boats along the top edge, a calm blue-green sea filling the open middle band with a few small sailing ships far apart, a tiled harbour and a palm-fringed shore of the far Malay coast in the right corner, gulls and wave patterns at the edges. |
 
-Optional later: a fifth map for the Rajput campaign when it opens.
+**Fifth map, now that the Rajput campaign is open** (`map_rajput.png`, same rules as above; the Rajput tab shows the Tarain battlefield until it arrives):
+
+| File | Campaign | Prompt (add after the style block) |
+| --- | --- | --- |
+| `map_rajput.png` | Rajput, The Saffron Banner | Painted cloth map of north-west India in the age of the Chahamana kings: the dry plain between the Sarasvati and the Yamuna, a sandstone hill-fort with saffron banners on a rocky hill and a lake with a small white pavilion in the upper left, a walled city of Delhi with a tall gateway in the upper right, golden dry fields, thorn trees and a faint cart road in the open middle band kept calm, a brick fort with an arched gate and green banners far away in the lower right, a camel caravan and a small camp of tents in the lower left, a few antelope near the edges. |

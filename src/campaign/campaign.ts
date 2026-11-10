@@ -16,6 +16,7 @@ import { GOLDEN_AGE_SCENARIO } from './goldenAge';
 import { KADARAM_SCENARIO } from './kadaram';
 import { GANGA_SCENARIO } from './ganga';
 import { LANKA_SCENARIO } from './lanka';
+import { TARAIN1_SCENARIO } from './tarain1';
 
 export interface CampaignNode {
   scenario: Scenario;
@@ -53,6 +54,10 @@ export const CHALUKYA_CAMPAIGN: CampaignNode[] = [
   { scenario: NARMADA_LINE_SCENARIO, face: 'c_pulakeshin', blurb: 'Stop Harsha of Kanauj on the Narmada.' }
 ];
 
+export const RAJPUT_CAMPAIGN: CampaignNode[] = [
+  { scenario: TARAIN1_SCENARIO, face: 'gh_muizz', blurb: "Break the sultan of Ghur at Tarain, 1191." }
+];
+
 export const CHOLA_CAMPAIGN: CampaignNode[] = [
   { scenario: LANKA_SCENARIO, face: 'si_mahinda', blurb: 'Cross the strait and take Anuradhapura from Mahinda V.' },
   { scenario: GANGA_SCENARIO, face: 'pl_mahipala', blurb: 'March north to the Ganga and beat the Pala elephants on its bank.' },
@@ -63,7 +68,8 @@ export const CAMPAIGNS: Campaign[] = [
   { id: 'maurya', kicker: 'THE MAURYA CAMPAIGN', title: 'Rise of Magadha', ground: 'pataliputra', map: 'map_maurya', nodes: MAURYA_CAMPAIGN },
   { id: 'gupta', kicker: 'THE GUPTA CAMPAIGN', title: 'The Golden Age', ground: 'ujjain', map: 'map_gupta', nodes: GUPTA_CAMPAIGN },
   { id: 'chalukya', kicker: 'THE CHALUKYA CAMPAIGN', title: 'Tigers of the South', ground: 'narmada', map: 'map_chalukya', nodes: CHALUKYA_CAMPAIGN },
-  { id: 'chola', kicker: 'THE CHOLA CAMPAIGN', title: 'The Tiger Banner', ground: 'ganga', map: 'map_chola', nodes: CHOLA_CAMPAIGN }
+  { id: 'chola', kicker: 'THE CHOLA CAMPAIGN', title: 'The Tiger Banner', ground: 'ganga', map: 'map_chola', nodes: CHOLA_CAMPAIGN },
+  { id: 'rajput', kicker: 'THE RAJPUT CAMPAIGN', title: 'The Saffron Banner', ground: 'tarain', nodes: RAJPUT_CAMPAIGN }
 ];
 
 export const scenarioById = (id: string): Scenario | undefined =>

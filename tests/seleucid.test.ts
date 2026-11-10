@@ -145,7 +145,7 @@ describe('data files', () => {
     expect(MAURYA_CAMPAIGN[0].scenario.nextId).toBe('first_throne');
     expect(MAURYA_CAMPAIGN[1].scenario.nextId).toBe('indus_line');
     expect(INDUS_LINE_SCENARIO.nextId).toBe('digvijaya');
-    expect(CAMPAIGNS.map(c => c.id)).toEqual(['maurya', 'gupta', 'chalukya', 'chola']);
+    expect(CAMPAIGNS.map(c => c.id)).toEqual(['maurya', 'gupta', 'chalukya', 'chola', 'rajput']);
     expect(scenarioById('digvijaya')).toBeDefined();
     expect(scenarioById('golden_age')).toBeDefined();
   });

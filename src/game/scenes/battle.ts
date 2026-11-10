@@ -489,7 +489,8 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
         t3.position.set(tx, 166); t4.position.set(tx, t3.y + t3.height + 14); t5.position.set(tx, t4.y + t4.height + 14);
         if (t5.y + t5.height + 110 <= H) break;
       }
-    } else { t1.position.set(tx, 260); t2.position.set(tx - 4, 296); t3.position.set(tx, 420); t4.position.set(tx, t3.y + t3.height + 24); t5.position.set(tx, t4.y + t4.height + 22); }
+    } else { while (t2.width > W - tx - 40 && +t2.style.fontSize > 48) t2.style.fontSize = +t2.style.fontSize - 2; // long titles step down to fit
+      t1.position.set(tx, 260); t2.position.set(tx - 4, 296); t3.position.set(tx, 420); t4.position.set(tx, t3.y + t3.height + 24); t5.position.set(tx, t4.y + t4.height + 22); }
     const go = makeButton(sc.goLabel, () => {
       audio.unlock(); audio.play('conch');
       audio.playMusic(tune('calm', 'music_battle_calm'));

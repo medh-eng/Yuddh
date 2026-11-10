@@ -113,6 +113,26 @@
       "source": "Sources: Allahabad (Prayaga) Pillar inscription by Harishena, as edited in Corpus Inscriptionum Indicarum vol. III.",
       "epilogue": "Vishnugopa was released and restored. Kanchi stayed Pallava for centuries; its kings would one day capture Badami, the Chalukya capital."
     },
+    "tarain1": {
+      "kicker": "THE FIRST BATTLE OF TARAIN · 1191 CE",
+      "happened": "In the winter of 1190-91 Mu'izz al-Din Muhammad of Ghor, ruler of Ghur and Ghazni, took the fortress of Tabarhinda (Bathinda) and left a garrison in it. Prithviraj III of the Chahamana (Chauhan) dynasty, lord of Ajmer and Delhi, marched against him with his feudatories and met the Ghurid army at Tarain (Taraori, Haryana). The Persian chronicler Minhaj-i Siraj, writing in 1260, says the Ghurid army was beaten. He tells how the sultan charged Govind Rai of Delhi, broke his teeth with a lance and was wounded in the arm by his javelin, and was led from the field by a young soldier. The sultan withdrew to Ghazni. In 1192 he came back and won the second battle of Tarain.",
+      "changed": [
+        {
+          "basis": "INVENTED",
+          "text": "The battle itself: the formations, the elephants and the drums. The sources give the outcome and a few moments, not the fight. There are no troop numbers because the large figures in later retellings are not trustworthy. The game plays it in its firm-ground season; the real battle was fought in the winter of early 1191."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Govindaraja is Minhaj's Govind Rai of Delhi, and the lance-and-javelin duel is his story. The Ghurid side is shown as the disciplined professional army it was, with drilled horse guards, mounted archers and kettle-drums."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "Later Persian writers call Govind Rai Prithviraj's brother; Minhaj calls him the ruler of Delhi. Later accounts also differ on what happened at Tabarhinda: whether Prithviraj took the fort back or the garrison held out until the sultan returned. The game does not decide it."
+        }
+      ],
+      "source": "Sources: Minhaj-i Siraj, Tabaqat-i Nasiri (1260); Cynthia Talbot, The Last Hindu Emperor (2015), on the sources and the later legend; the Sanskrit Prithvirajavijaya for the Chahamana court's own voice. The late Prithviraj Raso is not used as evidence.",
+      "epilogue": "It was a clear victory and it settled nothing. The sultan went home, rebuilt his army and came back the next year."
+    },
     "lanka": {
       "kicker": "THE CROSSING TO LANKA · c. 993 CE",
       "happened": "In about 993 CE a Chola army sent by Rajaraja I crossed the Palk Strait and took Anuradhapura, the ancient capital of northern Sri Lanka. The island's chronicle, the Culavamsa, says King Mahinda V had already lost his hold: his unpaid army would not obey him, and he withdrew south to Ruhuna. Chola inscriptions call the conquered north Ila-mandalam, and the port of Mahatittha was renamed Rajarajapura. Rajendra I completed the conquest of the island around 1017 and Mahinda V was taken to India. Chola rule there ended in 1070 under Vijayabahu I.",

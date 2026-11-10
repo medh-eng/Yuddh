@@ -71,6 +71,11 @@
    "name": "Chola",
    "hindi": "चोल",
    "hero": "ch_rajendra"
+  },
+  "rajput": {
+   "name": "Rajput",
+   "hindi": "राजपूत",
+   "hero": "r_prithviraj"
   }
  },
  "rewards": {
@@ -98,6 +103,11 @@
    "title": "The Household Regiments",
    "text": "Chola inscriptions name royal bodyguard regiments such as the Velaikkarar, whose soldiers are recorded as pledging to guard the king, even in death. Alongside a standing land army, the Cholas kept a fleet that carried Rajendra's power to the Malay seas. A Nayaka of the Tiger Banner commands men of that kind.",
    "source": "Chola temple inscriptions (the Velaikkarar); Rajendra I's Tamil records. Details of rank are the game's own."
+  },
+  "rajput": {
+   "title": "The Court of Ajmer",
+   "text": "The Sanskrit poem Prithvirajavijaya, written at the Chahamana court and surviving incomplete in a single manuscript, praises Prithviraj III and his reign, while Persian chroniclers such as Minhaj-i Siraj tell the same years from the other side. Between them they show an army that was not one body but a gathering: feudatories, ranas and horse lords who came with their own banners. A Nayaka of the Saffron Banner leads men of that kind.",
+   "source": "The Prithvirajavijaya (Sanskrit court poem); Minhaj-i Siraj, Tabaqat-i Nasiri; Cynthia Talbot, The Last Hindu Emperor. Details of rank are the game's own."
   }
  }
 }

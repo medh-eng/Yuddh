@@ -6,7 +6,9 @@
 - [ ] Play **Rajendra's Sea Road** (Campaign → Chola tab): are the boat wall (Perahu, Raksha) and fire boats (Pelita Api) fair? Balance ~63% sim, a JSON edit in decks.json.
 - [ ] Play **The Ganga Road** (Chola tab, battle 2; ~58% sim).
 - [ ] Play **The Crossing to Lanka** (Chola tab, first battle now; ~54% sim). Is the Sinhalese side (elephants, archers, Maha Thera, Wewa Jala) fair?
-- [ ] Paint **batch 12** (`art/PROMPTS-BATCH12.md`, 12 images: The First Battle of Tarain, 1191, opens the Rajput campaign; battlefield already painted) and upload to `art/source/cards/`.
+- [ ] Play **The First Battle of Tarain** (Rajput tab, new; ~55% sim). Do the horse archers and the Naqqara feel fair?
+- [ ] Paint **batch 13** (`art/PROMPTS-BATCH13.md`: 8 cards for The Second Battle of Tarain, 1192, plus `map_rajput`), and answer the design question in it (player leads the Rajputs or the Ghurids; Claude suggests the Ghurids).
+- [ ] Regalia left: Gupta 6, all Chalukya, all Chola (prompts in `art/PROMPTS-REGALIA.md`). Maurya 1–6 and Gupta 1–5 are in.
 - [x] Four campaign maps delivered and wired 10 Nov (`map:` in `campaign.ts`; backdrop dim lowered to 0.3 for maps).
 - [ ] Regalia: Maurya 1–6 and Gupta 1 absorbed 10 Nov; the rest are optional, with improved prompts in `art/PROMPTS-REGALIA.md` ("First samples reviewed"). Gupta 2 sample was Mughal: keep for `rg_rajput_2`.
 - [ ] Paint the four campaign maps when you like (`art/PROMPTS-MAPS.md`, optional) and pick which rank rewards to build (`DESIGN.md`, "Rank and renown").
@@ -27,7 +29,7 @@
 
 ## Done 10 Nov
 - [x] **Batch 11 absorbed and The Crossing to Lanka built** (`lanka.ts`, `decks.json` "lanka", `history.json` "lanka", 9 cards in cards.json, Durg and battlefield converted, gallery tab Sinhala, tests/lanka.test.ts, 91 tests pass). Sim: Chola side wins 54%.
-- [x] Batch 12 sheet written (`art/PROMPTS-BATCH12.md`).
+- [x] Batch 12 absorbed and **The First Battle of Tarain built** (Rajput campaign opens; 94 tests pass; briefing titles now shrink to fit). Regalia Maurya 1–6, Gupta 1–5 absorbed; four campaign maps wired. Batch 13 sheet written.
 
 ## Done 9 Nov (Kadaram)
 - [x] **Rajendra's Sea Road** (Chola campaign battle 1, `kadaram.ts`): batch 9 converted; Chola cards ch_rajendra (deploy +1 attack to all), ch_vanigar (Raksha, +1 Kosha), ch_kalam (ranged warship); Kadaram cards sv_* (own gallery tab "Kadaram"): Sangrama (Raksha, +2 Kosha), Nakhoda, Pemanah, Perahu Wall (Raksha 1/8), Penjaga, Pelita Api (3 damage + 1 to all). Chola passive (ranged +1) applies. Balance ~63% (band 45–70%). History note written from Rajendra's Tamil prasasti (c. 1026); the Tiruvalangadu plates are earlier and are not cited for Kadaram. The old "Chola prototype fix" is done (title now Rajendra, c. 1025).
@@ -62,11 +64,12 @@
 - [x] **Chola: Rajendra's Sea Road, c. 1025 CE** (Kadaram) built 9 Nov: see Done 9 Nov.
 - [x] **The Ganga Road** (Chola battle 2) built 9 Nov evening: `ganga.ts`, pl_* Pala cards (gallery tab Pala), ch_araiyan / ch_velaikkarar / ch_ganga_jal / ch_marg; ~58%.
 - [x] **The Crossing to Lanka** (Chola battle 1 by date, c. 993) built 10 Nov: `lanka.ts`, ch_vandiyadevan / ch_marakkalam / ch_valangai, si_* Sinhalese cards (gallery tab Sinhala), Chola list now Lanka → Ganga → Kadaram; ~54%. The engine cannot start a side below 1 Kosha (`startKosha: 0` reads as 1), so the empty treasury is shown by a Durg of 24 and few Kosha cards.
-- [ ] **Rajput campaign: The First Battle of Tarain (1191)**: build when batch 12 arrives (`tarain1.ts`, gh_* Ghurid cards, Rajput tab on the map). Then batch 13 = Second Tarain (1192).
+- [x] **Rajput campaign: The First Battle of Tarain (1191)** built 10 Nov: `tarain1.ts`, r_govindaraja / r_sawar / r_durgapala / r_samanta, gh_* Ghurid cards (gallery tab Ghurid), Rajput tab "The Saffron Banner", ranks.json entry; ~55%.
+- [ ] **The Second Battle of Tarain (1192)**: build when batch 13 arrives (`tarain2.ts`).
 - [x] Campaign map: winding route, frame, compass built 9 Nov; painted maps optional (`art/PROMPTS-MAPS.md`; then set `map:` in `campaign.ts`).
 - [x] Rank and renown: Roll of Renown page, Yash, seven ranks, rank-up on the end screen, Kirti on rank-up (9 Nov). Rewards beyond titles wait for Pon's pick.
 - [x] Chola campaign renamed The Tiger Banner and put in time order (Lanka, then Ganga, then Kadaram).
-- [ ] Later: Chalukya Pullalur (c. 618) and Badami; Rajput Second Tarain 1192 (source-critical).
+- [ ] Later: Chalukya Pullalur (c. 618) and Badami; Rajput Second Tarain 1192 (batch 13).
 
 ## Next ideas
 - [ ] Next Gupta battles from the nine missions (Samudragupta's Digvijaya); Gupta passive in the reading panel.
