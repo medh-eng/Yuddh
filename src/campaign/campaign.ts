@@ -17,6 +17,7 @@ import { KADARAM_SCENARIO } from './kadaram';
 import { GANGA_SCENARIO } from './ganga';
 import { LANKA_SCENARIO } from './lanka';
 import { TARAIN1_SCENARIO } from './tarain1';
+import { TARAIN2_SCENARIO } from './tarain2';
 
 export interface CampaignNode {
   scenario: Scenario;
@@ -55,7 +56,8 @@ export const CHALUKYA_CAMPAIGN: CampaignNode[] = [
 ];
 
 export const RAJPUT_CAMPAIGN: CampaignNode[] = [
-  { scenario: TARAIN1_SCENARIO, face: 'gh_muizz', blurb: "Break the sultan of Ghur at Tarain, 1191." }
+  { scenario: TARAIN1_SCENARIO, face: 'gh_muizz', blurb: "Break the sultan of Ghur at Tarain, 1191." },
+  { scenario: TARAIN2_SCENARIO, face: 'gh_aibak', blurb: "Hold the plain against the patient plan of 1192." }
 ];
 
 export const CHOLA_CAMPAIGN: CampaignNode[] = [

@@ -7,7 +7,7 @@
 - [ ] Play **The Ganga Road** (Chola tab, battle 2; ~58% sim).
 - [ ] Play **The Crossing to Lanka** (Chola tab, first battle now; ~54% sim). Is the Sinhalese side (elephants, archers, Maha Thera, Wewa Jala) fair?
 - [ ] Play **The First Battle of Tarain** (Rajput tab, new; ~55% sim). Do the horse archers and the Naqqara feel fair?
-- [ ] Paint **batch 13** (`art/PROMPTS-BATCH13.md`: 8 cards for The Second Battle of Tarain, 1192, plus `map_rajput`), and answer the design question in it (player leads the Rajputs or the Ghurids; Claude suggests the Ghurids).
+- [ ] Still to upload from batch 13: `r_charan.png` (Charan Bard) and `map_rajput.png`. Play **The Second Battle of Tarain** (Rajput tab; ~44% sim, meant to be hard): are Feigned Flight and the Mailed Reserve fair? Edit decks.json "tarain2" or `enemyHq` in tarain2.ts to ease it.
 - [x] Four campaign maps delivered and wired 10 Nov (`map:` in `campaign.ts`; backdrop dim lowered to 0.3 for maps).
 - [ ] Rajput regalia (6 pieces, `rg_rajput_1`–`6`) are optional and not yet prompted; the Mughal-style bow sample is reserved for `rg_rajput_2`. Until painted, Rajput shows numbered stand-ins.
 - [ ] Paint the four campaign maps when you like (`art/PROMPTS-MAPS.md`, optional) and pick which rank rewards to build (`DESIGN.md`, "Rank and renown").
@@ -18,6 +18,9 @@
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
 
 ## Next for Claude
+- [ ] **Two-human play** (Pon's idea, plan in DESIGN.md "Two-human play"): 1 pass-and-play Duel mode, 2 WebRTC two-phone play (QR pairing), 3 Nearby/Bluetooth in the Android wrapper.
+- [ ] When `r_charan.png` arrives: move `r_charan` from cards.json pendingArt to "yuddh", add `r_charan*2` to the tarain2 player deck, re-check balance. When `map_rajput.png` arrives: `map: 'map_rajput'` on the rajput campaign.
+- [ ] Batch 14 (The Battle of Chandawar, 1194; `art/PROMPTS-BATCH14.md`, 9 images) once painted.
 - [ ] **Cinematics (proposed, not started):** 8-second illustrated clips (a still painting with slow push-in, short caption, sound) before and between battles; pilot = The First Throne, C01–C03 in `docs/HISTORY-RESEARCH.md`, with a skip button and a short "dramatised" footer.
 - [ ] **Tigers of the South** (Chalukya campaign): battle 1 The Narmada Line (Pulakeshin II vs Harsha). Prompts: `art/PROMPTS-BATCH7.md` (11 images, with Pon). Narmada battlefield already painted.
 - [ ] Pon to read the history notes in `src/data/history.json` for accuracy and tone; add a note for each new battle there (The Narmada Line next).
@@ -25,6 +28,9 @@
 - [ ] **Gate 2**: Pon plays with morale/rout and the Veteran foe (briefing → Foe: Veteran), says whether the AI is strong enough and morale readable.
 - [ ] Phase 3 campaigns: more of Tigers of the South (Chola and Rajput battles after the Chola chronology is fixed); cinematic briefings (waiting for Pon); original narrator voice.
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
+
+## Done 10 Nov (evening)
+- [x] **The Second Battle of Tarain built** (`tarain2.ts`, player leads the Rajputs; Ghurid Aibak / Mailed Reserve / Feigned Flight (`damageFront`) / Dawn Charge, Rajput Skandaraja / Rana's Clan Foot; enemy Durg 28; sim ~44% Rajput wins; History note; Rajput tab chain tarain1 → tarain2). Batch 14 sheet written.
 
 ## Done 10 Nov (afternoon)
 - [x] **All 24 regalia absorbed** (Maurya, Gupta, Chalukya, Chola × 6; Gupta 6, Chalukya 1–6, Chola 1–6 converted today). Roll of Renown checked at 1280×720 and 844×390 with every rank earned. 94 tests pass.

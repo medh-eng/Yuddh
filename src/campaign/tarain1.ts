@@ -29,7 +29,9 @@ export const TARAIN1 = {
   briefing: "The sultan of Ghur has taken Tabarhinda and left a garrison in it, and the whole of the Rana's country has answered Prithviraj's call: Delhi, Ajmer and the clans between them, each under its own banner. Across the plain at Tarain waits a disciplined army with mounted archers, a drilled horse guard and kettle-drums that move a whole line at once. Ride out with the feudatories, hold the centre and break the sultan's host. Win it well, and remember that the Persian writers say the sultan was carried from the field alive.",
   playerDeck: decks.player,
   enemyDeck: decks.enemy,
-  enemyHq: 24
+  enemyHq: 24,
+  nextId: 'tarain2',
+  nextLabel: 'The Second Battle of Tarain'
 };
 
 export function tarain1Game(seed: number, level: AiLevel = 'normal', upgrades: Record<string, number> = {}, season: Season = 'sharad'): GameState {

@@ -83,3 +83,5 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 - **Rajput campaign opened 10 Nov** (`tarain1.ts`, `gh_*` Ghurid cards, gallery tab `ghurid`, `rajput` in ranks.json empires and chronicles, CAMPAIGNS has 5 tabs). Fixed season Sharad. A new campaign needs: a ranks.json empires + chronicles entry, a CAMPAIGNS tab, and updating tests/seleucid.test.ts's campaign list. Briefing titles shrink to fit (battle.ts). Next: batch 13 (`art/PROMPTS-BATCH13.md`).
 
 - **All 24 regalia medallions in (10 Nov, afternoon)**: Maurya, Gupta, Chalukya, Chola. Rajput regalia (`rg_rajput_1`–`6`) not yet painted; stand-ins show. Next: batch 13 (Second Tarain, `map_rajput`).
+
+- **The Second Battle of Tarain built (10 Nov, evening)**: `tarain2.ts`, player = Rajput, enemy Durg 28, ~44% sim (test band 30–55%). New orders data fields reused: `damageFront` (Feigned Flight), `buffAtk`+`draw` (Dawn Charge). `r_charan` waits in cards.json pendingArt for its painting. tests/e2e/campaign.cjs knows `SCENARIO=tarain2`. Next: batch 14 (`art/PROMPTS-BATCH14.md`), two-human play plan in DESIGN.md.

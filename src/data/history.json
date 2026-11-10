@@ -133,6 +133,26 @@
       "source": "Sources: Minhaj-i Siraj, Tabaqat-i Nasiri (1260); Cynthia Talbot, The Last Hindu Emperor (2015), on the sources and the later legend; the Sanskrit Prithvirajavijaya for the Chahamana court's own voice. The late Prithviraj Raso is not used as evidence.",
       "epilogue": "It was a clear victory and it settled nothing. The sultan went home, rebuilt his army and came back the next year."
     },
+    "tarain2": {
+      "kicker": "THE SECOND BATTLE OF TARAIN · 1192 CE",
+      "happened": "In 1192 Mu'izz al-Din Muhammad of Ghor returned to Tarain with a rebuilt army. The Persian chroniclers Minhaj-i Siraj and Hasan Nizami say the Ghurid army harassed the Rajput line with mounted archers, drew it out, and sent its heavy cavalry against it only when it was worn. The Rajput host broke. Prithviraj III was captured; the sources differ on how and when he died. Within a year or two Delhi and Ajmer came under Ghurid control, and the sultan's general Qutb al-Din Aibak stayed in India as his governor. The Delhi Sultanate grew from that base.",
+      "changed": [
+        {
+          "basis": "INVENTED",
+          "text": "The player commands the Rajputs and can win. In 1192 they lost. The battle itself, the card effects and the reserve's timing are the game's; there are no troop numbers because the large figures in later retellings are not trustworthy."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "The Ghurid plan is the one the Persian chroniclers describe: harass with mounted archers, avoid a head-on clash, keep the heavy horse back, then strike. That is why Feigned Flight hurts a whole front line and the Mailed Reserve is expensive."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "Later accounts name captains and tell of poets and legends around Prithviraj's fall (the blinding, the arrow, the poet Chand Bardai). They come from late sources and are not used as evidence. The name Skandaraja and the Charan bard are the game's figures for the Chahamana court and army, not claims about individuals."
+        }
+      ],
+      "source": "Sources: Minhaj-i Siraj, Tabaqat-i Nasiri (1260); Hasan Nizami, Taj al-Ma'athir (early 13th c.); Cynthia Talbot, The Last Hindu Emperor (2015), on the sources and the later legend. The late Prithviraj Raso is not used as evidence.",
+      "epilogue": "The sources say the host broke in 1192 and the plain changed hands. Whatever you did here, the next chapter belongs to the governors who stayed behind."
+    },
     "lanka": {
       "kicker": "THE CROSSING TO LANKA · c. 993 CE",
       "happened": "In about 993 CE a Chola army sent by Rajaraja I crossed the Palk Strait and took Anuradhapura, the ancient capital of northern Sri Lanka. The island's chronicle, the Culavamsa, says King Mahinda V had already lost his hold: his unpaid army would not obey him, and he withdrew south to Ruhuna. Chola inscriptions call the conquered north Ila-mandalam, and the port of Mahatittha was renamed Rajarajapura. Rajendra I completed the conquest of the island around 1017 and Mahinda V was taken to India. Chola rule there ended in 1070 under Vijayabahu I.",
