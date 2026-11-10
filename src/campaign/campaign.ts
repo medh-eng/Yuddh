@@ -21,6 +21,7 @@ import { TARAIN1_SCENARIO } from './tarain1';
 import { TARAIN2_SCENARIO } from './tarain2';
 import { CHANDAWAR_SCENARIO } from './chandawar';
 import { PULLALUR_SCENARIO } from './pullalur';
+import { BADAMI_SCENARIO } from './badami';
 
 export interface CampaignNode {
   scenario: Scenario;
@@ -57,7 +58,8 @@ export const GUPTA_CAMPAIGN: CampaignNode[] = [
 
 export const CHALUKYA_CAMPAIGN: CampaignNode[] = [
   { scenario: NARMADA_LINE_SCENARIO, face: 'c_pulakeshin', blurb: 'Stop Harsha of Kanauj on the Narmada.' },
-  { scenario: PULLALUR_SCENARIO, face: 'pv_mahendravarman', blurb: 'Break the clever king of Kanchi before the gates close.' }
+  { scenario: PULLALUR_SCENARIO, face: 'pv_mahendravarman', blurb: 'Break the clever king of Kanchi before the gates close.' },
+  { scenario: BADAMI_SCENARIO, face: 'pv_narasimhavarman', blurb: 'Hold Vatapi itself against the wrestler-king\'s grudge.' }
 ];
 
 export const RAJPUT_CAMPAIGN: CampaignNode[] = [

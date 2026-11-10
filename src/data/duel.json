@@ -292,6 +292,23 @@
    "hq": 30
   },
   {
+   "id": "pallava_badami",
+   "name": "Mamalla's Pallava",
+   "hindi": "पल्लव",
+   "empire": "neutral",
+   "capital": "Kanchipuram",
+   "faction": "Pallava army",
+   "deck": [
+    "badami",
+    "enemy"
+   ],
+   "durg": "durg_pallava_camp",
+   "hero": "pv_narasimhavarman",
+   "ground": "vatapi",
+   "blurb": "The wrestler-king's host: heavy foot, elephants and a pillar of victory.",
+   "hq": 28
+  },
+  {
    "id": "kalinga",
    "name": "Kalinga",
    "hindi": "कलिंग",

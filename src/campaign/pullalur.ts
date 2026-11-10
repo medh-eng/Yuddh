@@ -52,5 +52,7 @@ export const PULLALUR_SCENARIO: Scenario = {
   winText: turn => `The Pallava line breaks in turn ${turn}. Ravikirti's praise-poem says Pulakeshin won at Pullalur and that Mahendravarman then hid behind the walls of Kanchi. The Pallava would not forget it: his son took the war to Badami in 642 CE.`,
   loseText: "The gates of Kanchi close behind the elephants, and the Pallava king keeps his city and his army. The Chalukya poets will have to find another victory to carve in stone.",
   goLabel: 'To battle',
+  nextId: 'badami',
+  nextLabel: 'The Fall of Badami',
   game: seed => pullalurGame(seed, 'normal')
 };

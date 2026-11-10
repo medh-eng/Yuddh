@@ -543,5 +543,44 @@
 "s_agni",
 "y_pratikar"
 ]
+},
+"badami": {
+"player": [
+"c_badami_rakshak*3",
+"c_rakshak*2",
+"c_ashvarohi*2",
+"c_badami_dhanu*3",
+"c_gajasena_badami*2",
+"c_gaja",
+"c_senapati*2",
+"c_pulakeshin",
+"c_ravikirti",
+"c_shaila_dwar*2",
+"c_varaha_dhwaja",
+"c_pulakeshin_charge",
+"n_padati*2",
+"n_dhanurdhar*2",
+"n_aakraman*2",
+"n_sena_bhojan"
+],
+"enemy": [
+"pv_mallar*2",
+"pv_gaja_vahini*2",
+"pv_paranjothi*2",
+"pv_narasimhavarman",
+"pv_vijaya_stambha*2",
+"pv_shilpi_sena*2",
+"n_padati*2",
+"n_dhanurdhar*3",
+"n_ashvarohi*2",
+"n_rathi*2",
+"n_maharathi",
+"n_atirathi",
+"n_gaja*2",
+"n_senapati",
+"n_aakraman*2",
+"s_agni",
+"y_pratikar"
+]
 }
 }

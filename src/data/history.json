@@ -320,6 +320,26 @@
       ],
       "source": "Sources: Aihole inscription of Ravikirti (634–635 CE); inscriptions and the play Mattavilasa Prahasana of Mahendravarman I; Pallava records of Narasimhavarman I.",
       "epilogue": "Pulakeshin II held the Deccan from the Narmada to the Kaveri. Mahendravarman's son Narasimhavarman I answered in 642 CE by taking Badami."
+    },
+    "badami": {
+      "kicker": "THE FALL OF BADAMI · 642 CE",
+      "happened": "Mahendravarman I's son Narasimhavarman I (Mamalla, 'the great wrestler') became Pallava king around 630 CE and marched on Vatapi (Badami), the Chalukya capital, in 642 CE. The Kuram plates and the Velurpalaiyam plates record the Pallava claim: the king took 'the pillar of victory standing in the centre of Vatapi' and earned the title Vatapikonda, conqueror of Vatapi. They also credit him with earlier wins over Pulakeshin II at Pariyala, Manimangala and Suramara. The Chalukya record of the fall is silent. Pulakeshin II is presumed, from the outcome, to have died in the fighting; the Pallava held Vatapi for about twelve years, until Pulakeshin's son Vikramaditya I restored the kingdom by about 655–670 CE.",
+      "changed": [
+        {
+          "basis": "HISTORY",
+          "text": "The date (642 CE), the Pallava capture of Vatapi and the title Vatapikonda come from the Pallava Kuram and Velurpalaiyam plates. Pulakeshin's death in the battle is presumed from his disappearance from the record, not stated outright in any source."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "The general Paranjothi, who the game lets you draw and play, is not named in the Pallava plates. He comes from the Periya Puranam, a twelfth-century Tamil book of saints' tales, written five centuries after the battle."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "The ground outside the city, the course of the fight and the cards. There are no troop numbers and no Chalukya account of the defeat to invent from, so the game builds the battle from the Pallava claim and the silence that follows it."
+        }
+      ],
+      "source": "Sources: Kuram plates and Velurpalaiyam plates of the Pallava dynasty; the Periya Puranam (12th c.) for the Paranjothi tradition; Aihole-line Chalukya records for Vikramaditya I's recovery of the kingdom.",
+      "epilogue": "The Pallava held Vatapi for about twelve years. Pulakeshin II's son Vikramaditya I took it back by about 655–670 CE, and the Chalukya–Pallava war went on for generations after both kings were gone."
     }
   }
 }
