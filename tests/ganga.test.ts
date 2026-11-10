@@ -27,6 +27,6 @@ describe("The Ganga Road", () => {
   });
   it('the Chola campaign has its own tab on the map', () => {
     const c = CAMPAIGNS.find(x => x.id === 'chola')!;
-    expect(c.nodes.map(n => n.scenario.id)).toEqual(['ganga', 'kadaram']);
+    expect(c.nodes.map(n => n.scenario.id)).toEqual(['lanka', 'ganga', 'kadaram']);
   });
 });

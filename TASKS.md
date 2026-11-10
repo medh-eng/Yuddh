@@ -1,11 +1,13 @@
 # YUDDH — tasks
 
-*Updated at the end of each session (last: 9 Nov 2026). Design and rules: `DESIGN.md`.*
+*Updated at the end of each session (last: 10 Nov 2026). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
 - [ ] Play **Rajendra's Sea Road** (Campaign → Chola tab): are the boat wall (Perahu, Raksha) and fire boats (Pelita Api) fair? Balance ~63% sim, a JSON edit in decks.json.
 - [ ] Play **The Ganga Road** (Chola tab, battle 2; ~58% sim).
-- [ ] Paint **batch 11** (`art/PROMPTS-BATCH11.md`, 11 images: The Crossing to Lanka, c. 993: Rajaraja's army vs Mahinda V at Anuradhapura) and upload to `art/source/`.
+- [ ] Play **The Crossing to Lanka** (Chola tab, first battle now; ~54% sim). Is the Sinhalese side (elephants, archers, Maha Thera, Wewa Jala) fair?
+- [ ] Paint **batch 12** (`art/PROMPTS-BATCH12.md`, 12 images: The First Battle of Tarain, 1191, opens the Rajput campaign; battlefield already painted) and upload to `art/source/cards/`.
+- [ ] The four campaign maps (`art/PROMPTS-MAPS.md`) were mentioned as uploaded on 10 Nov but are **not in the repo** (no `map_*.png` in `art/source/battlefields/`). Upload them (web upload may not have been committed) and Claude sets `map:` in `campaign.ts`.
 - [ ] Paint the four campaign maps when you like (`art/PROMPTS-MAPS.md`, optional) and pick which rank rewards to build (`DESIGN.md`, "Rank and renown").
 - [ ] Play **The Great Forest** and **The Walls of Kanchi** (Campaign → Gupta tab); say if Dhuan archers or the Kanchi gate line feel unfair. Balance is a JSON edit in decks.json.
 - [ ] Try morale/rout: does a broken unit read clearly (red ROUTED band, flee animation)? Too common or too rare (about 2 per battle now; the break line is in `rules.json`)?
@@ -21,6 +23,10 @@
 - [ ] **Gate 2**: Pon plays with morale/rout and the Veteran foe (briefing → Foe: Veteran), says whether the AI is strong enough and morale readable.
 - [ ] Phase 3 campaigns: more of Tigers of the South (Chola and Rajput battles after the Chola chronology is fixed); cinematic briefings (waiting for Pon); original narrator voice.
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
+
+## Done 10 Nov
+- [x] **Batch 11 absorbed and The Crossing to Lanka built** (`lanka.ts`, `decks.json` "lanka", `history.json` "lanka", 9 cards in cards.json, Durg and battlefield converted, gallery tab Sinhala, tests/lanka.test.ts, 91 tests pass). Sim: Chola side wins 54%.
+- [x] Batch 12 sheet written (`art/PROMPTS-BATCH12.md`).
 
 ## Done 9 Nov (Kadaram)
 - [x] **Rajendra's Sea Road** (Chola campaign battle 1, `kadaram.ts`): batch 9 converted; Chola cards ch_rajendra (deploy +1 attack to all), ch_vanigar (Raksha, +1 Kosha), ch_kalam (ranged warship); Kadaram cards sv_* (own gallery tab "Kadaram"): Sangrama (Raksha, +2 Kosha), Nakhoda, Pemanah, Perahu Wall (Raksha 1/8), Penjaga, Pelita Api (3 damage + 1 to all). Chola passive (ranged +1) applies. Balance ~63% (band 45–70%). History note written from Rajendra's Tamil prasasti (c. 1026); the Tiruvalangadu plates are earlier and are not cited for Kadaram. The old "Chola prototype fix" is done (title now Rajendra, c. 1025).
@@ -54,11 +60,12 @@
 ## Next campaign work (9 Nov)
 - [x] **Chola: Rajendra's Sea Road, c. 1025 CE** (Kadaram) built 9 Nov: see Done 9 Nov.
 - [x] **The Ganga Road** (Chola battle 2) built 9 Nov evening: `ganga.ts`, pl_* Pala cards (gallery tab Pala), ch_araiyan / ch_velaikkarar / ch_ganga_jal / ch_marg; ~58%.
-- [ ] **The Crossing to Lanka** (Chola battle 3, c. 993): build when batch 11 arrives (`lanka.ts`; hero card is the existing ch_rajaraja; Sinhalese cards si_*, enemy starts with 0 Kosha).
+- [x] **The Crossing to Lanka** (Chola battle 1 by date, c. 993) built 10 Nov: `lanka.ts`, ch_vandiyadevan / ch_marakkalam / ch_valangai, si_* Sinhalese cards (gallery tab Sinhala), Chola list now Lanka → Ganga → Kadaram; ~54%. The engine cannot start a side below 1 Kosha (`startKosha: 0` reads as 1), so the empty treasury is shown by a Durg of 24 and few Kosha cards.
+- [ ] **Rajput campaign: The First Battle of Tarain (1191)**: build when batch 12 arrives (`tarain1.ts`, gh_* Ghurid cards, Rajput tab on the map). Then batch 13 = Second Tarain (1192).
 - [x] Campaign map: winding route, frame, compass built 9 Nov; painted maps optional (`art/PROMPTS-MAPS.md`; then set `map:` in `campaign.ts`).
 - [x] Rank and renown: Roll of Renown page, Yash, seven ranks, rank-up on the end screen, Kirti on rank-up (9 Nov). Rewards beyond titles wait for Pon's pick.
-- [x] Chola campaign renamed The Tiger Banner and put in time order (Ganga, then Kadaram; Lanka goes first when built).
-- [ ] Later: Chalukya Pullalur (c. 618) and Badami; Rajput Tarain 1191/1192 (source-critical).
+- [x] Chola campaign renamed The Tiger Banner and put in time order (Lanka, then Ganga, then Kadaram).
+- [ ] Later: Chalukya Pullalur (c. 618) and Badami; Rajput Second Tarain 1192 (source-critical).
 
 ## Next ideas
 - [ ] Next Gupta battles from the nine missions (Samudragupta's Digvijaya); Gupta passive in the reading panel.

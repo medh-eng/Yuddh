@@ -76,3 +76,6 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 - Next: morale/rout; more cards; Phase 3 campaigns; search AI → Gate 2. Full plan: https://claude.ai/artifact/GXWYv5rFMrBzsoqt3X456s
 ## Status (9 Nov 2026, last)
 - **Rank rewards** (cosmetic): War Council chronicle at Nayaka, gilded card frame at Senapati (`isGilded`), regalia medallions (`ui/regalia.ts`, art `rg_<empire>_<n>`, prompts `art/PROMPTS-REGALIA.md`). **Pixi: a container's custom `hitArea` prunes its children outside it** (buttons there never fired).
+
+## Status (10 Nov 2026)
+- **The Crossing to Lanka built** (Chola battle 1 by date, `lanka.ts`, si_* Sinhalese cards, gallery tab `sinhala`, ~54%); Chola campaign order Lanka → Ganga → Kadaram (nextId lanka→ganga→kadaram). `startKosha: 0` is read as 1 (`cfg.startKosha || 1` in rules.ts), so a side cannot start poorer than the default; the tutorial passes 0 and relies on that, so it was left alone. Next: batch 12 (`art/PROMPTS-BATCH12.md`, First Tarain, Rajput campaign). Campaign maps (`PROMPTS-MAPS.md`) not yet in the repo.

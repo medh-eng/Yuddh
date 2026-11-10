@@ -15,6 +15,7 @@ import { KANCHI_SCENARIO } from './kanchi';
 import { GOLDEN_AGE_SCENARIO } from './goldenAge';
 import { KADARAM_SCENARIO } from './kadaram';
 import { GANGA_SCENARIO } from './ganga';
+import { LANKA_SCENARIO } from './lanka';
 
 export interface CampaignNode {
   scenario: Scenario;
@@ -53,6 +54,7 @@ export const CHALUKYA_CAMPAIGN: CampaignNode[] = [
 ];
 
 export const CHOLA_CAMPAIGN: CampaignNode[] = [
+  { scenario: LANKA_SCENARIO, face: 'si_mahinda', blurb: 'Cross the strait and take Anuradhapura from Mahinda V.' },
   { scenario: GANGA_SCENARIO, face: 'pl_mahipala', blurb: 'March north to the Ganga and beat the Pala elephants on its bank.' },
   { scenario: KADARAM_SCENARIO, face: 'sv_sangrama', blurb: 'Sail to Kadaram and break the harbour of the sea kings.' }
 ];

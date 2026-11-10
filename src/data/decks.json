@@ -327,6 +327,34 @@
 "y_pratikar"
 ]
 },
+"lanka": {
+"player": [
+"ch_archer*3",
+"ch_navik*3",
+"ch_valangai*2",
+"ch_velaikkarar",
+"ch_vandiyadevan",
+"ch_rajaraja",
+"ch_marakkalam*2",
+"ch_vyapari",
+"n_rakshak",
+"n_aakraman*2",
+"n_sena_bhojan",
+"y_kavach"
+],
+"enemy": [
+"si_dhanu*4",
+"si_ruhuna*3",
+"si_bhikkhu*2",
+"si_gaja*2",
+"si_mahinda",
+"si_wewa*2",
+"n_padati*2",
+"n_rakshak*2",
+"n_senapati",
+"y_pratikar"
+]
+},
 "ganga": {
 "player": [
 "ch_archer*3",

@@ -113,6 +113,26 @@
       "source": "Sources: Allahabad (Prayaga) Pillar inscription by Harishena, as edited in Corpus Inscriptionum Indicarum vol. III.",
       "epilogue": "Vishnugopa was released and restored. Kanchi stayed Pallava for centuries; its kings would one day capture Badami, the Chalukya capital."
     },
+    "lanka": {
+      "kicker": "THE CROSSING TO LANKA · c. 993 CE",
+      "happened": "In about 993 CE a Chola army sent by Rajaraja I crossed the Palk Strait and took Anuradhapura, the ancient capital of northern Sri Lanka. The island's chronicle, the Culavamsa, says King Mahinda V had already lost his hold: his unpaid army would not obey him, and he withdrew south to Ruhuna. Chola inscriptions call the conquered north Ila-mandalam, and the port of Mahatittha was renamed Rajarajapura. Rajendra I completed the conquest of the island around 1017 and Mahinda V was taken to India. Chola rule there ended in 1070 under Vijayabahu I.",
+      "changed": [
+        {
+          "basis": "INVENTED",
+          "text": "The battle itself: the beach, the elephants and the fight at the reservoir. The sources say the north was taken, not how."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Both voices are kept: the Chola record says it was conquered, the chronicle says the king's own army had stopped obeying him. Neither is a neutral witness. The game cannot start the Sinhalese side with an empty treasury, so it gives them fewer ways to pay for war instead."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "Scholars differ on how much of the island fell in 993 and how much in the later campaigns. Vandiyadevan is a name from Chola tradition for a commander of Rajaraja's time; his part in the crossing is the game's licence."
+        }
+      ],
+      "source": "Sources: the Culavamsa (the Sinhalese chronicle); Chola inscriptions of Rajaraja I and Rajendra I (South Indian Inscriptions); K. A. Nilakanta Sastri, The Colas; Sri Lankan histories of the Anuradhapura–Polonnaruva transition.",
+      "epilogue": "The Cholas held the north for about eighty years. Rajaraja's son would finish the island, and Anuradhapura, the capital for over a thousand years, never again became the seat of a Sinhalese king."
+    },
     "ganga": {
       "kicker": "THE GANGA ROAD · c. 1019–1022 CE",
       "happened": "Rajendra I's inscriptions say a Chola army marched north from the Godavari through Kalinga and Odisha into Bengal, beat several kings on the way and then Mahipala I of the Pala empire, and carried Ganga water back south. Rajendra did not lead it: the general Araiyan Rajarajan did, and the emperor waited on the Godavari and met the army on its return. He then founded a new capital, Gangaikonda Cholapuram (\"the city of the Chola who took the Ganga\"), with a great tank his record calls a \"liquid pillar of victory\".",
