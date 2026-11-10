@@ -45,3 +45,38 @@ describe('pass-and-play side swap', () => {
     for (const [i, p] of st.players.entries()) p.support.forEach(u => expect(u.owner).toBe(i));
   });
 });
+
+import { mirrorAction, syncHash, actionObservers, type Action } from '../src/engine';
+
+describe('two-phone lockstep', () => {
+  it('host and guest stay in step when only mirrored actions are exchanged', () => {
+    for (const seed of [3, 77, 901]) {
+      const host = mk(seed);                       // real frame
+      const guest = mk(seed); swapSides(guest);    // guest's frame: guest is player 0
+      let guard = 0, steps = 0;
+      while (!host.over && guard++ < 300) {
+        const hostMoves = host.active === 0;
+        const mover = hostMoves ? host : guest, other = hostMoves ? guest : host;
+        const sent: Action[] = [];
+        const obs = (_s: GameState, a: Action) => { if (_s === mover) sent.push(a); };
+        actionObservers.add(obs);
+        try { aiTurn(mover, 0, 'normal'); } finally { actionObservers.delete(obs); }
+        // the mover's actions travel in the host's frame
+        for (const a of sent) {
+          const wire = hostMoves ? a : mirrorAction(a);        // guest -> host frame
+          const local = hostMoves ? mirrorAction(wire) : wire; // host frame -> receiver's frame
+          expect(applyAction(other, local).ok).toBe(true);
+          steps++;
+        }
+        // the mover finished its whole turn before the receiver replayed it, so compare now
+        expect(syncHash(host, false), `seed ${seed} step ${steps}`).toBe(syncHash(guest, true));
+      }
+      expect(host.over).toBe(guest.over);
+    }
+  });
+  it('mirrorAction is its own inverse', () => {
+    const a: Action = { type: 'attack', uid: 4, target: { kind: 'unit', owner: 1, uid: 9 } };
+    expect(mirrorAction(mirrorAction(a))).toEqual(a);
+    expect(mirrorAction({ type: 'end' })).toEqual({ type: 'end' });
+  });
+});

@@ -30,7 +30,7 @@ const NOTICE_KEY = 'yuddh.notice.v1';
 const noticeSeen = (): boolean => { try { return localStorage.getItem(NOTICE_KEY) === '1'; } catch { return true; } };
 const markNotice = (): void => { try { localStorage.setItem(NOTICE_KEY, '1'); } catch { /* private mode */ } };
 
-export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void; campaign(): void; standing(): void; duel(): void; gallery(): void; preview(): void; prototype(): void }): Scene {
+export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void; campaign(): void; standing(): void; duel(): void; online(): void; gallery(): void; preview(): void; prototype(): void }): Scene {
   const s: Scene = new Container();
   const painting = Texture.from(battlefieldUrl('title'));
   const art = new Sprite(painting); art.anchor.set(0.5);
@@ -94,14 +94,14 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
     // new players are pointed at the training ground first
     const fresh = !tutorialDone();
     const list: [string, () => void, boolean][] = fresh
-      ? [['Learn to play', go.tutorial, true], ['To battle', go.battle, false], ['Campaign', go.campaign, false], ['Two players', go.duel, false], ['Rank & Renown', go.standing, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]]
-      : [['Campaign', go.campaign, true], ['To battle', go.battle, false], ['Two players', go.duel, false], ['Rank & Renown', go.standing, false], ['Learn to play', go.tutorial, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]];
+      ? [['Learn to play', go.tutorial, true], ['To battle', go.battle, false], ['Campaign', go.campaign, false], ['Two players', go.duel, false], ['Two phones', go.online, false], ['Rank & Renown', go.standing, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]]
+      : [['Campaign', go.campaign, true], ['To battle', go.battle, false], ['Two players', go.duel, false], ['Two phones', go.online, false], ['Rank & Renown', go.standing, false], ['Learn to play', go.tutorial, false], ['Card gallery', go.gallery, false], ['Watch two generals', go.preview, false]];
     list.forEach(([label, fn, primary], i) => {
       // one choice per visit: a second tap while a battle's paintings load would start a second scene
       const b = makeButton(label, () => { if (chosen) return; chosen = true; fn(); }, { primary, w: ph ? 380 : 400, ui: ph ? 1.1 : 1 });
       // phones: two columns, the odd last button centred; desktop: one column
-      if (ph) b.position.set(i === list.length - 1 && list.length % 2 ? W / 2 : W / 2 + (i % 2 ? 1 : -1) * 270, 430 + Math.floor(i / 2) * 78);
-      else b.position.set(W / 2, 580 + i * 66);
+      if (ph) b.position.set(i === list.length - 1 && list.length % 2 ? W / 2 : W / 2 + (i % 2 ? 1 : -1) * 270, 426 + Math.floor(i / 2) * 68);
+      else b.position.set(W / 2, 570 + i * 58);
       buttons.addChild(b);
     });
     about.removeChildren().forEach(c => c.destroy({ children: true }));

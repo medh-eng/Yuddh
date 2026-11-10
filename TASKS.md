@@ -18,7 +18,9 @@
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
 
 ## Next for Claude
-- [ ] **Two-human play, steps 2 and 3** (plan in DESIGN.md): WebRTC two-phone play (QR pairing), Nearby/Bluetooth in the Android wrapper. Step 1, pass-and-play, is built.
+- [x] Two-human play steps 1 (pass-and-play) and 2 (two phones over WebRTC, QR/paste pairing) built 10 Nov.
+- [ ] **Two-human play, step 3**: Nearby/Bluetooth in the Android wrapper. Also maybe: hidden hands (host-held secrets), online rematch, TURN relay.
+- [ ] Playtest two-phone play on real phones (same WiFi, then mobile data) and report what fails.
 - [ ] Duel follow-ups: balance per faction pairing (decks were made for campaign battles, some enemy factions are strong or weak without their scenario's Durg or Kosha tweaks); a coin-toss for who moves first; 'Two players' button on phones at 7 buttons is tight.
 - [ ] Batch 14 (The Battle of Chandawar, 1194; `art/PROMPTS-BATCH14.md`, 9 images) once painted.
 - [ ] **Cinematics (proposed, not started):** 8-second illustrated clips (a still painting with slow push-in, short caption, sound) before and between battles; pilot = The First Throne, C01–C03 in `docs/HISTORY-RESEARCH.md`, with a skip button and a short "dramatised" footer.

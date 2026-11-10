@@ -22,6 +22,7 @@ import { campaignScene } from './game/scenes/campaign';
 import { standingScene } from './game/scenes/standing';
 import { duelSetupScene } from './game/scenes/duelSetup';
 import { duelScenario } from './campaign/duel';
+import { pairing } from './game/net/pairing';
 import { scenarioById, type Campaign } from './campaign/campaign';
 import type { Scenario } from './campaign/scenario';
 import { audio } from './game/audio';
@@ -88,12 +89,21 @@ async function boot(): Promise<void> {
     const sc = duelScenario(a, b);
     void loading(preloadBattle(sc)).then(() => stage.show(battleScene(stage, title, sc, undefined, { title, setup: duel })));
   }));
+  /** two phones: choose your faction, pair by code, then fight over the link */
+  const online = (): void => stage.show(duelSetupScene(stage, title, me => {
+    audio.unlock();
+    pairing(me, p => {
+      const sc = duelScenario(p.a, p.b, { link: p.link, role: p.role, seed: p.seed, ground: p.ground });
+      void loading(preloadBattle(sc)).then(() => stage.show(battleScene(stage, title, sc, undefined, { title })));
+    }, online);
+  }, true));
   const title = (): void => stage.show(titleScene(stage, {
     battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title, undefined, () => play(scenarioById('indus_line')!, title), { map: campaign, title }))); },
     tutorial: () => play(TUTORIAL, title),
     campaign: () => campaign(),
     standing,
     duel,
+    online,
     gallery: () => { audio.unlock(); stage.show(galleryScene(stage, title)); },
     preview: () => { void loading(loadArt(CARD_ART)).then(() => { stage.setBackdrop(null); stage.show(battlePreviewScene(title)); }); },
     prototype: () => { window.location.href = `${import.meta.env.BASE_URL}prototype/`; }

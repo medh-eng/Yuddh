@@ -12,6 +12,7 @@ import { newGame } from '../engine/rules';
 import type { EmpireId, GameState, Season } from '../engine/types';
 import { decksOf } from '../data';
 import type { Scenario } from './scenario';
+import type { Link } from '../game/net/link';
 
 export interface Faction {
   id: string; name: string; hindi: string; empire: EmpireId; capital: string; faction: string;
@@ -39,23 +40,25 @@ export function duelGame(a: Faction, b: Faction, seed: number): GameState {
 }
 
 /** the scenario the battle screen plays for this pairing (a is player 1 and moves first) */
-export function duelScenario(a: Faction, b: Faction): Scenario {
-  const ground = Math.random() < 0.5 ? a.ground : b.ground;
+export function duelScenario(a: Faction, b: Faction, online?: { link: Link; role: 'host' | 'guest'; seed: number; ground: string }): Scenario {
+  const ground = online?.ground ?? (Math.random() < 0.5 ? a.ground : b.ground);
   return {
     id: 'duel',
     title: `${a.name} against ${b.name}`,
-    place: 'Pass and play',
+    place: online ? 'Two phones' : 'Pass and play',
     year: 'Two commanders',
     battlefield: ground,
-    briefing: `Two commanders share one table. ${a.name} moves first and ${b.name} draws one extra card to make up for it. When you end your turn the screen is hidden: pass the device and let the other player tap when they are ready. Nobody should look while the other plays; each player's hand shows only on their own turn.`,
+    briefing: online ? `Two phones, one battle. ${a.name} (the host) moves first and ${b.name} draws one extra card to make up for it. Each of you sees only your own hand. If the connection drops the battle ends, so keep both phones awake and online.` : `Two commanders share one table. ${a.name} moves first and ${b.name} draws one extra card to make up for it. When you end your turn the screen is hidden: pass the device and let the other player tap when they are ready. Nobody should look while the other plays; each player's hand shows only on their own turn.`,
     objective: 'Break the other commander\'s Durg.',
-    heroCard: a.hero,
-    defeatCard: b.hero,
-    enemyName: `${b.name} host`,
+    heroCard: online?.role === 'guest' ? b.hero : a.hero,
+    defeatCard: online?.role === 'guest' ? a.hero : b.hero,
+    enemyName: online?.role === 'guest' ? a.name : `${b.name} host`,
     durgArt: [a.durg, b.durg],
     winText: turn => `The Durg falls in turn ${turn}.`,
     loseText: '',
-    goLabel: 'Begin the duel',
+    goLabel: online ? (online.role === 'host' ? 'Begin the battle' : 'I am ready') : 'Begin the duel',
+    online: online ? { link: online.link, role: online.role } : undefined,
+    fixedSeed: online?.seed,
     playerDeck: deckOf(a),
     enemyDeck: deckOf(b),
     game: seed => duelGame(a, b, seed),

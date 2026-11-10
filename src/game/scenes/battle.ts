@@ -18,6 +18,8 @@ import {
   CARDS, EMPIRES, RANK_NAMES, SEASONS, dharmaOf, strikeDamage, actionObservers, findUnit, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
   drainEvents, swapSides, fixTurnAfterEnd, type Action, type AiLevel, type GameEvent, type Season, type GameState, type PlayerIndex, type Target, type Unit
 } from '../../engine';
+import { mirrorAction, syncHash } from '../../engine';
+import type { NetMsg } from '../net/link';
 import { FIRST_THRONE_SCENARIO } from '../../campaign/firstThrone';
 import type { Scenario } from '../../campaign/scenario';
 import { markTutorialDone } from '../../campaign/tutorial';
@@ -141,6 +143,11 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   /** pass-and-play: two humans; `flipped` = player 0 on screen is the original second player */
   const duel = sc.duel;
   let flipped = false;
+  /** two phones: the other player is on the far end of this link; the guest's state is kept swapped so the local player is always player 0 */
+  const online = sc.online;
+  const guest = online?.role === 'guest';
+  const inbox: Extract<NetMsg, { t: 'act' }>[] = [];
+  let pumping = false, netDown = false;
   let curtainDone: (() => void) | null = null;
   /** the faction on screen at frame position f (0 = bottom, the player to move) */
   const sideAt = (f: number) => duel!.sides[(f ^ (flipped ? 1 : 0)) as 0 | 1];
@@ -447,7 +454,8 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   function start(): void {
     yashNote = null; yashDone = false;
     flipped = false; curtainDone = null;
-    st = sc.game(Math.floor(Math.random() * 1e9));
+    st = sc.game(sc.fixedSeed ?? Math.floor(Math.random() * 1e9));
+    if (guest) { swapSides(st); flipped = true; }
     baseLevel = st.aiLevel;
     if (!sc.coached) st.aiLevel = foeLevel(baseLevel);
     drainEvents(st);
@@ -514,7 +522,8 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
         alpha: 0, duration: 0.4, onComplete: () => {
           destroyTree(panel); busy = false;
           handHeld = false; syncHand(shown, false);
-          void turnBanner(0); refreshInteractivity();
+          if (guest) { void turnBanner(1); refreshInteractivity(); void pump(); }
+          else { void turnBanner(0); refreshInteractivity(); }
         }
       });
     }, { primary: true, w: 340 });
@@ -1032,6 +1041,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     }
     const check = applyAction(st, action);
     if (!check.ok) { flashHint(check.reason); layoutHand(); return; }
+    netSend(action);
     if (action.type === 'attack') coachFlags.attacks++;
     if (action.type === 'attack' || action.type === 'move') coachFlags.acted++;
     busy = true; animating = true;
@@ -1594,7 +1604,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const bh = L.phone ? 120 : 140;
     const band = new Graphics().rect(0, -bh / 2, L.W, bh).fill({ color: 0x000000, alpha: 0.75 });
     band.moveTo(0, -bh / 2).lineTo(L.W, -bh / 2).moveTo(0, bh / 2).lineTo(L.W, bh / 2).stroke({ width: 2, color: who === 0 ? INK.gold : 0xe0674a });
-    const t = new Text({ text: duel ? `${sideAt(who).name.toUpperCase()}: YOUR TURN` : who === 0 ? 'YOUR TURN' : `THE ${sc.enemyName.toUpperCase()} MOVES`, style: { fontFamily: FONT_TITLE, fontSize: 72, fontWeight: '700', letterSpacing: 14, fill: who === 0 ? INK.goldPale : 0xffb09a } });
+    const t = new Text({ text: online ? (who === 0 ? 'YOUR TURN' : `${sideAt(1).name.toUpperCase()} MOVES`) : duel ? `${sideAt(who).name.toUpperCase()}: YOUR TURN` : who === 0 ? 'YOUR TURN' : `THE ${sc.enemyName.toUpperCase()} MOVES`, style: { fontFamily: FONT_TITLE, fontSize: 72, fontWeight: '700', letterSpacing: 14, fill: who === 0 ? INK.goldPale : 0xffb09a } });
     t.anchor.set(0.5); t.x = L.W / 2;
     if (t.width > L.W - 100) t.scale.set((L.W - 100) / t.width);
     const c = new Container(); c.addChild(band, t); c.y = L.line.front; fx.addChild(c);
@@ -1610,9 +1620,11 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     coachFlags.ended++; coachFlags.acted = 0;
     busy = true; animating = true;
     applyAction(st, { type: 'end' });
+    if (online) { netSend({ type: 'end' }); if (guest) st.turn += 1; }
     drainEvents(st);
     reconcile(snapshot(st));
     if (st.over) { busy = false; animating = false; checkOver(); return; }
+    if (online) { await turnBanner(1); busy = false; animating = false; refreshInteractivity(); void pump(); return; }
     if (duel) { await duelHandOver(); return; }
     await turnBanner(1);
     // record the computer's turn one action at a time
@@ -1633,6 +1645,70 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     animating = false;
     refreshInteractivity();
     settle();
+  }
+
+  /* ---------------- two phones ---------------- */
+  function netSend(action: Action): void {
+    if (!online) return;
+    online.link.send({ t: 'act', a: guest ? mirrorAction(action) : action, h: syncHash(st, guest) });
+  }
+  if (online) {
+    online.link.setHandler(m => {
+      if (m.t === 'act') { inbox.push(m); void pump(); }
+      else if (m.t === 'bye') netLost('The other player has left the battle.');
+    });
+    online.link.onClose(() => netLost('The connection to the other phone was lost.'));
+  }
+  /** play the other player's queued actions, one at a time, once the screen is ready for them */
+  async function pump(): Promise<void> {
+    if (pumping || !online) return;
+    pumping = true;
+    try {
+      while (inbox.length && alive && !netDown) {
+        if (handHeld || overlay || animating || st.over) break;
+        await applyRemote(inbox.shift()!);
+      }
+    } finally { pumping = false; }
+  }
+  async function applyRemote(m: Extract<NetMsg, { t: 'act' }>): Promise<void> {
+    const local = guest ? mirrorAction(m.a) : m.a;
+    busy = true; animating = true; refreshInteractivity();
+    const steps: { events: GameEvent[]; snap: Snap }[] = [];
+    const obs = (state: GameState) => { steps.push({ events: drainEvents(state), snap: snapshot(state) }); };
+    actionObservers.add(obs);
+    let res: { ok: boolean };
+    try { res = applyAction(st, local); } finally { actionObservers.delete(obs); }
+    if (!res.ok || syncHash(st, guest) !== m.h) { netLost('The two phones no longer agree about the battle, so it cannot go on.'); return; }
+    if (local.type === 'end') {
+      if (guest) st.turn -= 1;
+      drainEvents(st);
+      reconcile(snapshot(st));
+      if (!checkOver()) await turnBanner(0);
+    } else {
+      for (const step of steps) { if (!alive) return; await animate(step.events, step.snap); }
+      if (!alive) return;
+      reconcile(snapshot(st));
+      if (checkOver()) { animating = false; return; }
+    }
+    if (!alive) return;
+    busy = false; animating = false;
+    refreshInteractivity(); settle();
+  }
+  /** the link broke or the phones disagree: say so, and offer the title screen */
+  function netLost(why: string): void {
+    if (!alive || netDown || st.over) return;
+    netDown = true; busy = true; inbox.length = 0;
+    const W = L.W, H = L.H, ph = L.phone;
+    const c = new Container();
+    const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.85 }); dim.eventMode = 'static';
+    const t1 = new Text({ text: 'THE BATTLE HAS ENDED', style: { fontFamily: FONT_TITLE, fontSize: ph ? 54 : 72, fontWeight: '700', letterSpacing: 6, fill: INK.goldPale } });
+    t1.anchor.set(0.5); t1.position.set(W / 2, H * 0.36); if (t1.width > W - 100) t1.scale.set((W - 100) / t1.width);
+    const t2 = new Text({ text: why, style: { fontFamily: FONT_SERIF, fontSize: ph ? 30 : 34, fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - 200 } });
+    t2.anchor.set(0.5); t2.position.set(W / 2, H * 0.5);
+    const b = makeButton('Title screen', nav ? nav.title : exit, { primary: true, w: 340, ui: ph ? 1.1 : 1 });
+    b.position.set(W / 2, H * 0.68);
+    c.addChild(dim, t1, t2, b); s.addChild(c);
+    gsap.from(c, { alpha: 0, duration: 0.4 });
   }
 
   /** pass-and-play: hide the board, wait for the other player, turn the table round and begin their turn */
@@ -1694,10 +1770,10 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const sub = new Text({ text: `The Durg of ${duel!.sides[(1 - winnerReal) as 0 | 1].name} falls in turn ${st.turn}.`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * (ph ? 1.1 : 1)), fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - 200 } });
     sub.anchor.set(0.5); sub.position.set(W / 2, ph ? 442 : 775);
     const kk = ph ? 1.1 : 1, w = ph ? 230 : 300;
-    const btns: Container[] = [makeButton('Rematch', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 340, ui: kk })];
-    if (nav?.setup) btns.push(makeButton('Choose factions', nav.setup, { w, ui: kk }));
-    btns.push(makeButton('Title screen', nav ? nav.title : exit, { w, ui: kk }));
-    const widths = btns.map((_, i) => (i === 0 ? 340 : w) * kk), gap = 24 * kk;
+    const btns: Container[] = online ? [makeButton('Title screen', nav ? nav.title : exit, { primary: true, w: 340, ui: kk })] : [makeButton('Rematch', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 340, ui: kk })];
+    if (!online && nav?.setup) btns.push(makeButton('Choose factions', nav.setup, { w, ui: kk }));
+    if (!online) btns.push(makeButton('Title screen', nav ? nav.title : exit, { w, ui: kk }));
+    const widths = btns.map((_, i) => (i === 0 || online ? 340 : w) * kk), gap = 24 * kk;
     let bx = W / 2 - (widths.reduce((a, v) => a + v, 0) + gap * (btns.length - 1)) / 2;
     btns.forEach((b, i) => { b.position.set(bx + widths[i] / 2, ph ? 580 : 885); bx += widths[i] + gap; });
     c.addChild(dim, face, title, sub, ...btns);
@@ -1889,6 +1965,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     Ticker.shared.remove(weatherTick);
     coachLayer.children.forEach(c => stopTweens(c as Container));
     alive = false;
+    online?.link.close();
     fx.children.forEach(c => stopTweens(c as Container));
     window.removeEventListener('contextmenu', blockMenu);
     tokens.forEach(t => t.destroy());

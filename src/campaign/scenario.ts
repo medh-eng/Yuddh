@@ -37,4 +37,8 @@ export interface Scenario {
   coached?: boolean;
   /** pass-and-play: two humans, no AI; sides[0] moves first. The battle turns the board between turns. */
   duel?: { sides: [DuelSide, DuelSide] };
+  /** two phones: the link to the other player, and which end this is (the host moves first and keeps the real frame) */
+  online?: { link: import('../game/net/link').Link; role: 'host' | 'guest' };
+  /** two phones: both devices deal from this seed */
+  fixedSeed?: number;
 }

@@ -31,6 +31,7 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 | Morale / rout (who breaks, the line, who is steadfast) | `src/data/rules.json` ("morale"); logic is `checkRout` in `src/engine/rules.ts` |
 | How the Veteran (search) AI thinks and how long | `src/data/rules.json` ("ai": beam, depth, finalists, replies); code in `src/engine/search.ts`; the player's Standard/Veteran choice in `src/campaign/difficulty.ts` |
 | Pass-and-play Duel (factions, picker, turn swap, curtain) | factions: `src/data/duel.json`; `src/campaign/duel.ts`; picker `src/game/scenes/duelSetup.ts`; turn swap `src/engine/duel.ts`; curtain and win screen in `src/game/scenes/battle.ts` (`duel`, `duelHandOver`) |
+| Two-phone play (WebRTC, QR/paste pairing, lockstep) | `src/game/net/link.ts` (link + codes), `src/game/net/pairing.ts` (pairing overlay + handshake), `src/engine/duel.ts` (`mirrorAction`, `syncHash`), `src/game/scenes/battle.ts` (`online`, `pump`, `applyRemote`, `netLost`); test `tests/e2e/online.cjs` |
 | How a screen looks | `src/game/scenes/` (title, campaign, standing, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
 | Art or sound | Drop masters in `art/source/{cards,battlefields,sfx}/`, run `npm run assets`, commit `public/assets/` and `src/assets/*.json` |
 

@@ -16,7 +16,7 @@ import { FACTIONS, type Faction } from '../../campaign/duel';
 import { EMPIRES } from '../../engine';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
-export function duelSetupScene(stage: Stage, back: () => void, begin: (a: Faction, b: Faction) => void): Scene {
+export function duelSetupScene(stage: Stage, back: () => void, begin: (a: Faction, b: Faction) => void, solo = false): Scene {
   const s: Scene = new Container();
   const body = new Container();
   s.addChild(body);
@@ -32,9 +32,9 @@ export function duelSetupScene(stage: Stage, back: () => void, begin: (a: Factio
     const W = view.w, H = view.h, ph = view.phone, k = view.ui;
     const hdr = ph ? 96 : 150;
     body.addChild(new Graphics().rect(0, 0, W, hdr).fill({ color: 0x0a0604, alpha: 0.6 }));
-    const kicker = new Text({ text: step === 0 ? 'PASS AND PLAY · PLAYER 1' : 'PASS AND PLAY · PLAYER 2', style: { fontFamily: FONT_TITLE, fontSize: Math.round(20 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold, stroke: { color: 0x000000, width: 4 } } });
+    const kicker = new Text({ text: solo ? 'TWO PHONES' : step === 0 ? 'PASS AND PLAY · PLAYER 1' : 'PASS AND PLAY · PLAYER 2', style: { fontFamily: FONT_TITLE, fontSize: Math.round(20 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold, stroke: { color: 0x000000, width: 4 } } });
     kicker.position.set(ph ? 40 : 90, ph ? 10 : 28);
-    const title = new Text({ text: step === 0 ? 'Choose your faction' : first ? `Choose a faction to face ${first.name}` : 'Choose your faction', style: { fontFamily: FONT_TITLE, fontSize: ph ? 46 : 64, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 6 } } });
+    const title = new Text({ text: solo || step === 0 ? 'Choose your faction' : first ? `Choose a faction to face ${first.name}` : 'Choose your faction', style: { fontFamily: FONT_TITLE, fontSize: ph ? 46 : 64, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 6 } } });
     title.position.set(ph ? 38 : 86, ph ? 34 : 56);
     if (title.width > W - (ph ? 300 : 360)) title.scale.set((W - (ph ? 300 : 360)) / title.width);
     body.addChild(kicker, title);
@@ -83,23 +83,24 @@ export function duelSetupScene(stage: Stage, back: () => void, begin: (a: Factio
 
     // proceed
     const ready = !!chosen;
-    const label = step === 0 ? 'Player 1 is ready' : 'Begin the duel';
+    const label = solo ? 'Continue' : step === 0 ? 'Player 1 is ready' : 'Begin the duel';
     const go = makeButton(label, () => {
       if (!chosen) return;
       audio.play('conch');
-      if (step === 0) { first = chosen; step = 1; chosen = null; void draw(); }
+      if (solo) begin(chosen, chosen);
+      else if (step === 0) { first = chosen; step = 1; chosen = null; void draw(); }
       else if (first) begin(first, chosen);
     }, { primary: true, w: 400, ui: ph ? 1 : 1 });
     go.position.set(W / 2, H - (ph ? 44 : 70)); go.alpha = ready ? 1 : 0.4;
     body.addChild(go);
-    const note = new Text({ text: step === 0 ? 'Player 1 moves first. Player 2 will choose next, so look away if you like.' : 'Player 2 draws one extra card to offset moving second.', style: { fontFamily: FONT_SERIF, fontSize: Math.round(22 * k), fontStyle: 'italic', fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
+    const note = new Text({ text: solo ? 'Choose the faction you will command. Your friend chooses theirs on their own phone.' : step === 0 ? 'Player 1 moves first. Player 2 will choose next, so look away if you like.' : 'Player 2 draws one extra card to offset moving second.', style: { fontFamily: FONT_SERIF, fontSize: Math.round(22 * k), fontStyle: 'italic', fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
     note.anchor.set(0.5); note.position.set(W / 2, H - (ph ? 116 : 128));
     body.addChild(note);
   }
 
   (window as unknown as { __yuddhDuel: unknown }).__yuddhDuel = {
     pick: (id: string) => { chosen = FACTIONS.find(f => f.id === id) ?? null; void draw(); },
-    next: () => { if (!chosen) return; if (step === 0) { first = chosen; step = 1; chosen = null; void draw(); } else if (first) begin(first, chosen); }
+    next: () => { if (!chosen) return; if (solo) begin(chosen, chosen); else if (step === 0) { first = chosen; step = 1; chosen = null; void draw(); } else if (first) begin(first, chosen); }
   };
   s.relayout = () => { void draw(); };
   s.enter = () => {

@@ -5,4 +5,4 @@ export {
   buildDeck, objectiveStatus, routLine, isSteadfast, wouldRout, drainEvents, rngFactory, other, actionObservers
 } from './rules';
 export { aiTurn, aiPlayPhase, aiCombatPhase, hasLethal, faceDamageAvailable } from './ai';
-export { swapSides, fixTurnAfterEnd } from './duel';
+export { swapSides, fixTurnAfterEnd, mirrorAction, syncHash } from './duel';
