@@ -277,6 +277,30 @@
       "source": "Sources: Hasan Nizami, Taj al-Ma'athir (early 13th c.); Ibn al-Athir, al-Kamil (c. 1231); Peter Jackson, The Delhi Sultanate (1999); Cynthia Talbot, The Last Hindu Emperor (2015).",
       "epilogue": "Whatever happened on the Yamuna in this game, the chroniclers say the heartland of the Gahadavalas passed to the sultan's governors within a few years, and the Ganga plain became the core of the Delhi Sultanate."
     },
+    "kalinga": {
+      "kicker": "THE KALINGA WAR · c. 261 BCE",
+      "happened": "In the eighth year after his coronation (c. 261 BCE) Ashoka conquered Kalinga, the coastal country on the Bay of Bengal. The only account is Ashoka's own Major Rock Edict XIII: he says that 150,000 people were carried away, 100,000 were killed and many times that number died, that he felt remorse (anusocana) at it, and that he turned to dhamma, the practice of moral duty, care and restraint. The edict says nothing about generals, sites or the fighting itself, and it does not name the king of Kalinga.",
+      "changed": [
+        {
+          "basis": "HISTORY",
+          "text": "The conquest, its cost and Ashoka's remorse are in his own Rock Edict XIII, carved at several places across the empire. The Kalinga edicts at Dhauli and Jaugada speak to the conquered country in a gentler voice."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "The battle, the armies and the cards. The game uses none of the troop numbers sometimes repeated from later retellings, and gives the Kalinga side no named hero because Ashoka names none: its leader is simply the Kalinga commander."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "The river Daya running red below the Dhauli hills is a later tradition, not evidence, and the war is only presumed to have been fought there. The later Buddhist story of a cruel Chandashoka before his conversion is not used."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Kalinga was a wealthy country of ports and war elephants, mentioned as a strong power in earlier sources. In the game it is painted with dignity, as a kingdom defending its own land. Ashoka is not shown as a saint either: he won."
+        }
+      ],
+      "source": "Sources: Ashoka's Major Rock Edict XIII and the Separate Kalinga Edicts (Dhauli, Jaugada); Romila Thapar, Asoka and the Decline of the Mauryas; Patrick Olivelle, Ashoka: Portrait of a Philosopher King (2023).",
+      "epilogue": "Ashoka did not fight another war of conquest. His edicts, cut in rock and pillar from Kandahar to Karnataka, speak instead of dhamma, hospitals, roads and wells. Centuries later, the Gupta kings of the Ganges plain would march again."
+    },
     "pullalur": {
       "kicker": "PULLALUR · c. 618–630 CE",
       "happened": "The Aihole inscription (Ravikirti, 634–635 CE) says that Pulakeshin II of Badami defeated the Pallava king Mahendravarman I at Pullalur, near Kanchipuram, and that the Pallava then hid behind the walls of Kanchi while Pulakeshin reached the Kaveri. The place and the date are argued over. The Pallava side survives in Mahendravarman's own inscriptions: he was a king, a playwright and a builder of rock-cut temples. His son Narasimhavarman I took the Pallava war to Badami in 642 CE.",

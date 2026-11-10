@@ -25,7 +25,7 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 | What is in a battle's decks (`"id*3"` = three copies; order matters) | `src/data/decks.json` |
 | Rank names, seasons and their rules, Dharma limit, charging classes, Kuta cards | `src/data/rules.json` |
 | A battle's History note, sources, epilogue; the first-launch notice | `src/data/history.json` (keyed by scenario id) |
-| A battle's story, Durgs, AI level, start Kosha / Durg health | `src/campaign/<battle>.ts` (`firstThrone.ts`, `indusLine.ts`, `digvijaya.ts`, `mahakantara.ts`, `kanchi.ts`, `goldenAge.ts`, `narmada.ts`, `lanka.ts`, `tarain1.ts`, `tarain2.ts`, `chandawar.ts`, `pullalur.ts`, `kadaram.ts`, `ganga.ts`, `tutorial.ts`) |
+| A battle's story, Durgs, AI level, start Kosha / Durg health | `src/campaign/<battle>.ts` (`firstThrone.ts`, `indusLine.ts`, `kalinga.ts`, `digvijaya.ts`, `mahakantara.ts`, `kanchi.ts`, `goldenAge.ts`, `narmada.ts`, `lanka.ts`, `tarain1.ts`, `tarain2.ts`, `chandawar.ts`, `pullalur.ts`, `kadaram.ts`, `ganga.ts`, `tutorial.ts`) |
 | The campaigns, the order of their battles, and win tracking | `src/campaign/campaign.ts` |
 | A new *kind* of rule or order effect | `src/engine/rules.ts` (behind `st.rules === 'yuddh'`), then the AI's value in `src/engine/ai.ts`, then the reading panel in `src/game/ui/glossary.ts` |
 | Morale / rout (who breaks, the line, who is steadfast) | `src/data/rules.json` ("morale"); logic is `checkRout` in `src/engine/rules.ts` |

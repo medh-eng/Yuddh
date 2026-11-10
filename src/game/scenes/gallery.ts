@@ -16,7 +16,7 @@ import { audio } from '../audio';
 import { loadArt, loadBattlefield } from '../../assets/manifest';
 import { destroyTree, type Scene, type Stage } from '../stage';
 
-type TabId = EmpireId | 'nanda' | 'seleucid' | 'naga' | 'vardhana' | 'forest' | 'kanchi' | 'srivijaya' | 'pala' | 'sinhala' | 'ghurid' | 'pallava';
+type TabId = EmpireId | 'nanda' | 'seleucid' | 'naga' | 'vardhana' | 'forest' | 'kanchi' | 'srivijaya' | 'pala' | 'sinhala' | 'ghurid' | 'pallava' | 'kalinga';
 const TABS: { id: TabId; name: string; ground: string; place: string }[] = [
   { id: 'maurya', name: 'Maurya', ground: 'pataliputra', place: 'Pataliputra' },
   { id: 'gupta', name: 'Gupta', ground: 'ujjain', place: 'Ujjain' },
@@ -34,6 +34,7 @@ const TABS: { id: TabId; name: string; ground: string; place: string }[] = [
   { id: 'sinhala', name: 'Sinhala', ground: 'anuradhapura', place: 'Anuradhapura' },
   { id: 'ghurid', name: 'Ghurid', ground: 'tarain', place: 'Tarain' },
   { id: 'pallava', name: 'Pallava', ground: 'pullalur', place: 'Pullalur' },
+  { id: 'kalinga', name: 'Kalinga', ground: 'dhauli', place: 'Dhauli' },
   { id: 'neutral', name: 'Neutral', ground: 'title', place: 'any field' }
 ];
 
@@ -57,7 +58,7 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
   head.addChild(shade, kicker, name, line);
 
   // the Nanda court's cards are neutral in the rules but get their own page
-  const cards = (id: TabId) => Object.values(CARDS).filter(c => id === 'nanda' ? c.id.startsWith('nd_') : id === 'seleucid' ? c.id.startsWith('se_') : id === 'naga' ? c.id.startsWith('na_') : id === 'vardhana' ? c.id.startsWith('vd_') : id === 'forest' ? c.id.startsWith('mk_') : id === 'kanchi' ? c.id.startsWith('pk_') : id === 'srivijaya' ? c.id.startsWith('sv_') : id === 'pala' ? c.id.startsWith('pl_') : id === 'sinhala' ? c.id.startsWith('si_') : id === 'ghurid' ? c.id.startsWith('gh_') : id === 'pallava' ? c.id.startsWith('pv_') : c.empire === id && !/^(nd|se|na|vd|mk|pk|sv|pl|si|gh|pv)_/.test(c.id)).sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name));
+  const cards = (id: TabId) => Object.values(CARDS).filter(c => id === 'nanda' ? c.id.startsWith('nd_') : id === 'seleucid' ? c.id.startsWith('se_') : id === 'naga' ? c.id.startsWith('na_') : id === 'vardhana' ? c.id.startsWith('vd_') : id === 'forest' ? c.id.startsWith('mk_') : id === 'kanchi' ? c.id.startsWith('pk_') : id === 'srivijaya' ? c.id.startsWith('sv_') : id === 'pala' ? c.id.startsWith('pl_') : id === 'sinhala' ? c.id.startsWith('si_') : id === 'ghurid' ? c.id.startsWith('gh_') : id === 'pallava' ? c.id.startsWith('pv_') : id === 'kalinga' ? c.id.startsWith('kl_') : c.empire === id && !/^(nd|se|na|vd|mk|pk|sv|pl|si|gh|pv|kl)_/.test(c.id)).sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name));
 
   /** How to lay out `n` cards: as large as possible in one or two rows when they all fit
       on one page, otherwise two rows of the standard size, page by page. */
@@ -115,11 +116,11 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
 
   function drawHead(): void {
     const t = TABS[tab], ph = view.phone, W = view.w;
-    const eid: EmpireId = t.id === 'nanda' || t.id === 'seleucid' || t.id === 'naga' || t.id === 'vardhana' || t.id === 'forest' || t.id === 'kanchi' || t.id === 'srivijaya' || t.id === 'pala' || t.id === 'sinhala' || t.id === 'ghurid' || t.id === 'pallava' ? 'neutral' : t.id;
+    const eid: EmpireId = t.id === 'nanda' || t.id === 'seleucid' || t.id === 'naga' || t.id === 'vardhana' || t.id === 'forest' || t.id === 'kanchi' || t.id === 'srivijaya' || t.id === 'pala' || t.id === 'sinhala' || t.id === 'ghurid' || t.id === 'pallava' || t.id === 'kalinga' ? 'neutral' : t.id;
     const st = EMPIRE_STYLE[eid];
     const emp = EMPIRES[eid];
     kicker.style.fontSize = Math.round(20 * view.ui); kicker.position.set(ph ? 60 : 100, ph ? 12 : 40);
-    name.text = t.id === 'nanda' ? 'The Nanda court · Pataliputra' : t.id === 'seleucid' ? 'The Seleucid host · the Indus' : t.id === 'naga' ? 'The Naga kings · Padmavati' : t.id === 'vardhana' ? 'Harsha and the Vardhana host · Kanauj' : t.id === 'forest' ? 'Vyaghraraja and the forest kingdoms · Mahakantara' : t.id === 'kanchi' ? 'Vishnugopa and the walls of Kanchi' : t.id === 'srivijaya' ? 'The sea kings · Kadaram' : t.id === 'pala' ? 'The Pala empire · the Ganga' : t.id === 'sinhala' ? 'The kingdom of Anuradhapura · Lanka' : t.id === 'ghurid' ? 'The Ghurid sultanate · Ghur and Ghazni' : t.id === 'pallava' ? 'Mahendravarman and the Pallava host · Kanchi' : t.id === 'neutral' ? 'Neutral cards' : `${emp.name} · ${emp.capital}`;
+    name.text = t.id === 'nanda' ? 'The Nanda court · Pataliputra' : t.id === 'seleucid' ? 'The Seleucid host · the Indus' : t.id === 'naga' ? 'The Naga kings · Padmavati' : t.id === 'vardhana' ? 'Harsha and the Vardhana host · Kanauj' : t.id === 'forest' ? 'Vyaghraraja and the forest kingdoms · Mahakantara' : t.id === 'kanchi' ? 'Vishnugopa and the walls of Kanchi' : t.id === 'srivijaya' ? 'The sea kings · Kadaram' : t.id === 'pala' ? 'The Pala empire · the Ganga' : t.id === 'sinhala' ? 'The kingdom of Anuradhapura · Lanka' : t.id === 'ghurid' ? 'The Ghurid sultanate · Ghur and Ghazni' : t.id === 'pallava' ? 'Mahendravarman and the Pallava host · Kanchi' : t.id === 'kalinga' ? 'The kingdom of Kalinga · Dhauli and the Daya' : t.id === 'neutral' ? 'Neutral cards' : `${emp.name} · ${emp.capital}`;
     name.style.fontSize = ph ? 54 : 72; name.position.set(ph ? 56 : 96, ph ? 38 : 70);
     line.text = t.id === 'nanda' ? 'Dhana Nanda, his minister, his elephants and his gold: the enemy of The First Throne.'
       : t.id === 'seleucid' ? 'Seleucus, his phalanx, his Companion cavalry and his catapults: the enemy of The Indus Line.'
@@ -129,6 +130,7 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
       : t.id === 'pala' ? 'Mahipala I, the Pala war elephants, river-boat archers and the monastery teachers: the enemy of The Ganga Road.'
       : t.id === 'ghurid' ? "Mu'izz al-Din, the guard cavalry, mounted archers, the war-drums, the foot archers who shoot elephants and the fort: the enemy of both Tarains and Chandawar."
       : t.id === 'pallava' ? "Mahendravarman, the builders' guard, the Pallava war elephants and the retreat to Kanchi: the enemy of Pullalur."
+      : t.id === 'kalinga' ? 'The Kalinga elephants, foot, bowmen and the river in spate: the enemy of The Kalinga War.'
       : t.id === 'sinhala' ? 'Mahinda V, the war elephants, archers, the Maha Thera and the Great Tank: the enemy of The Crossing to Lanka.'
       : t.id === 'srivijaya' ? 'Sangrama Vijayottungavarman, his boat wall, harbour archers and fire boats: the enemy of Rajendra\'s Sea Road.'
       : t.id === 'naga' ? 'Ganapati Naga, Nagasena, Achyuta and their clan warriors: the enemy of The Digvijaya.'

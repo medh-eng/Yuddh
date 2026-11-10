@@ -290,6 +290,23 @@
    "ground": "pullalur",
    "blurb": "Builders' guard, elephants and the retreat to Kanchi.",
    "hq": 30
+  },
+  {
+   "id": "kalinga",
+   "name": "Kalinga",
+   "hindi": "कलिंग",
+   "empire": "neutral",
+   "capital": "Tosali",
+   "faction": "Kalinga",
+   "deck": [
+    "kalinga",
+    "enemy"
+   ],
+   "durg": "durg_tosali",
+   "hero": "kl_gaja",
+   "ground": "dhauli",
+   "blurb": "The coastal kingdom: great elephants, bowmen and the river.",
+   "hq": 30
   }
  ]
 }

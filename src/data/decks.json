@@ -472,6 +472,42 @@
 "n_aakraman"
 ]
 },
+"kalinga": {
+"player": [
+"n_padati",
+"m_padati*2",
+"n_dhanurdhar*2",
+"m_ashva_dhanurdhara",
+"n_ashvarohi*2",
+"n_rakshak*2",
+"n_gaja",
+"m_hasti*2",
+"n_senapati",
+"m_chanakya",
+"m_ashoka",
+"m_mahamatra*2",
+"m_shila_lekh*2",
+"m_raja_dhwaja",
+"m_shalya_vaidya",
+"m_makara_vyuha",
+"m_gaja_sandhi",
+"n_aakraman*2",
+"n_sena_bhojan",
+"y_kavach"
+],
+"enemy": [
+"kl_sena*4",
+"kl_dhanu*3",
+"kl_gaja*3",
+"kl_daya*2",
+"n_rakshak*2",
+"n_ashvarohi",
+"n_senapati",
+"n_aakraman*2",
+"n_sena_bhojan",
+"y_pratikar"
+]
+},
 "pullalur": {
 "player": [
 "c_rakshak*3",

@@ -131,7 +131,7 @@ describe('The Golden Age cards', () => {
 
 describe('data files', () => {
   it('every deck in decks.json names existing cards, and expandDeck keeps order', () => {
-    for (const id of ['training_ground', 'first_throne', 'indus_line']) {
+    for (const id of ['training_ground', 'first_throne', 'indus_line', 'kalinga']) {
       const d = decksOf(id);
       for (const c of [...d.player, ...d.enemy]) expect(CARDS[c], `${id}: ${c}`).toBeDefined();
     }
@@ -141,10 +141,11 @@ describe('data files', () => {
     for (const c of PENDING_CARDS) expect(CARDS[c.id], c.id).toBeUndefined();
   });
   it('the campaign runs Training Ground → First Throne → Indus Line', () => {
-    expect(MAURYA_CAMPAIGN.map(n => n.scenario.id)).toEqual(['training_ground', 'first_throne', 'indus_line']);
+    expect(MAURYA_CAMPAIGN.map(n => n.scenario.id)).toEqual(['training_ground', 'first_throne', 'indus_line', 'kalinga']);
     expect(MAURYA_CAMPAIGN[0].scenario.nextId).toBe('first_throne');
     expect(MAURYA_CAMPAIGN[1].scenario.nextId).toBe('indus_line');
-    expect(INDUS_LINE_SCENARIO.nextId).toBe('digvijaya');
+    expect(INDUS_LINE_SCENARIO.nextId).toBe('kalinga');
+    expect(scenarioById('kalinga')!.nextId).toBe('digvijaya');
     expect(CAMPAIGNS.map(c => c.id)).toEqual(['maurya', 'gupta', 'chalukya', 'chola', 'rajput']);
     expect(scenarioById('digvijaya')).toBeDefined();
     expect(scenarioById('golden_age')).toBeDefined();

@@ -95,3 +95,6 @@ legacy/            Sarwam's prototype, untouched; public/prototype/ is its build
 - **Duel balance**: duel decks are padded to 52 (`DUEL_DECK_SIZE`), `hq`/`kosha` per faction in duel.json; attrition (`fatigue`) decides short decks, so any new campaign deck used in the duel list is padded the same way. Simulation recipe: loop all factions' ordered pairs with `duelGame(a, b, seed)` + `aiTurn(st, st.active, 'normal')`, count `st.winner === 0`.
 - **Two-phone link hardened** (see DESIGN.md "Connection hardening"): `slim()` keeps IPv6/public/relay candidates; ICE = 3 STUN + a public TURN; QR bigger; failure message lists candidate counts. Untested on real phones (sandbox has no network path): Pon's retest is the next step.
 - Next: batch 16 (Kalinga) when painted; Rajput regalia prompts; Gate 2 follow-ups; real-phone retest.
+
+## Status (11 Nov 2026, night)
+- **The Kalinga War built** (batch 16; `kalinga.ts`, `kl_*` gallery tab `kalinga`, Maurya campaign now ends Indus → Kalinga → Digvijaya via nextId). `SCENARIO=kalinga` works in tests/e2e/campaign.cjs. Batch 17 (Koppam) art is not in the repo; batch 18 (Badami) sheet written. Next: Koppam when its art arrives, Badami when batch 18 is painted.

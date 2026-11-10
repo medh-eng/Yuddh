@@ -8,6 +8,7 @@ import type { Scenario } from './scenario';
 import { TUTORIAL, tutorialDone } from './tutorial';
 import { FIRST_THRONE_SCENARIO } from './firstThrone';
 import { INDUS_LINE_SCENARIO } from './indusLine';
+import { KALINGA_SCENARIO } from './kalinga';
 import { DIGVIJAYA_SCENARIO } from './digvijaya';
 import { NARMADA_LINE_SCENARIO } from './narmada';
 import { MAHAKANTARA_SCENARIO } from './mahakantara';
@@ -44,7 +45,8 @@ export interface Campaign {
 export const MAURYA_CAMPAIGN: CampaignNode[] = [
   { scenario: TUTORIAL, face: 'm_chanakya', blurb: 'Chanakya teaches the war.' },
   { scenario: FIRST_THRONE_SCENARIO, face: 'nd_dhana_nanda', blurb: 'Take Pataliputra from the Nanda.' },
-  { scenario: INDUS_LINE_SCENARIO, face: 'se_seleucus', blurb: 'Meet Seleucus at the river.' }
+  { scenario: INDUS_LINE_SCENARIO, face: 'se_seleucus', blurb: 'Meet Seleucus at the river.' },
+  { scenario: KALINGA_SCENARIO, face: 'kl_gaja', blurb: 'Take Kalinga, and count the cost.' }
 ];
 export const GUPTA_CAMPAIGN: CampaignNode[] = [
   { scenario: DIGVIJAYA_SCENARIO, face: 'na_ganapati_naga', blurb: 'Break the Naga kings of the Ganges plain.' },

@@ -1,12 +1,14 @@
 # YUDDH — tasks
 
-*Updated at the end of each session (last: 11 Nov 2026). Design and rules: `DESIGN.md`.*
+*Updated at the end of each session (last: 11 Nov 2026, night). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
+- [ ] Play **The Kalinga War** (Maurya tab, battle 4 on the map; built 11 Nov night, ~45% sim, duel faction Kalinga ~58% average). Is Ashoka's +1 attack and Raksha enough? Do the Kalinga Gaja (Raksha 4/7) and The Daya in Spate (2 to every enemy on the Yudhbhumi) feel fair? Edit decks.json "kalinga" or `enemyHq` in kalinga.ts.
+- [ ] Paint **BATCH18** (`art/PROMPTS-BATCH18.md`, The Fall of Badami, Chalukya battle 3, 9 images). Check battlefields land in `art/source/battlefields/`.
+- [ ] **BATCH17 (Koppam, Chola battle 4) paintings are not in the repository** (11 Nov night: no `koppam.png`, `durg_kalyani.png`, `ch_rajadhiraja.png`, `ch_veera_ani.png`, `wc_*.png`). Re-upload to `art/source/`. Batch 7 (Narmada) was already built.
 - [ ] **Two phones, retest (11 Nov):** the connection code was hardened (IPv6 candidates, more STUN, a public TURN relay, bigger QR, better scanner, clearer error). Same WiFi first, then one phone on the other's hotspot, then mobile data on both. If it still fails, tell Claude what the red message says (it now lists the candidate counts); the fix after this is a small relay or a 4-letter room code over a signalling service.
 - [ ] Play **The Battle of Chandawar** (Rajput tab, new; ~40% sim): do the Elephant-Shooters feel fair against your elephants? Edit decks.json "chandawar" (enemy list) or `playerHq` in chandawar.ts.
 - [ ] Play **Pullalur** (Chalukya tab, new; ~53% sim): is the Pallava side too passive, or its Retreat to Kanchi too strong?
-- [ ] Paint **BATCH16** (`art/PROMPTS-BATCH16.md`, The Kalinga War, Ashoka, 9 images). Check that battlefields go in `art/source/battlefields/` (chandawar and pullalur landed in `cards/` and were moved).
 - [ ] Try **Two players**, Maurya vs Gupta (balance fixed 11 Nov): does it feel even now?
 - [ ] Play **Rajendra's Sea Road** (Campaign → Chola tab): are the boat wall (Perahu, Raksha) and fire boats (Pelita Api) fair? Balance ~63% sim, a JSON edit in decks.json.
 - [ ] Play **The Ganga Road** (Chola tab, battle 2; ~58% sim).
@@ -35,6 +37,10 @@
 - [ ] **Gate 2**: Pon plays with morale/rout and the Veteran foe (briefing → Foe: Veteran), says whether the AI is strong enough and morale readable.
 - [ ] Phase 3 campaigns: more of Tigers of the South (Chola and Rajput battles after the Chola chronology is fixed); cinematic briefings (waiting for Pon); original narrator voice.
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
+
+## Done 11 Nov (night)
+- [x] **Batch 16 built: The Kalinga War** (`kalinga.ts`, Maurya battle 4: Training Ground → First Throne → Indus Line → Kalinga → Digvijaya). New cards: m_ashoka (legendary, Raksha, deploy +1 attack to all), m_mahamatra (drawHeal), m_shila_lekh (heal 5, Dharma +1), kl_gaja (Raksha 4/7 elephant), kl_sena, kl_dhanu, kl_daya (`damageFront` 2); Kalinga gallery tab; Durg `durg_tosali`, battlefield `dhauli`; History note `kalinga`; duel faction Kalinga (hq 30). tests/kalinga.test.ts; duelBalance test now checks every legendary card appears once. Short phone playtest (844×390, 4 turns) found no failures.
+- [x] **Batch 18 sheet written** (The Fall of Badami, 642 CE).
 
 ## Done 11 Nov
 - [x] **Batches 14 and 15 built**: The Battle of Chandawar (Rajput 3, `chandawar.ts`, Elephant-Shooters / `vsElephant`), Pullalur (Chalukya 2, `pullalur.ts`, `pv_*` Pallava cards, gallery tab Pallava, Pallava added to the duel list). 14 new cards, 2 Durgs, 2 battlefields, 2 History notes, tests/chandawar.test.ts, tests/pullalur.test.ts. 118+ tests pass.

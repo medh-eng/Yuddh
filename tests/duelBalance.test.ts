@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aiTurn } from '../src/engine';
+import { aiTurn, CARDS } from '../src/engine';
 import { DUEL_DECK_SIZE, FACTIONS, duelGame, duelScenario, factionById } from '../src/campaign/duel';
 
 describe('Duel balance (pass-and-play)', () => {
@@ -7,8 +7,9 @@ describe('Duel balance (pass-and-play)', () => {
     for (const f of FACTIONS) {
       const sc = duelScenario(f, f);
       expect(sc.playerDeck.length, f.id).toBeGreaterThanOrEqual(DUEL_DECK_SIZE);
-      const heroes = sc.playerDeck.filter(id => id === f.hero);
-      expect(heroes.length, `${f.id} hero`).toBeLessThanOrEqual(1);
+      // legendary cards once (Kalinga has no named hero: its showpiece card is an epic elephant)
+      for (const id of new Set(sc.playerDeck.filter(id => CARDS[id]?.rarity === 'legendary')))
+        expect(sc.playerDeck.filter(x => x === id).length, `${f.id} ${id}`).toBeLessThanOrEqual(1);
     }
   });
   it('Maurya against Gupta is an even match from either seat (Gupta once lost 94% of its games by drawing its deck dry)', () => {
