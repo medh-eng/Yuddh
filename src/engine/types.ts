@@ -58,6 +58,8 @@ export interface CardDef {
   dharma?: number;
   /** Pikes: a melee unit that advanced this turn and strikes this unit takes this much damage (Yuddh rules) */
   reprisal?: number;
+  /** Elephant-slayers: extra damage when this unit strikes a War Elephant (Yuddh rules) */
+  vsElephant?: number;
   rarity?: Rarity;
 }
 

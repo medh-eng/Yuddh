@@ -1,5 +1,5 @@
 {
- "_about": "Factions a player can pick in the pass-and-play Duel. deck = [decks.json key, 'player'|'enemy']. empire is the rules empire (its passive applies). ground is the battlefield painting. Add a faction here to add it to the picker.",
+ "_about": "Factions a player can pick in the pass-and-play Duel. deck = [decks.json key, 'player'|'enemy']. empire is the rules empire (its passive applies). ground is the battlefield painting. Add a faction here to add it to the picker. hq (Durg hit points) is the balance lever, tuned by simulation (see DESIGN.md, Duel balance). Decks are padded to 52 cards in code (DUEL_DECK_SIZE). kosha (starting Kosha ceiling, default 1) is a second lever, used for Gupta.",
  "factions": [
   {
    "id": "maurya",
@@ -15,7 +15,8 @@
    "durg": "durg_maurya_camp",
    "hero": "m_chandragupta",
    "ground": "pataliputra",
-   "blurb": "Chakravartin's army: cheap Kosha, pikes, elephants and spies."
+   "blurb": "Chakravartin's army: cheap Kosha, pikes, elephants and spies.",
+   "hq": 14
   },
   {
    "id": "gupta",
@@ -31,7 +32,9 @@
    "durg": "durg_ujjain",
    "hero": "g_vikramaditya",
    "ground": "ujjain",
-   "blurb": "The Golden Age: Mantras that draw cards, cavalry and learning."
+   "blurb": "The Golden Age: Mantras that draw cards, cavalry and learning.",
+   "hq": 24,
+   "kosha": 3
   },
   {
    "id": "chalukya",
@@ -47,7 +50,8 @@
    "durg": "durg_badami",
    "hero": "c_pulakeshin",
    "ground": "narmada",
-   "blurb": "Stone forts: a 28 Durg and stronger Raksha guards."
+   "blurb": "Stone forts: hardy Raksha guards, elephants and the Boar Banner.",
+   "hq": 14
   },
   {
    "id": "chola",
@@ -63,7 +67,8 @@
    "durg": "durg_gangaikonda",
    "hero": "ch_rajendra",
    "ground": "kadaram",
-   "blurb": "The Tiger Banner: ranged units hit harder, fleets and elephants."
+   "blurb": "The Tiger Banner: ranged units hit harder, fleets and elephants.",
+   "hq": 14
   },
   {
    "id": "rajput",
@@ -79,7 +84,8 @@
    "durg": "durg_ajmer",
    "hero": "r_prithviraj",
    "ground": "tarain",
-   "blurb": "Vega riders that arrive stronger, fort guards and clan foot."
+   "blurb": "Vega riders that arrive stronger, fort guards and clan foot.",
+   "hq": 14
   },
   {
    "id": "ghurid",
@@ -95,7 +101,8 @@
    "durg": "durg_ghurid_camp",
    "hero": "gh_muizz",
    "ground": "tarain",
-   "blurb": "Horse archers, heavy reserve and the war-drums."
+   "blurb": "Horse archers, heavy reserve and the war-drums.",
+   "hq": 14
   },
   {
    "id": "nanda",
@@ -111,7 +118,8 @@
    "durg": "durg_pataliputra",
    "hero": "nd_dhana_nanda",
    "ground": "pataliputra",
-   "blurb": "The rich old throne of Magadha: gold, elephants, chariots."
+   "blurb": "The rich old throne of Magadha: gold, elephants, chariots.",
+   "hq": 44
   },
   {
    "id": "seleucid",
@@ -127,7 +135,8 @@
    "durg": "durg_seleucid_camp",
    "hero": "se_seleucus",
    "ground": "indus",
-   "blurb": "Pike phalanx, Greek cavalry and siege engines."
+   "blurb": "Pike phalanx, Greek cavalry and siege engines.",
+   "hq": 20
   },
   {
    "id": "naga",
@@ -143,7 +152,8 @@
    "durg": "durg_padmavati",
    "hero": "na_ganapati_naga",
    "ground": "padmavati",
-   "blurb": "The Naga kings of the north: poison, serpents and cunning."
+   "blurb": "The Naga kings of the north: poison, serpents and cunning.",
+   "hq": 44
   },
   {
    "id": "forest",
@@ -159,7 +169,8 @@
    "durg": "durg_mahakantara",
    "hero": "mk_vyaghraraja",
    "ground": "mahakantara",
-   "blurb": "Mahakantara: ambush, archers and the green jungle."
+   "blurb": "Mahakantara: ambush, archers and the green jungle.",
+   "hq": 44
   },
   {
    "id": "kanchi",
@@ -175,7 +186,8 @@
    "durg": "durg_kanchi",
    "hero": "pk_vishnugopa",
    "ground": "kanchi",
-   "blurb": "Walled Kanchi: a gate line and the Pallava king."
+   "blurb": "Walled Kanchi: a gate line and the Pallava king.",
+   "hq": 26
   },
   {
    "id": "satrap",
@@ -191,7 +203,8 @@
    "durg": "durg_satrap_camp",
    "hero": "sa_rudrasimha",
    "ground": "ujjain",
-   "blurb": "The Satraps of the west: horse archers and silver coin."
+   "blurb": "The Satraps of the west: horse archers and silver coin.",
+   "hq": 44
   },
   {
    "id": "vardhana",
@@ -207,7 +220,8 @@
    "durg": "durg_kanauj",
    "hero": "vd_harsha",
    "ground": "narmada",
-   "blurb": "Harsha's great host of elephants and foot."
+   "blurb": "Harsha's great host of elephants and foot.",
+   "hq": 14
   },
   {
    "id": "pala",
@@ -223,7 +237,8 @@
    "durg": "durg_pala",
    "hero": "pl_mahipala",
    "ground": "ganga",
-   "blurb": "The Pala empire of Bengal: war elephants on the Ganga."
+   "blurb": "The Pala empire of Bengal: war elephants on the Ganga.",
+   "hq": 29
   },
   {
    "id": "srivijaya",
@@ -239,7 +254,8 @@
    "durg": "durg_kadaram",
    "hero": "sv_sangrama",
    "ground": "kadaram",
-   "blurb": "The sea kings: a boat wall and fire boats."
+   "blurb": "The sea kings: a boat wall and fire boats.",
+   "hq": 27
   },
   {
    "id": "sinhala",
@@ -255,7 +271,25 @@
    "durg": "durg_anuradhapura",
    "hero": "si_mahinda",
    "ground": "anuradhapura",
-   "blurb": "The island kingdom: elephants, archers and monks."
+   "blurb": "The island kingdom: elephants, archers and monks.",
+   "hq": 44
+  },
+  {
+   "id": "pallava",
+   "name": "Pallava",
+   "hindi": "पल्लव",
+   "empire": "neutral",
+   "capital": "Kanchipuram",
+   "faction": "Pallava army",
+   "deck": [
+    "pullalur",
+    "enemy"
+   ],
+   "durg": "durg_kanchi_pallava",
+   "hero": "pv_mahendravarman",
+   "ground": "pullalur",
+   "blurb": "Builders' guard, elephants and the retreat to Kanchi.",
+   "hq": 30
   }
  ]
 }

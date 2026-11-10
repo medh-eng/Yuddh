@@ -376,13 +376,14 @@ export const MAX_RANK = RULES.ranks.length - 1;
 
 /** the four seasons a Yuddh battle can be fought in, and what each changes */
 /** the damage a unit deals when it strikes (Grishma haze blunts archers) */
-export function strikeDamage(st: GameState, a: Unit): number {
+export function strikeDamage(st: GameState, a: Unit, target?: { cardId: string }): number {
   if (st.rules !== 'yuddh') return a.atk;
   let d = a.atk;
   // a standard-bearer's morale: +1 for his comrades on the Yudhbhumi
   if (a.cardId !== 'm_raja_dhwaja' && st.front.units.includes(a)
     && allUnits(st, a.owner).some(x => x.unit.cardId === 'm_raja_dhwaja')) d += 1;
   if (st.season === 'grishma' && a.range === 'ranged') d = Math.max(Math.min(1, d), d - 1);
+  if (target && isElephant(target)) d += CARDS[a.cardId]?.vsElephant ?? 0;
   return d;
 }
 
@@ -649,7 +650,7 @@ export function applyActionCore(st: GameState, action: Action): Check {
     const tgt = action.target;
     const d = findUnit(st, tgt.owner, tgt.uid)!.unit;
     log(st, `${a.name} attacks ${d.name}.`, pIdx);
-    const hit = strikeDamage(st, a);
+    const hit = strikeDamage(st, a, d);
     pushEvent(st, { t: 'attack', owner: pIdx, uid: a.uid, target: { owner: tgt.owner, uid: d.uid }, dmg: hit });
     const dHpBefore = d.hp, aHpBefore = a.hp;
     d.hp -= hit;

@@ -32,6 +32,6 @@ describe('The Second Battle of Tarain', () => {
   });
   it('the Rajput campaign runs First Tarain → Second Tarain', () => {
     const c = CAMPAIGNS.find(x => x.id === 'rajput')!;
-    expect(c.nodes.map(n => n.scenario.id)).toEqual(['tarain1', 'tarain2']);
+    expect(c.nodes.map(n => n.scenario.id)).toEqual(['tarain1', 'tarain2', 'chandawar']);
   });
 });

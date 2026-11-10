@@ -53,5 +53,7 @@ export const NARMADA_LINE_SCENARIO: Scenario = {
   winText: turn => `Harsha's elephants break in turn ${turn}. Ravikirti will carve it in stone: the emperor lost his harsha, his joy, on the Narmada.`,
   loseText: "The elephants cross the Narmada. Harsha's lion banner flies over the Deccan, and the poets of Kanauj write the next chapter.",
   goLabel: 'To battle',
+  nextId: 'pullalur',
+  nextLabel: 'Pullalur',
   game: seed => narmadaGame(seed, 'normal')
 };

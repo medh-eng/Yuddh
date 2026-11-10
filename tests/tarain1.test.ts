@@ -27,6 +27,6 @@ describe("The First Battle of Tarain", () => {
   });
   it('the Rajput campaign has its own tab on the map', () => {
     const c = CAMPAIGNS.find(x => x.id === 'rajput')!;
-    expect(c.nodes.map(n => n.scenario.id)).toEqual(['tarain1', 'tarain2']);
+    expect(c.nodes.map(n => n.scenario.id)).toEqual(['tarain1', 'tarain2', 'chandawar']);
   });
 });

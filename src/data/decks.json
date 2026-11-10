@@ -441,4 +441,71 @@
 "y_pratikar"
 ]
 }
+,
+"chandawar": {
+"player": [
+"r_kashi_sena*4",
+"r_yoddha*2",
+"r_archer*3",
+"r_rana*2",
+"r_durgapala*2",
+"r_howdah*2",
+"r_jayachandra",
+"r_samanta*2",
+"r_charan",
+"r_ghat*2",
+"n_aakraman*2",
+"n_sena_bhojan"
+],
+"enemy": [
+"gh_light_horse*2",
+"gh_horse_archer*2",
+"gh_marksmen*3",
+"gh_ghori*1",
+"gh_ghulam*2",
+"gh_reserve*1",
+"gh_aibak",
+"gh_muizz",
+"gh_crossing*1",
+"gh_naqqara",
+"gh_feint",
+"n_aakraman"
+]
+},
+"pullalur": {
+"player": [
+"c_rakshak*3",
+"c_ashvarohi*3",
+"c_gajasena_badami*2",
+"c_gaja",
+"c_senapati*2",
+"c_pulakeshin",
+"c_ravikirti",
+"n_padati*2",
+"n_dhanurdhar*2",
+"c_shilpa",
+"c_varaha_dhwaja",
+"c_pulakeshin_charge*2",
+"c_kaveri_march*2",
+"n_aakraman*2",
+"n_sena_bhojan"
+],
+"enemy": [
+"pv_shilpi_sena*2",
+"pv_gaja_vahini*3",
+"pv_mahendravarman",
+"pv_kanchi_pravesha*2",
+"n_padati*2",
+"n_dhanurdhar*3",
+"n_ashvarohi*2",
+"n_rathi*2",
+"n_maharathi",
+"n_atirathi",
+"n_gaja*2",
+"n_senapati",
+"n_aakraman*2",
+"s_agni",
+"y_pratikar"
+]
+}
 }

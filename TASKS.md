@@ -1,8 +1,13 @@
 # YUDDH — tasks
 
-*Updated at the end of each session (last: 10 Nov 2026). Design and rules: `DESIGN.md`.*
+*Updated at the end of each session (last: 11 Nov 2026). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
+- [ ] **Two phones, retest (11 Nov):** the connection code was hardened (IPv6 candidates, more STUN, a public TURN relay, bigger QR, better scanner, clearer error). Same WiFi first, then one phone on the other's hotspot, then mobile data on both. If it still fails, tell Claude what the red message says (it now lists the candidate counts); the fix after this is a small relay or a 4-letter room code over a signalling service.
+- [ ] Play **The Battle of Chandawar** (Rajput tab, new; ~40% sim): do the Elephant-Shooters feel fair against your elephants? Edit decks.json "chandawar" (enemy list) or `playerHq` in chandawar.ts.
+- [ ] Play **Pullalur** (Chalukya tab, new; ~53% sim): is the Pallava side too passive, or its Retreat to Kanchi too strong?
+- [ ] Paint **BATCH16** (`art/PROMPTS-BATCH16.md`, The Kalinga War, Ashoka, 9 images). Check that battlefields go in `art/source/battlefields/` (chandawar and pullalur landed in `cards/` and were moved).
+- [ ] Try **Two players**, Maurya vs Gupta (balance fixed 11 Nov): does it feel even now?
 - [ ] Play **Rajendra's Sea Road** (Campaign → Chola tab): are the boat wall (Perahu, Raksha) and fire boats (Pelita Api) fair? Balance ~63% sim, a JSON edit in decks.json.
 - [ ] Play **The Ganga Road** (Chola tab, battle 2; ~58% sim).
 - [ ] Play **The Crossing to Lanka** (Chola tab, first battle now; ~54% sim). Is the Sinhalese side (elephants, archers, Maha Thera, Wewa Jala) fair?
@@ -22,7 +27,7 @@
 - [ ] **Two-human play, step 3**: Nearby/Bluetooth in the Android wrapper. Also maybe: hidden hands (host-held secrets), online rematch, TURN relay.
 - [ ] Playtest two-phone play on real phones (same WiFi, then mobile data) and report what fails.
 - [ ] Duel follow-ups: balance per faction pairing (decks were made for campaign battles, some enemy factions are strong or weak without their scenario's Durg or Kosha tweaks); a coin-toss for who moves first; 'Two players' button on phones at 7 buttons is tight.
-- [ ] Batch 14 (The Battle of Chandawar, 1194; `art/PROMPTS-BATCH14.md`, 9 images) once painted.
+- [x] Batch 14 (Chandawar) and batch 15 (Pullalur) built 11 Nov.
 - [ ] **Cinematics (proposed, not started):** 8-second illustrated clips (a still painting with slow push-in, short caption, sound) before and between battles; pilot = The First Throne, C01–C03 in `docs/HISTORY-RESEARCH.md`, with a skip button and a short "dramatised" footer.
 - [ ] **Tigers of the South** (Chalukya campaign): battle 1 The Narmada Line (Pulakeshin II vs Harsha). Prompts: `art/PROMPTS-BATCH7.md` (11 images, with Pon). Narmada battlefield already painted.
 - [ ] Pon to read the history notes in `src/data/history.json` for accuracy and tone; add a note for each new battle there (The Narmada Line next).
@@ -30,6 +35,13 @@
 - [ ] **Gate 2**: Pon plays with morale/rout and the Veteran foe (briefing → Foe: Veteran), says whether the AI is strong enough and morale readable.
 - [ ] Phase 3 campaigns: more of Tigers of the South (Chola and Rajput battles after the Chola chronology is fixed); cinematic briefings (waiting for Pon); original narrator voice.
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
+
+## Done 11 Nov
+- [x] **Batches 14 and 15 built**: The Battle of Chandawar (Rajput 3, `chandawar.ts`, Elephant-Shooters / `vsElephant`), Pullalur (Chalukya 2, `pullalur.ts`, `pv_*` Pallava cards, gallery tab Pallava, Pallava added to the duel list). 14 new cards, 2 Durgs, 2 battlefields, 2 History notes, tests/chandawar.test.ts, tests/pullalur.test.ts. 118+ tests pass.
+- [x] **Duel balance**: padded decks to 52 (attrition was deciding games), per-faction `hq`/`kosha` in duel.json, Maurya vs Gupta from 92/8 to ~50/50 (DESIGN.md, "Duel balance"). Other factions still uneven.
+- [x] **Two-phone connection hardened** (DESIGN.md, "Connection hardening"): IPv6 and public candidates kept, STUN x3 + TURN, bigger QR, BarcodeDetector, error detail.
+- [x] Batch 16 sheet written (The Kalinga War).
+- [ ] Duel follow-up: dedicated duel decks per faction and a coin toss; the first-seat win rate is ~40-45%.
 
 ## Done 10 Nov (evening)
 - [x] **Pass-and-play Duel built**: title "Two players", faction picker (16 factions, any pairing), board turns round with a pass-the-device curtain, Player 2 draws +1 card, random season, own win screen with Rematch / Choose factions. `src/engine/duel.ts`, `src/campaign/duel.ts`, `src/data/duel.json`, `scenes/duelSetup.ts`, tests/duel.test.ts, tests/duelFactions.test.ts, tests/e2e/duel.cjs (A=, B=, FAST=1). 104 tests pass; played at 1280×720 and 844×390.

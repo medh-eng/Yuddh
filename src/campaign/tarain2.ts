@@ -55,5 +55,7 @@ export const TARAIN2_SCENARIO: Scenario = {
   winText: turn => `The Ghurid line breaks in turn ${turn}. History did not go this way: in 1192 the Rajput host was beaten, Prithviraj was taken, and Delhi and Ajmer passed to the sultan's governors. You have held where they did not.`,
   loseText: "The heavy horse comes up from behind the rise and the tired line gives way. This is how the sources say it ended: the host broke, Prithviraj was taken, and Delhi and Ajmer soon had new governors.",
   goLabel: 'To battle',
+  nextId: 'chandawar',
+  nextLabel: 'The Battle of Chandawar',
   game: seed => tarain2Game(seed, 'normal')
 };

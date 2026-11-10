@@ -9,6 +9,7 @@
    ============================================================ */
 import duelJson from '../data/duel.json';
 import { newGame } from '../engine/rules';
+import { CARDS } from '../engine/cards';
 import type { EmpireId, GameState, Season } from '../engine/types';
 import { decksOf } from '../data';
 import type { Scenario } from './scenario';
@@ -16,20 +17,29 @@ import type { Link } from '../game/net/link';
 
 export interface Faction {
   id: string; name: string; hindi: string; empire: EmpireId; capital: string; faction: string;
-  deck: [string, 'player' | 'enemy']; durg: string; hero: string; ground: string; blurb: string;
+  deck: [string, 'player' | 'enemy']; /** Durg hit points in a duel: the balance lever, tuned by simulation (tests/_sim) */ hq?: number; /** starting Kosha ceiling (default 1): a second, lighter balance lever */ kosha?: number; durg: string; hero: string; ground: string; blurb: string;
 }
 export const FACTIONS = duelJson.factions as unknown as Faction[];
 export const factionById = (id: string): Faction | undefined => FACTIONS.find(f => f.id === id);
 
 const SEASON_LIST: Season[] = ['sharad', 'varsha', 'grishma', 'hemanta'];
-const deckOf = (f: Faction): string[] => { const d = decksOf(f.deck[0]); return f.deck[1] === 'player' ? d.player : d.enemy; };
+/** A duel runs about 16 turns and both sides draw every turn, so a campaign deck of 20-30 cards runs dry and the loser is whoever draws more (Gupta, whose Mantras draw, lost 94% of its games to attrition). Every duel deck is padded to this many cards by repeating its non-legendary cards in order; legendary cards appear once. */
+export const DUEL_DECK_SIZE = 52;
+const deckOf = (f: Faction): string[] => {
+  const d = decksOf(f.deck[0]);
+  const base = f.deck[1] === 'player' ? d.player : d.enemy;
+  const out = base.slice();
+  const pool = base.filter(id => CARDS[id]?.rarity !== 'legendary');
+  for (let i = 0; pool.length && out.length < DUEL_DECK_SIZE; i++) out.push(pool[i % pool.length]);
+  return out;
+};
 
 export function duelGame(a: Faction, b: Faction, seed: number): GameState {
   const season = SEASON_LIST[Math.abs(Math.floor(seed)) % SEASON_LIST.length];
   return newGame({
     seed,
-    player: { empire: a.empire, ally: 'neutral', deck: deckOf(a), faction: a.faction, capital: a.capital },
-    enemy: { empire: b.empire, ally: 'neutral', deck: deckOf(b), faction: b.faction, capital: b.capital, handSize: 5 },
+    player: { empire: a.empire, ally: 'neutral', deck: deckOf(a), faction: a.faction, capital: a.capital, hq: a.hq, startKosha: a.kosha },
+    enemy: { empire: b.empire, ally: 'neutral', deck: deckOf(b), faction: b.faction, capital: b.capital, hq: b.hq, startKosha: b.kosha, handSize: 5 },
     aiLevel: 'normal',
     objective: { type: 'destroy' },
     scenarioId: 'duel',

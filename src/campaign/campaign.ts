@@ -18,6 +18,8 @@ import { GANGA_SCENARIO } from './ganga';
 import { LANKA_SCENARIO } from './lanka';
 import { TARAIN1_SCENARIO } from './tarain1';
 import { TARAIN2_SCENARIO } from './tarain2';
+import { CHANDAWAR_SCENARIO } from './chandawar';
+import { PULLALUR_SCENARIO } from './pullalur';
 
 export interface CampaignNode {
   scenario: Scenario;
@@ -52,12 +54,14 @@ export const GUPTA_CAMPAIGN: CampaignNode[] = [
 ];
 
 export const CHALUKYA_CAMPAIGN: CampaignNode[] = [
-  { scenario: NARMADA_LINE_SCENARIO, face: 'c_pulakeshin', blurb: 'Stop Harsha of Kanauj on the Narmada.' }
+  { scenario: NARMADA_LINE_SCENARIO, face: 'c_pulakeshin', blurb: 'Stop Harsha of Kanauj on the Narmada.' },
+  { scenario: PULLALUR_SCENARIO, face: 'pv_mahendravarman', blurb: 'Break the clever king of Kanchi before the gates close.' }
 ];
 
 export const RAJPUT_CAMPAIGN: CampaignNode[] = [
   { scenario: TARAIN1_SCENARIO, face: 'gh_muizz', blurb: "Break the sultan of Ghur at Tarain, 1191." },
-  { scenario: TARAIN2_SCENARIO, face: 'gh_aibak', blurb: "Hold the plain against the patient plan of 1192." }
+  { scenario: TARAIN2_SCENARIO, face: 'gh_aibak', blurb: "Hold the plain against the patient plan of 1192." },
+  { scenario: CHANDAWAR_SCENARIO, face: 'gh_marksmen', blurb: "Hold the Yamuna for Kannauj against the elephant-shooters, 1194." }
 ];
 
 export const CHOLA_CAMPAIGN: CampaignNode[] = [

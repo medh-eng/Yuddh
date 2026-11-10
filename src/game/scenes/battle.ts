@@ -1362,9 +1362,10 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     if (!tgt) return;
     const a = findUnit(st, 0, uid)?.unit; if (!a) return;
     const put = (x: number, y: number, n: number) => { const c = shieldGraphic(n, 0.9); c.position.set(x, y); combatFx.addChild(c); gsap.from(c.scale, { x: 0.2, y: 0.2, duration: 0.18, ease: 'back.out(2)' }); };
-    const hitDmg = strikeDamage(st, a);
+    const d = tgt.kind === 'unit' ? findUnit(st, 1, tgt.uid)?.unit : undefined;
+    const hitDmg = strikeDamage(st, a, d);
     if (tgt.kind === 'hq') { put(durg[1].x + 80 * L.durgS, durg[1].y - 60 * L.durgS, hitDmg); return; }
-    const d = findUnit(st, 1, tgt.uid)?.unit, dv = tokens.get(tgt.uid), av = tokens.get(uid);
+    const dv = tokens.get(tgt.uid), av = tokens.get(uid);
     if (!d || !dv || !av) return;
     put(dv.x + 52 * L.tok, dv.y - 70 * L.tok, hitDmg);
     if (a.range === 'melee' && d.range === 'melee' && d.atk > 0) put(av.x + 52 * L.tok, av.y - 70 * L.tok, d.atk);

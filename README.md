@@ -25,13 +25,13 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 | What is in a battle's decks (`"id*3"` = three copies; order matters) | `src/data/decks.json` |
 | Rank names, seasons and their rules, Dharma limit, charging classes, Kuta cards | `src/data/rules.json` |
 | A battle's History note, sources, epilogue; the first-launch notice | `src/data/history.json` (keyed by scenario id) |
-| A battle's story, Durgs, AI level, start Kosha / Durg health | `src/campaign/<battle>.ts` (`firstThrone.ts`, `indusLine.ts`, `digvijaya.ts`, `mahakantara.ts`, `kanchi.ts`, `goldenAge.ts`, `narmada.ts`, `lanka.ts`, `tarain1.ts`, `kadaram.ts`, `ganga.ts`, `tutorial.ts`) |
+| A battle's story, Durgs, AI level, start Kosha / Durg health | `src/campaign/<battle>.ts` (`firstThrone.ts`, `indusLine.ts`, `digvijaya.ts`, `mahakantara.ts`, `kanchi.ts`, `goldenAge.ts`, `narmada.ts`, `lanka.ts`, `tarain1.ts`, `tarain2.ts`, `chandawar.ts`, `pullalur.ts`, `kadaram.ts`, `ganga.ts`, `tutorial.ts`) |
 | The campaigns, the order of their battles, and win tracking | `src/campaign/campaign.ts` |
 | A new *kind* of rule or order effect | `src/engine/rules.ts` (behind `st.rules === 'yuddh'`), then the AI's value in `src/engine/ai.ts`, then the reading panel in `src/game/ui/glossary.ts` |
 | Morale / rout (who breaks, the line, who is steadfast) | `src/data/rules.json` ("morale"); logic is `checkRout` in `src/engine/rules.ts` |
 | How the Veteran (search) AI thinks and how long | `src/data/rules.json` ("ai": beam, depth, finalists, replies); code in `src/engine/search.ts`; the player's Standard/Veteran choice in `src/campaign/difficulty.ts` |
 | Pass-and-play Duel (factions, picker, turn swap, curtain) | factions: `src/data/duel.json`; `src/campaign/duel.ts`; picker `src/game/scenes/duelSetup.ts`; turn swap `src/engine/duel.ts`; curtain and win screen in `src/game/scenes/battle.ts` (`duel`, `duelHandOver`) |
-| Two-phone play (WebRTC, QR/paste pairing, lockstep) | `src/game/net/link.ts` (link + codes), `src/game/net/pairing.ts` (pairing overlay + handshake), `src/engine/duel.ts` (`mirrorAction`, `syncHash`), `src/game/scenes/battle.ts` (`online`, `pump`, `applyRemote`, `netLost`); test `tests/e2e/online.cjs` |
+| Two-phone play (WebRTC, QR/paste pairing, lockstep) | `src/game/net/link.ts` (link + codes), `src/game/net/pairing.ts` (pairing overlay + handshake), `src/engine/duel.ts` (`mirrorAction`, `syncHash`), `src/game/scenes/battle.ts` (`online`, `pump`, `applyRemote`, `netLost`); test `tests/e2e/online.cjs`; Duel balance levers (`hq`, `kosha` per faction): `src/data/duel.json`, padding in `src/campaign/duel.ts` |
 | How a screen looks | `src/game/scenes/` (title, campaign, standing, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
 | Art or sound | Drop masters in `art/source/{cards,battlefields,sfx}/`, run `npm run assets`, commit `public/assets/` and `src/assets/*.json` |
 

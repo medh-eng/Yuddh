@@ -28,24 +28,49 @@ export interface Link {
   readonly open: boolean;
 }
 
-const iceServers = (): RTCIceServer[] => (window as unknown as { __yuddhIce?: RTCIceServer[] }).__yuddhIce ?? [{ urls: 'stun:stun.l.google.com:19302' }];
+/** STUN finds each phone's public address; the TURN entries are a best-effort public relay for networks where a direct link is impossible (mobile-data carrier NAT, strict firewalls). A relay is a free third-party service: if it is down, the phones simply connect directly or not at all. */
+export const DEFAULT_ICE: RTCIceServer[] = [
+  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
+  { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turns:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }
+];
+const iceServers = (): RTCIceServer[] => (window as unknown as { __yuddhIce?: RTCIceServer[] }).__yuddhIce ?? DEFAULT_ICE;
 
 /* ---------------- codes ---------------- */
 const b64 = (u: Uint8Array): string => { let s = ''; u.forEach(b => { s += String.fromCharCode(b); }); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
 const unb64 = (t: string): Uint8Array => { const s = atob(t.replace(/-/g, '+').replace(/_/g, '/')); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; };
 
-/** keep only what a data channel needs: UDP candidates on IPv4 or mDNS names, at most four */
+/** an address a phone on another network could actually reach: not link-local (fe80), not a unique-local IPv6 (fc/fd) */
+const reachable = (addr: string): boolean => !/^(fe80|f[cd][0-9a-f]{2}):/i.test(addr);
+
+/** Keep only what a data channel needs, in an order that never loses the useful ones: UDP only; at most 2 host
+    candidates (an mDNS name, a private IPv4 or a global IPv6), then every server-reflexive one (the public address),
+    then relays. The old filter dropped all IPv6 and kept the first four lines, so on an IPv6-first mobile network
+    (Jio, Airtel) or a phone with several interfaces the public address could be cut and the link could not form. */
 export function slim(sdp: string): string {
   const lines = sdp.split(/\r?\n/).filter(Boolean);
-  let kept = 0;
-  const out = lines.filter(l => {
-    if (!l.startsWith('a=candidate:')) return true;
+  const rank = (l: string): number => (/ typ relay/.test(l) ? 2 : / typ srflx/.test(l) ? 1 : 0);
+  const cand = lines.filter(l => {
+    if (!l.startsWith('a=candidate:')) return false;
     const f = l.split(' ');
-    const addr = f[4] ?? '';
-    if ((f[2] ?? '').toLowerCase() !== 'udp' || addr.includes(':')) return false;
-    return kept++ < 4;
+    return (f[2] ?? '').toLowerCase() === 'udp' && reachable(f[4] ?? '');
   });
+  const per = [0, 0, 0], cap = [2, 3, 2];
+  const keep = new Set(cand.filter(l => per[rank(l)]++ < cap[rank(l)]));
+  const ordered = [...keep].sort((x, y) => rank(x) - rank(y));
+  const out: string[] = [];
+  let placed = false;
+  for (const l of lines) {
+    if (!l.startsWith('a=candidate:')) { out.push(l); continue; }
+    if (!placed) { out.push(...ordered); placed = true; }
+  }
   return out.join('\r\n') + '\r\n';
+}
+
+/** what a code carries, for the "could not connect" message: how many candidates of each kind */
+export function describeCandidates(sdp: string): string {
+  const c = sdp.split(/\r?\n/).filter(l => l.startsWith('a=candidate:'));
+  const n = (re: RegExp): number => c.filter(l => re.test(l)).length;
+  return `${n(/ typ host/)} local, ${n(/ typ srflx/)} public, ${n(/ typ relay/)} relay, ${c.filter(l => (l.split(' ')[4] ?? '').includes(':')).length} IPv6`;
 }
 
 export async function pack(d: { type: string; sdp: string }): Promise<string> {
@@ -120,7 +145,7 @@ export async function hostOffer(): Promise<{ code: string; connect(answerCode: s
       const a = await unpack(answerCode);
       if (a.type !== 'answer') throw new Error('That is a host code. Paste your friend\'s reply code here.');
       await pc.setRemoteDescription({ type: 'answer', sdp: a.sdp });
-      await Promise.race([opened(dc), new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Could not connect. Check both phones are online and try again.')), 25000))]);
+      await Promise.race([opened(dc), new Promise<never>((_, rej) => setTimeout(() => rej(new Error(`Could not connect (${pc.iceConnectionState}). On mobile data the two phones often cannot reach each other directly: try both on the same WiFi, or switch one phone on to the other's hotspot. This code carried: ${describeCandidates(pc.localDescription?.sdp ?? '')}.`)), 30000))]);
       return link;
     }
   };
@@ -137,7 +162,7 @@ export async function guestAnswer(offerCode: string): Promise<{ code: string; li
   await gathered(pc, 3500);
   const code = await pack(pc.localDescription as RTCSessionDescription);
   const link = (async () => {
-    const dc = await Promise.race([dcP, new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Could not connect. Ask the host to try again.')), 60000))]);
+    const dc = await Promise.race([dcP, new Promise<never>((_, rej) => setTimeout(() => rej(new Error(`Could not connect (${pc.iceConnectionState}). Ask the host to try again, ideally on the same WiFi. This code carried: ${describeCandidates(pc.localDescription?.sdp ?? '')}.`)), 60000))]);
     await opened(dc);
     return wrap('guest', pc, dc);
   })();

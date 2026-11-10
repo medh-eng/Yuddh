@@ -256,6 +256,46 @@
       ],
       "source": "Sources: Aihole inscription of Ravikirti (634–635 CE); Bana, Harshacharita; Xuanzang, Records of the Western World.",
       "epilogue": "Pulakeshin II took the title Parameshvara and ruled a Deccan empire from the Narmada to the Kaveri. Harsha never marched south again; he died in 647 CE and his empire broke apart within a generation. In 642 CE the Pallava king Narasimhavarman captured Badami."
+    },
+    "chandawar": {
+      "kicker": "THE BATTLE OF CHANDAWAR · 1194 CE",
+      "happened": "After Tarain, Mu'izz al-Din Muhammad of Ghor turned on the Gahadavala kingdom of Jayachandra, lord of Kannauj and Varanasi. In 1194 CE the armies met at Chandawar on the Yamuna, near modern Firozabad. The Persian chroniclers Hasan Nizami and Ibn al-Athir agree on the outline: the Gahadavala host was strong in war elephants, Jayachandra rode one himself, and the Ghurid army won. Jayachandra was killed, and the accounts differ on the detail. Kannauj and Varanasi passed under Ghurid control.",
+      "changed": [
+        {
+          "basis": "INVENTED",
+          "text": "The player commands the Gahadavala host and can win. The sources give the outcome and Jayachandra's death on his elephant, not the fight. The ford, the turns, the cards and the numbers are the game's; the huge figures in the chronicles are not trusted, so none are used."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "Elephant-Shooters, the foot archers who deal extra damage to a War Elephant, are the game's way of making the tall beasts a risk. The chronicles do not describe such a unit."
+        },
+        {
+          "basis": "TRADITION",
+          "text": "A later story says Jayachandra invited the Ghurids against Prithviraj and so betrayed the Rajputs. It comes from late tradition, is not supported by the contemporary chroniclers, and is not used here."
+        }
+      ],
+      "source": "Sources: Hasan Nizami, Taj al-Ma'athir (early 13th c.); Ibn al-Athir, al-Kamil (c. 1231); Peter Jackson, The Delhi Sultanate (1999); Cynthia Talbot, The Last Hindu Emperor (2015).",
+      "epilogue": "Whatever happened on the Yamuna in this game, the chroniclers say the heartland of the Gahadavalas passed to the sultan's governors within a few years, and the Ganga plain became the core of the Delhi Sultanate."
+    },
+    "pullalur": {
+      "kicker": "PULLALUR · c. 618–630 CE",
+      "happened": "The Aihole inscription (Ravikirti, 634–635 CE) says that Pulakeshin II of Badami defeated the Pallava king Mahendravarman I at Pullalur, near Kanchipuram, and that the Pallava then hid behind the walls of Kanchi while Pulakeshin reached the Kaveri. The place and the date are argued over. The Pallava side survives in Mahendravarman's own inscriptions: he was a king, a playwright and a builder of rock-cut temples. His son Narasimhavarman I took the Pallava war to Badami in 642 CE.",
+      "changed": [
+        {
+          "basis": "HISTORY",
+          "text": "The clash, the Pallava withdrawal behind Kanchi and the Chalukya claim of victory come from the Aihole inscription, a praise-poem written by the winner's poet."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "The plain, the armies, the turns of the fight and the cards. Nobody knows exactly where Pullalur was or how the fight went, so the game invents it from the outcome. There are no troop numbers."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "Mahendravarman is shown as a cultured king, builder and engineer, not a fool; his guard are builders because the Pallava were great temple-builders, and Retreat to Kanchi is how the poem says he survived."
+        }
+      ],
+      "source": "Sources: Aihole inscription of Ravikirti (634–635 CE); inscriptions and the play Mattavilasa Prahasana of Mahendravarman I; Pallava records of Narasimhavarman I.",
+      "epilogue": "Pulakeshin II held the Deccan from the Narmada to the Kaveri. Mahendravarman's son Narasimhavarman I answered in 642 CE by taking Badami."
     }
   }
 }
