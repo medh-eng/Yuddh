@@ -42,3 +42,50 @@ Please keep to objects the period actually knew. Where the shape is a guess, say
 6. **rg_chola_6**: a bronze crown with a tiger crest, inspired by Chola bronzes (no face, no figure).
 
 *Order of painting:* Maurya first (it is the most played). Do the rest as time allows; each missing one simply stays a numbered stand-in.
+
+---
+
+## First samples reviewed (10 Nov 2026) and the improved prompt rules
+
+**Absorbed into the game:** `rg_maurya_1` spear, `_2` bow and quiver, `_3` drum, `_4` sword, `_5` lion-headed goad, `_6` golden wheel (the buff-sandstone version, which matches the Chunar sandstone of the Ashokan pillars), and `rg_gupta_1` sword on blue silk. The red-base wheel and the Mughal bow with thumb ring were not used (see below).
+
+**What worked:** the dark background, the warm top-left light, the gold and sandstone palette, the gilded detail. The set already looks like one family.
+
+**Two things to fix, both small:**
+1. **Medallions are small (about 40 px on a phone).** Thin, long objects (spear, goad, bow) shrink to a line. The game now shows each picture at 85% so the tips are not cut by the circle, but for the rest, paint the object **bold and chunky, filling the central circle, nothing in the corners**.
+2. **A few details are from a later age.** The Maurya sword has a Mughal-style knuckle-guard; the Maurya drum has pointed (Islamic-style) arches; the bow with the thumb ring is Mughal. At medallion size nobody sees this, so keep them if you like, or repaint with the corrections below.
+
+### Shared style line v2 (use this for all the remaining pieces)
+*Museum-quality hand-painted illustration of ONE historical object, in the same style as the game's card paintings. The whole object sits inside a circle that touches the middle of each edge of the square (nothing in the corners). Bold, simple silhouette that reads at thumbnail size; if the object is long, show it at a three-quarter angle, shortened, or curved, not as a thin diagonal. Warm light from the upper left, plain dark background (colour below), no text, no letters, no people, no frame.*
+
+**Background colour per empire:** Maurya deep brown (done) · Gupta deep blue velvet · Chalukya dark red-brown · Chola dark sea-green.
+
+### Optional repaints for Maurya (only if you want them period-exact)
+- `rg_maurya_3` drum: *"a barrel-shaped war drum (dundubhi) of dark wood with two broad bronze bands, the body carved with a band of lotus petals like the Sanchi railing (no pointed arches), leather heads laced with cord, on a low wooden stand, two drumsticks leaning on it."*
+- `rg_maurya_4` sword: *"a straight broad-bladed khadga with a gently leaf-shaped blade, a simple round disc pommel and a plain cross-guard (no knuckle-guard, no basket), in a leather scabbard with gilded fittings, lying on a red cloth, shortened to a three-quarter angle."*
+
+### Gupta (pieces 2–6; sample 1 is done)
+Palette: gold and deep blue. For 2, **the Mughal bow you painted is not Gupta**; keep it for Rajput (it will become `rg_rajput_2`, c. 1190 CE) and paint this instead.
+2. `rg_gupta_2`: *"a long simple bow of bamboo with horn tips and a cloth-wrapped grip, strung, with a quiver of arrows with gold bands laid across it on blue silk, as on the archer-type Gupta coins (no thumb ring, no floral inlay)."*
+3. `rg_gupta_3`: *"a golden standard: a tall pole topped by a Garuda with spread wings, a furled blue banner beneath it, shown at a three-quarter angle, filling the circle."*
+4. `rg_gupta_4`: *"a large gold coin, front view, in the style of a Gupta dinar: a king in a dhoti holding a bow, facing left, a plain beaded rim, a few abstract marks instead of letters, on blue velvet. The king is an invented figure, not a real portrait."*
+5. `rg_gupta_5`: *"a ceremonial parasol (chhatra) of white silk with a gold handle and gold fringe, opened, shown from slightly below, with a tassel on top."*
+6. `rg_gupta_6`: *"a gilded standing horse statue on a low carved stone plinth, in the manner of the Ashvamedha coins, a ceremonial post beside it, front three-quarter view."*
+
+### Chalukya (c. 543–753 CE; dark red-brown, Badami sandstone and gold)
+1. `rg_chalukya_1`: *"a round bronze-bossed shield (phalaka) with a boar crest in raised bronze, red sandstone behind it."*
+2. `rg_chalukya_2`: *"a curved dagger in an embossed leather sheath and a bronze belt buckle lying together on red leather."*
+3. `rg_chalukya_3`: *"a stone-carved elephant goad with a boar-headed finial, short and chunky, on a red sandstone slab."*
+4. `rg_chalukya_4`: *"a gilded boar standard (the Chalukya emblem): a golden boar on a tall pole with a crimson pennon, shortened to fit the circle."*
+5. `rg_chalukya_5`: *"a broad straight sword with a lion pommel carved like a Badami cave bracket, in a red leather scabbard."*
+6. `rg_chalukya_6`: *"a golden crown-helmet with a boar crest on a red sandstone pedestal, front three-quarter view."*
+
+### Chola (c. 850–1279 CE; dark sea-green, bronze)
+1. `rg_chola_1`: *"a short stabbing sword with a bronze hilt in a leather sheath, on dark teak."*
+2. `rg_chola_2`: *"a broad bronze-tipped oar-blade crossed with a coil of rope, on dark teak planks."*
+3. `rg_chola_3`: *"a bronze oil-lamp shaped like a small crouching tiger, lit, a warm flame."*
+4. `rg_chola_4`: *"a bronze tiger standard on a short pole, banner furled, shown at a three-quarter angle."*
+5. `rg_chola_5`: *"a pair of bronze armlets inlaid with pearls, side by side, on dark green cloth."*
+6. `rg_chola_6`: *"a bronze crown with a tiger crest on a stone pedestal (no face, no figure), front three-quarter view."*
+
+Name files `rg_<empire>_<n>.png` in `art/source/cards/`, as before; then `npm run assets` and commit (or just upload and tell Claude).

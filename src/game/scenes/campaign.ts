@@ -109,7 +109,7 @@ export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: ()
       const tab = new Container(); tab.addChild(pill, lab);
       tab.position.set(tabX + w / 2, (ph ? 118 : 205) + 30); tabX += tabW[i] + 24;
       tab.eventMode = 'static'; tab.cursor = 'pointer';
-      tab.on('pointertap', () => { if (c === cur) return; audio.unlock(); audio.play('click'); cur = c; void loadBattlefield(c.map ?? c.ground).then(t => { if (alive) stage.setBackdrop(t, c.map ? 0.9 : 0.5); }); void draw(); });
+      tab.on('pointertap', () => { if (c === cur) return; audio.unlock(); audio.play('click'); cur = c; void loadBattlefield(c.map ?? c.ground).then(t => { if (alive) stage.setBackdrop(t, c.map ? 0.3 : 0.5); }); void draw(); });
       body.addChild(tab); tabs.push({ id: c.id, c: tab });
     });
 
@@ -153,7 +153,7 @@ export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: ()
   s.relayout = () => { void draw(); };
   s.enter = () => {
     audio.playMusic('music_briefing');
-    void loadBattlefield(cur.map ?? cur.ground).then(t => { ground = t; if (alive) stage.setBackdrop(ground, cur.map ? 0.9 : 0.5); });
+    void loadBattlefield(cur.map ?? cur.ground).then(t => { ground = t; if (alive) stage.setBackdrop(ground, cur.map ? 0.3 : 0.5); });
     void draw();
   };
   s.leave = () => { alive = false; };

@@ -7,7 +7,8 @@
 - [ ] Play **The Ganga Road** (Chola tab, battle 2; ~58% sim).
 - [ ] Play **The Crossing to Lanka** (Chola tab, first battle now; ~54% sim). Is the Sinhalese side (elephants, archers, Maha Thera, Wewa Jala) fair?
 - [ ] Paint **batch 12** (`art/PROMPTS-BATCH12.md`, 12 images: The First Battle of Tarain, 1191, opens the Rajput campaign; battlefield already painted) and upload to `art/source/cards/`.
-- [ ] The four campaign maps (`art/PROMPTS-MAPS.md`) were mentioned as uploaded on 10 Nov but are **not in the repo** (no `map_*.png` in `art/source/battlefields/`). Upload them (web upload may not have been committed) and Claude sets `map:` in `campaign.ts`.
+- [x] Four campaign maps delivered and wired 10 Nov (`map:` in `campaign.ts`; backdrop dim lowered to 0.3 for maps).
+- [ ] Regalia: Maurya 1–6 and Gupta 1 absorbed 10 Nov; the rest are optional, with improved prompts in `art/PROMPTS-REGALIA.md` ("First samples reviewed"). Gupta 2 sample was Mughal: keep for `rg_rajput_2`.
 - [ ] Paint the four campaign maps when you like (`art/PROMPTS-MAPS.md`, optional) and pick which rank rewards to build (`DESIGN.md`, "Rank and renown").
 - [ ] Play **The Great Forest** and **The Walls of Kanchi** (Campaign → Gupta tab); say if Dhuan archers or the Kanchi gate line feel unfair. Balance is a JSON edit in decks.json.
 - [ ] Try morale/rout: does a broken unit read clearly (red ROUTED band, flee animation)? Too common or too rare (about 2 per battle now; the break line is in `rules.json`)?

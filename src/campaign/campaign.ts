@@ -60,10 +60,10 @@ export const CHOLA_CAMPAIGN: CampaignNode[] = [
 ];
 
 export const CAMPAIGNS: Campaign[] = [
-  { id: 'maurya', kicker: 'THE MAURYA CAMPAIGN', title: 'Rise of Magadha', ground: 'pataliputra', nodes: MAURYA_CAMPAIGN },
-  { id: 'gupta', kicker: 'THE GUPTA CAMPAIGN', title: 'The Golden Age', ground: 'ujjain', nodes: GUPTA_CAMPAIGN },
-  { id: 'chalukya', kicker: 'THE CHALUKYA CAMPAIGN', title: 'Tigers of the South', ground: 'narmada', nodes: CHALUKYA_CAMPAIGN },
-  { id: 'chola', kicker: 'THE CHOLA CAMPAIGN', title: 'The Tiger Banner', ground: 'ganga', nodes: CHOLA_CAMPAIGN }
+  { id: 'maurya', kicker: 'THE MAURYA CAMPAIGN', title: 'Rise of Magadha', ground: 'pataliputra', map: 'map_maurya', nodes: MAURYA_CAMPAIGN },
+  { id: 'gupta', kicker: 'THE GUPTA CAMPAIGN', title: 'The Golden Age', ground: 'ujjain', map: 'map_gupta', nodes: GUPTA_CAMPAIGN },
+  { id: 'chalukya', kicker: 'THE CHALUKYA CAMPAIGN', title: 'Tigers of the South', ground: 'narmada', map: 'map_chalukya', nodes: CHALUKYA_CAMPAIGN },
+  { id: 'chola', kicker: 'THE CHOLA CAMPAIGN', title: 'The Tiger Banner', ground: 'ganga', map: 'map_chola', nodes: CHOLA_CAMPAIGN }
 ];
 
 export const scenarioById = (id: string): Scenario | undefined =>

@@ -18,7 +18,7 @@ export function medallion(empire: string, level: number, r: number, owned: boole
   const tex = owned ? cardArt(regaliaId(empire, level)) : null;
   if (tex) {
     const sp = new Sprite(tex); sp.anchor.set(0.5);
-    sp.scale.set((2 * r) / Math.min(tex.width, tex.height));
+    sp.scale.set((1.7 * r) / Math.min(tex.width, tex.height)); // 85%: long objects (spear, goad) reach the corners of the square
     const m = new Graphics().circle(0, 0, r - 2).fill(0xffffff);
     sp.mask = m; c.addChild(m, sp);
   } else {
