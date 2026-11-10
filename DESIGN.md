@@ -87,4 +87,4 @@ The campaign screen draws a winding dashed route between battles (nodes sit on a
 All cosmetic; none changes a battle (data in `ranks.json` "rewards", "chronicles").
 - **Nayaka (level 2): War Council chronicle**, a short sourced text per empire (Megasthenes, Allahabad pillar, Aihole, Chola inscriptions), opened from the Roll of Renown (`chroniclePanel`).
 - **Senapati (level 4): gilded card frame** for that empire's cards (`isGilded` in paint.ts; `:g` in the face-cache key).
-- **Regalia**: six medallions per empire (levels 1–6) on the Roll of Renown; painted piece `rg_<empire>_<n>` if delivered, else a numbered stand-in (`ui/regalia.ts`). Prompts in `art/PROMPTS-REGALIA.md`. Later: a profile portrait ringed with the earned pieces.
+- **Regalia**: six medallions per empire (levels 1–6) on the Roll of Renown; painted piece `rg_<empire>_<n>` if delivered, else a numbered stand-in (`ui/regalia.ts`). Prompts in `art/PROMPTS-REGALIA.md`. All 24 painted (10 Nov); Rajput's six are still stand-ins. Later: a profile portrait ringed with the earned pieces.

@@ -8,9 +8,8 @@
 - [ ] Play **The Crossing to Lanka** (Chola tab, first battle now; ~54% sim). Is the Sinhalese side (elephants, archers, Maha Thera, Wewa Jala) fair?
 - [ ] Play **The First Battle of Tarain** (Rajput tab, new; ~55% sim). Do the horse archers and the Naqqara feel fair?
 - [ ] Paint **batch 13** (`art/PROMPTS-BATCH13.md`: 8 cards for The Second Battle of Tarain, 1192, plus `map_rajput`), and answer the design question in it (player leads the Rajputs or the Ghurids; Claude suggests the Ghurids).
-- [ ] Regalia left: Gupta 6, all Chalukya, all Chola (prompts in `art/PROMPTS-REGALIA.md`). Maurya 1–6 and Gupta 1–5 are in.
 - [x] Four campaign maps delivered and wired 10 Nov (`map:` in `campaign.ts`; backdrop dim lowered to 0.3 for maps).
-- [ ] Regalia: Maurya 1–6 and Gupta 1 absorbed 10 Nov; the rest are optional, with improved prompts in `art/PROMPTS-REGALIA.md` ("First samples reviewed"). Gupta 2 sample was Mughal: keep for `rg_rajput_2`.
+- [ ] Rajput regalia (6 pieces, `rg_rajput_1`–`6`) are optional and not yet prompted; the Mughal-style bow sample is reserved for `rg_rajput_2`. Until painted, Rajput shows numbered stand-ins.
 - [ ] Paint the four campaign maps when you like (`art/PROMPTS-MAPS.md`, optional) and pick which rank rewards to build (`DESIGN.md`, "Rank and renown").
 - [ ] Play **The Great Forest** and **The Walls of Kanchi** (Campaign → Gupta tab); say if Dhuan archers or the Kanchi gate line feel unfair. Balance is a JSON edit in decks.json.
 - [ ] Try morale/rout: does a broken unit read clearly (red ROUTED band, flee animation)? Too common or too rare (about 2 per battle now; the break line is in `rules.json`)?
@@ -26,6 +25,9 @@
 - [ ] **Gate 2**: Pon plays with morale/rout and the Veteran foe (briefing → Foe: Veteran), says whether the AI is strong enough and morale readable.
 - [ ] Phase 3 campaigns: more of Tigers of the South (Chola and Rajput battles after the Chola chronology is fixed); cinematic briefings (waiting for Pon); original narrator voice.
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
+
+## Done 10 Nov (afternoon)
+- [x] **All 24 regalia absorbed** (Maurya, Gupta, Chalukya, Chola × 6; Gupta 6, Chalukya 1–6, Chola 1–6 converted today). Roll of Renown checked at 1280×720 and 844×390 with every rank earned. 94 tests pass.
 
 ## Done 10 Nov
 - [x] **Batch 11 absorbed and The Crossing to Lanka built** (`lanka.ts`, `decks.json` "lanka", `history.json` "lanka", 9 cards in cards.json, Durg and battlefield converted, gallery tab Sinhala, tests/lanka.test.ts, 91 tests pass). Sim: Chola side wins 54%.

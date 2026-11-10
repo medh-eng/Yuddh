@@ -10,3 +10,5 @@ Kept up to date so the Google Play listing and an in-game credits screen can be 
 | Fonts | Cormorant Garamond, Tiro Devanagari Hindi (bundled via @fontsource) | SIL Open Font License: free to use and bundle. |
 
 Pixabay sounds: keep a note of each file's Pixabay page (title and author) as they are added, for an optional credits screen.
+
+Regalia medallions (24, `rg_<empire>_<n>`, Maurya, Gupta, Chalukya, Chola): painted with ChatGPT image generation from Claude's prompts. Several shapes are informed reconstructions, not surviving objects (the Maurya drum and sword, the Gupta horse standard, the Chalukya shield, goad and boar standard, the Chola anklets, lamp and crown); treat them as illustrative.
