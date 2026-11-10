@@ -71,7 +71,7 @@ export const CAMPAIGNS: Campaign[] = [
   { id: 'gupta', kicker: 'THE GUPTA CAMPAIGN', title: 'The Golden Age', ground: 'ujjain', map: 'map_gupta', nodes: GUPTA_CAMPAIGN },
   { id: 'chalukya', kicker: 'THE CHALUKYA CAMPAIGN', title: 'Tigers of the South', ground: 'narmada', map: 'map_chalukya', nodes: CHALUKYA_CAMPAIGN },
   { id: 'chola', kicker: 'THE CHOLA CAMPAIGN', title: 'The Tiger Banner', ground: 'ganga', map: 'map_chola', nodes: CHOLA_CAMPAIGN },
-  { id: 'rajput', kicker: 'THE RAJPUT CAMPAIGN', title: 'The Saffron Banner', ground: 'tarain', nodes: RAJPUT_CAMPAIGN }
+  { id: 'rajput', kicker: 'THE RAJPUT CAMPAIGN', title: 'The Saffron Banner', ground: 'tarain', map: 'map_rajput', nodes: RAJPUT_CAMPAIGN }
 ];
 
 export const scenarioById = (id: string): Scenario | undefined =>

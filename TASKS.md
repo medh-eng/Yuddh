@@ -7,7 +7,7 @@
 - [ ] Play **The Ganga Road** (Chola tab, battle 2; ~58% sim).
 - [ ] Play **The Crossing to Lanka** (Chola tab, first battle now; ~54% sim). Is the Sinhalese side (elephants, archers, Maha Thera, Wewa Jala) fair?
 - [ ] Play **The First Battle of Tarain** (Rajput tab, new; ~55% sim). Do the horse archers and the Naqqara feel fair?
-- [ ] Still to upload from batch 13: `r_charan.png` (Charan Bard) and `map_rajput.png`. Play **The Second Battle of Tarain** (Rajput tab; ~44% sim, meant to be hard): are Feigned Flight and the Mailed Reserve fair? Edit decks.json "tarain2" or `enemyHq` in tarain2.ts to ease it.
+- [x] Batch 13 complete: Charan Bard in the Tarain 2 deck, `map_rajput` wired, enemy Durg now 30 (~46% sim). Play **The Second Battle of Tarain** (Rajput tab; ~44% sim, meant to be hard): are Feigned Flight and the Mailed Reserve fair? Edit decks.json "tarain2" or `enemyHq` in tarain2.ts to ease it.
 - [x] Four campaign maps delivered and wired 10 Nov (`map:` in `campaign.ts`; backdrop dim lowered to 0.3 for maps).
 - [ ] Rajput regalia (6 pieces, `rg_rajput_1`–`6`) are optional and not yet prompted; the Mughal-style bow sample is reserved for `rg_rajput_2`. Until painted, Rajput shows numbered stand-ins.
 - [ ] Paint the four campaign maps when you like (`art/PROMPTS-MAPS.md`, optional) and pick which rank rewards to build (`DESIGN.md`, "Rank and renown").
@@ -20,7 +20,6 @@
 ## Next for Claude
 - [ ] **Two-human play, steps 2 and 3** (plan in DESIGN.md): WebRTC two-phone play (QR pairing), Nearby/Bluetooth in the Android wrapper. Step 1, pass-and-play, is built.
 - [ ] Duel follow-ups: balance per faction pairing (decks were made for campaign battles, some enemy factions are strong or weak without their scenario's Durg or Kosha tweaks); a coin-toss for who moves first; 'Two players' button on phones at 7 buttons is tight.
-- [ ] When `r_charan.png` arrives: move `r_charan` from cards.json pendingArt to "yuddh", add `r_charan*2` to the tarain2 player deck, re-check balance. When `map_rajput.png` arrives: `map: 'map_rajput'` on the rajput campaign.
 - [ ] Batch 14 (The Battle of Chandawar, 1194; `art/PROMPTS-BATCH14.md`, 9 images) once painted.
 - [ ] **Cinematics (proposed, not started):** 8-second illustrated clips (a still painting with slow push-in, short caption, sound) before and between battles; pilot = The First Throne, C01–C03 in `docs/HISTORY-RESEARCH.md`, with a skip button and a short "dramatised" footer.
 - [ ] **Tigers of the South** (Chalukya campaign): battle 1 The Narmada Line (Pulakeshin II vs Harsha). Prompts: `art/PROMPTS-BATCH7.md` (11 images, with Pon). Narmada battlefield already painted.

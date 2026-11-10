@@ -28,7 +28,7 @@ export const TARAIN2 = {
   briefing: "A year ago the sultan left this plain carried by a soldier. He has come back with a rebuilt army, and this time his horse archers do not charge: they shoot, turn away and wait for your riders to follow. Behind a low rise stands the heavy cavalry that has not yet drawn a blade. The clans are tired of waiting and the young lords want to pursue. Hold your line, keep your guard around the Durg, and do not chase what is meant to be chased.",
   playerDeck: decks.player,
   enemyDeck: decks.enemy,
-  enemyHq: 28
+  enemyHq: 30
 };
 
 export function tarain2Game(seed: number, level: AiLevel = 'normal', upgrades: Record<string, number> = {}, season: Season = 'sharad'): GameState {
