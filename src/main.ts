@@ -20,6 +20,8 @@ import { battleScene, preloadBattle } from './game/scenes/battle';
 import { galleryScene } from './game/scenes/gallery';
 import { campaignScene } from './game/scenes/campaign';
 import { standingScene } from './game/scenes/standing';
+import { duelSetupScene } from './game/scenes/duelSetup';
+import { duelScenario } from './campaign/duel';
 import { scenarioById, type Campaign } from './campaign/campaign';
 import type { Scenario } from './campaign/scenario';
 import { audio } from './game/audio';
@@ -80,11 +82,18 @@ async function boot(): Promise<void> {
   };
   const campaign = (start?: Campaign): void => stage.show(campaignScene(stage, sc => play(sc, campaign), title, start));
   const standing = (): void => stage.show(standingScene(stage, title, c => campaign(c)));
+  /** pass-and-play: choose two factions, then play on one device */
+  const duel = (): void => stage.show(duelSetupScene(stage, title, (a, b) => {
+    audio.unlock();
+    const sc = duelScenario(a, b);
+    void loading(preloadBattle(sc)).then(() => stage.show(battleScene(stage, title, sc, undefined, { title, setup: duel })));
+  }));
   const title = (): void => stage.show(titleScene(stage, {
     battle: () => { audio.unlock(); void loading(battleReady).then(() => stage.show(battleScene(stage, title, undefined, () => play(scenarioById('indus_line')!, title), { map: campaign, title }))); },
     tutorial: () => play(TUTORIAL, title),
     campaign: () => campaign(),
     standing,
+    duel,
     gallery: () => { audio.unlock(); stage.show(galleryScene(stage, title)); },
     preview: () => { void loading(loadArt(CARD_ART)).then(() => { stage.setBackdrop(null); stage.show(battlePreviewScene(title)); }); },
     prototype: () => { window.location.href = `${import.meta.env.BASE_URL}prototype/`; }

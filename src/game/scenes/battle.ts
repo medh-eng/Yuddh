@@ -16,7 +16,7 @@ import { Container, FederatedPointerEvent, Graphics, Point, Sprite, Text, Textur
 import gsap from 'gsap';
 import {
   CARDS, EMPIRES, RANK_NAMES, SEASONS, dharmaOf, strikeDamage, actionObservers, findUnit, aiTurn, allUnits, applyAction, canAttack, canCharge, canMove, canPlay, koshaCost,
-  drainEvents, type Action, type AiLevel, type GameEvent, type Season, type GameState, type PlayerIndex, type Target, type Unit
+  drainEvents, swapSides, fixTurnAfterEnd, type Action, type AiLevel, type GameEvent, type Season, type GameState, type PlayerIndex, type Target, type Unit
 } from '../../engine';
 import { FIRST_THRONE_SCENARIO } from '../../campaign/firstThrone';
 import type { Scenario } from '../../campaign/scenario';
@@ -112,7 +112,7 @@ type Drag =
   | { kind: 'card'; index: number; view: HandCard; moved: boolean; sx: number; sy: number; downAt: number }
   | { kind: 'unit'; uid: number; view: TokenView; moved: boolean; sx: number; sy: number; downAt: number };
 type Pick = { kind: 'card'; index: number } | { kind: 'unit'; uid: number } | null;
-type Overlay = { kind: 'briefing' | 'end' | 'confirm' | 'inspect'; view: Container; won?: boolean } | null;
+type Overlay = { kind: 'briefing' | 'end' | 'confirm' | 'inspect' | 'curtain'; view: Container; won?: boolean; /** duel: the real player index (curtain: who is up next; end: who won) */ who?: number } | null;
 
 function snapshot(st: GameState): Snap {
   const { rng, ...rest } = st;
@@ -122,7 +122,7 @@ function snapshot(st: GameState): Snap {
 }
 
 /** where the pause menu and the end screen can lead: the campaign map (if the battle came from there) and the title */
-export interface BattleNav { map?: () => void; title: () => void }
+export interface BattleNav { map?: () => void; title: () => void; /** duel: back to choosing factions */ setup?: () => void }
 
 export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST_THRONE_SCENARIO, next?: () => void, nav?: BattleNav): Scene {
   const s: Scene = new Container();
@@ -138,6 +138,12 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   let drag: Drag | null = null;
   let pick: Pick = null;
   let longPress: ReturnType<typeof setTimeout> | null = null;
+  /** pass-and-play: two humans; `flipped` = player 0 on screen is the original second player */
+  const duel = sc.duel;
+  let flipped = false;
+  let curtainDone: (() => void) | null = null;
+  /** the faction on screen at frame position f (0 = bottom, the player to move) */
+  const sideAt = (f: number) => duel!.sides[(f ^ (flipped ? 1 : 0)) as 0 | 1];
   let overlay: Overlay = null;
   let hoverIdx = -1;
   let pressAt: { x: number; y: number } | null = null;
@@ -169,6 +175,13 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
 
   const durg: [DurgView, DurgView] = [new DurgView(0, sc.durgArt[0]), new DurgView(1, sc.durgArt[1])];
   s.addChild(durg[0], durg[1]);
+  /** duel: name the lanes and paint the Durgs for whoever is at the bottom now */
+  function duelFrame(): void {
+    if (!duel) return;
+    durg[0].setArt(sideAt(0).durg); durg[1].setArt(sideAt(1).durg);
+    laneLabels[0].text = `${sideAt(1).name.toUpperCase()} RAJYA`;
+    laneLabels[2].text = `${sideAt(0).name.toUpperCase()} RAJYA`;
+  }
 
   // right column: enemy info, end turn, your treasury, deck
   const enemyInfo = new Text({ text: '', style: { fontFamily: FONT_TITLE, fontSize: 22, fill: INK.goldPale, align: 'center', stroke: { color: 0x000000, width: 3 } } });
@@ -433,6 +446,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   let yashNote: { empire: string; gain: Gain } | null = null, yashDone = false;
   function start(): void {
     yashNote = null; yashDone = false;
+    flipped = false; curtainDone = null;
     st = sc.game(Math.floor(Math.random() * 1e9));
     baseLevel = st.aiLevel;
     if (!sc.coached) st.aiLevel = foeLevel(baseLevel);
@@ -442,6 +456,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     clearBoard();
     handHeld = true;
     applyLayout();
+    duelFrame();
     buildSeason();
     reconcile(shown, true);
     coachStep = 0; Object.assign(coachFlags, { ended: 0, attacks: 0, acted: 0, selected: false });
@@ -510,7 +525,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
       hb.position.set(L.phone ? W - 118 : W - 190, L.phone ? 40 : 70);
       panel.addChild(hb);
     }
-    if (!sc.coached) {
+    if (!sc.coached && !duel) {
       // the foe: Standard (the heuristic opponent the battle was balanced against) or Veteran (the search AI)
       const foeButton = (): Container => {
         const b = makeButton(veteranFoe() ? 'Foe: Veteran' : 'Foe: Standard', () => {
@@ -580,7 +595,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
       const dh = durg[i].hp - p.hq.hp;
       if (!instant && durg[i].hp && dh > 0) damageShield(durg[i].x, durg[i].y - 10, dh, 1.35);
       if (!instant && durg[i].hp && dh < 0) floatNumber(durg[i].x, durg[i].y - 10, `+${-dh}`, 0x9cff8a, 64);
-      durg[i].set(p.hq.name, i === 0 ? EMPIRES[p.empire].name : p.faction, p.hq.hp, p.hq.maxHp);
+      durg[i].set(p.hq.name, i === 0 && !duel ? EMPIRES[p.empire].name : p.faction, p.hq.hp, p.hq.maxHp);
       drawMeter(i, dharmaOf(p));
     }
     // the music turns urgent once either Durg is half down
@@ -1579,7 +1594,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const bh = L.phone ? 120 : 140;
     const band = new Graphics().rect(0, -bh / 2, L.W, bh).fill({ color: 0x000000, alpha: 0.75 });
     band.moveTo(0, -bh / 2).lineTo(L.W, -bh / 2).moveTo(0, bh / 2).lineTo(L.W, bh / 2).stroke({ width: 2, color: who === 0 ? INK.gold : 0xe0674a });
-    const t = new Text({ text: who === 0 ? 'YOUR TURN' : `THE ${sc.enemyName.toUpperCase()} MOVES`, style: { fontFamily: FONT_TITLE, fontSize: 72, fontWeight: '700', letterSpacing: 14, fill: who === 0 ? INK.goldPale : 0xffb09a } });
+    const t = new Text({ text: duel ? `${sideAt(who).name.toUpperCase()}: YOUR TURN` : who === 0 ? 'YOUR TURN' : `THE ${sc.enemyName.toUpperCase()} MOVES`, style: { fontFamily: FONT_TITLE, fontSize: 72, fontWeight: '700', letterSpacing: 14, fill: who === 0 ? INK.goldPale : 0xffb09a } });
     t.anchor.set(0.5); t.x = L.W / 2;
     if (t.width > L.W - 100) t.scale.set((L.W - 100) / t.width);
     const c = new Container(); c.addChild(band, t); c.y = L.line.front; fx.addChild(c);
@@ -1598,6 +1613,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     drainEvents(st);
     reconcile(snapshot(st));
     if (st.over) { busy = false; animating = false; checkOver(); return; }
+    if (duel) { await duelHandOver(); return; }
     await turnBanner(1);
     // record the computer's turn one action at a time
     const steps: { events: GameEvent[]; snap: Snap }[] = [];
@@ -1619,6 +1635,77 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     settle();
   }
 
+  /** pass-and-play: hide the board, wait for the other player, turn the table round and begin their turn */
+  async function duelHandOver(): Promise<void> {
+    const nextReal = (flipped ? 0 : 1);               // the player about to move, as an index into duel.sides
+    fixTurnAfterEnd(st, flipped);
+    animating = false;                                // a rotated phone may redraw the curtain meanwhile
+    await new Promise<void>(res => { curtainDone = res; drawCurtain(nextReal, true); });
+    if (!alive) return;
+    animating = true;
+    swapSides(st); flipped = !flipped;
+    drainEvents(st);
+    clearBoard();
+    duelFrame();
+    reconcile(snapshot(st), true);
+    busy = false; animating = false;
+    await turnBanner(0);
+    refreshInteractivity();
+    settle();
+  }
+
+  /** the screen between two players' turns; it hides both hands and the face-down Yantras */
+  function drawCurtain(nextReal: number, animate: boolean): void {
+    const W = L.W, H = L.H, ph = L.phone;
+    const side = duel!.sides[nextReal as 0 | 1];
+    const c = new Container();
+    const bg = new Graphics().rect(0, 0, W, H).fill({ color: 0x070402, alpha: 1 });
+    bg.eventMode = 'static';
+    const k = ph ? 0.8 : 1;
+    const face = new Sprite(cardFace(side.hero)); face.anchor.set(0.5); face.scale.set((ph ? 0.52 : 0.62)); face.position.set(ph ? W * 0.27 : W * 0.3, H / 2);
+    const tx = ph ? W * 0.5 : W * 0.5;
+    const t1 = new Text({ text: 'PASS THE DEVICE TO', style: { fontFamily: FONT_TITLE, fontSize: Math.round(26 * k), fontWeight: '700', letterSpacing: 10, fill: INK.gold } });
+    const t2 = new Text({ text: side.name.toUpperCase(), style: { fontFamily: FONT_TITLE, fontSize: Math.round(80 * k), fontWeight: '700', fill: INK.goldPale, wordWrap: true, wordWrapWidth: W - tx - 60 } });
+    const t3 = new Text({ text: 'The other commander should look away. Tap when you hold the device and are ready to see your hand.', style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * (ph ? 0.9 : 1)), fontStyle: 'italic', fill: INK.cream, wordWrap: true, wordWrapWidth: W - tx - 80, lineHeight: Math.round(40 * (ph ? 0.9 : 1)) } });
+    t1.position.set(tx, H / 2 - t2.height / 2 - 70 * k); t2.position.set(tx, t1.y + t1.height + 12); t3.position.set(tx, t2.y + t2.height + 18);
+    const go = makeButton('I am ready', () => {
+      audio.play('conch');
+      overlay = null; destroyTree(c);
+      const r = curtainDone; curtainDone = null; if (r) r();
+    }, { primary: true, w: 340, ui: ph ? 1.1 : 1 });
+    go.position.set(tx + 170 * (ph ? 1.1 : 1), Math.min(H - 50, t3.y + t3.height + 70));
+    c.addChild(bg, face, t1, t2, t3, go);
+    s.addChild(c);
+    overlay = { kind: 'curtain', view: c, who: nextReal };
+    if (animate) gsap.from(c, { alpha: 0, duration: 0.35 });
+  }
+
+  /** pass-and-play: the winner's screen (nothing is recorded, no Yash) */
+  function duelEndScreen(winnerReal: number, animate: boolean): void {
+    const W = L.W, H = L.H, ph = L.phone;
+    const win = duel!.sides[winnerReal as 0 | 1];
+    if (animate) { audio.play('victory'); audio.playMusic('music_victory'); }
+    const c = new Container();
+    const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.82 }); dim.eventMode = 'static';
+    const face = new Sprite(cardFace(win.hero)); face.anchor.set(0.5); face.scale.set(ph ? 0.4 : 0.75); face.position.set(W / 2, ph ? 160 : 365);
+    const title = new Text({ text: `${win.name.toUpperCase()} WINS`, style: { fontFamily: FONT_TITLE, fontSize: ph ? 72 : 100, fontWeight: '700', letterSpacing: 10, fill: INK.goldPale, stroke: { color: 0x000000, width: 8 } } });
+    title.anchor.set(0.5); title.position.set(W / 2, ph ? 345 : 675);
+    if (title.width > W - 120) title.scale.set((W - 120) / title.width);
+    const sub = new Text({ text: `The Durg of ${duel!.sides[(1 - winnerReal) as 0 | 1].name} falls in turn ${st.turn}.`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * (ph ? 1.1 : 1)), fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - 200 } });
+    sub.anchor.set(0.5); sub.position.set(W / 2, ph ? 442 : 775);
+    const kk = ph ? 1.1 : 1, w = ph ? 230 : 300;
+    const btns: Container[] = [makeButton('Rematch', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 340, ui: kk })];
+    if (nav?.setup) btns.push(makeButton('Choose factions', nav.setup, { w, ui: kk }));
+    btns.push(makeButton('Title screen', nav ? nav.title : exit, { w, ui: kk }));
+    const widths = btns.map((_, i) => (i === 0 ? 340 : w) * kk), gap = 24 * kk;
+    let bx = W / 2 - (widths.reduce((a, v) => a + v, 0) + gap * (btns.length - 1)) / 2;
+    btns.forEach((b, i) => { b.position.set(bx + widths[i] / 2, ph ? 580 : 885); bx += widths[i] + gap; });
+    c.addChild(dim, face, title, sub, ...btns);
+    s.addChild(c);
+    overlay = { kind: 'end', view: c, who: winnerReal };
+    if (animate) gsap.from([face, title, sub, ...btns], { alpha: 0, duration: 0.6, stagger: 0.1 });
+  }
+
   /** after an animation: apply a layout change that arrived while it ran */
   function settle(): void {
     if (layoutPending && !animating) { layoutPending = false; relayout(); }
@@ -1627,6 +1714,11 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   function checkOver(): boolean {
     if (!st.over) return false;
     busy = true;
+    if (duel) {
+      const winnerReal = (st.winner === null ? 0 : (st.winner ^ (flipped ? 1 : 0)));
+      setTimeout(() => { if (alive) duelEndScreen(winnerReal, true); }, 900);
+      return true;
+    }
     const won = st.winner === 0;
     setTimeout(() => { if (alive) endScreen(won, true); }, 900);
     return true;
@@ -1745,7 +1837,8 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     buildSeason();
     reconcile(shown, true);
     if (open?.kind === 'briefing') briefing(false);
-    else if (open?.kind === 'end') endScreen(open.won ?? false, false);
+    else if (open?.kind === 'end') { if (duel) duelEndScreen(open.who ?? 0, false); else endScreen(open.won ?? false, false); }
+    else if (open?.kind === 'curtain') drawCurtain(open.who ?? 0, false);
     else if (!st.over) busy = false;
   }
   s.relayout = relayout;
@@ -1756,7 +1849,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
   // read-only hook for automated playtests (tests/e2e); positions are in screen (CSS) pixels
   const scr = (x: number, y: number) => { const g = s.toGlobal(new Point(x, y)); return { x: g.x, y: g.y }; };
   (window as unknown as { __yuddh: unknown }).__yuddh = {
-    state: () => st, busy: () => busy || dealing(), phone: () => L.phone,
+    state: () => st, flipped: () => flipped, busy: () => busy || dealing(), phone: () => L.phone,
     /** shows the end screen without playing to it (layout checks) */
     showEnd: (won: boolean) => { if (!overlay) endScreen(won, false); },
     hand: () => hand.map(h => ({ id: h.cardId, ...scr(h.x, h.y) })),
@@ -1807,7 +1900,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
 
 /** the art a battle needs: both decks, the two Durgs, the battlefield */
 export function battleArt(sc: Scenario = FIRST_THRONE_SCENARIO): string[] {
-  return [...sc.playerDeck, ...sc.enemyDeck, ...sc.durgArt];
+  return [...sc.playerDeck, ...sc.enemyDeck, ...sc.durgArt, sc.heroCard, sc.defeatCard, ...(sc.duel ? sc.duel.sides.map(x => x.hero) : [])];
 }
 
 /** preload the battlefield and paintings so the board never appears without them */

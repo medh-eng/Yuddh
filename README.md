@@ -30,6 +30,7 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 | A new *kind* of rule or order effect | `src/engine/rules.ts` (behind `st.rules === 'yuddh'`), then the AI's value in `src/engine/ai.ts`, then the reading panel in `src/game/ui/glossary.ts` |
 | Morale / rout (who breaks, the line, who is steadfast) | `src/data/rules.json` ("morale"); logic is `checkRout` in `src/engine/rules.ts` |
 | How the Veteran (search) AI thinks and how long | `src/data/rules.json` ("ai": beam, depth, finalists, replies); code in `src/engine/search.ts`; the player's Standard/Veteran choice in `src/campaign/difficulty.ts` |
+| Pass-and-play Duel (factions, picker, turn swap, curtain) | factions: `src/data/duel.json`; `src/campaign/duel.ts`; picker `src/game/scenes/duelSetup.ts`; turn swap `src/engine/duel.ts`; curtain and win screen in `src/game/scenes/battle.ts` (`duel`, `duelHandOver`) |
 | How a screen looks | `src/game/scenes/` (title, campaign, standing, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
 | Art or sound | Drop masters in `art/source/{cards,battlefields,sfx}/`, run `npm run assets`, commit `public/assets/` and `src/assets/*.json` |
 

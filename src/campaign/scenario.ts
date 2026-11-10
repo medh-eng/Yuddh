@@ -3,6 +3,8 @@
    tutorial are both scenarios; later campaign missions will be too. */
 import type { GameState } from '../engine/types';
 
+export interface DuelSide { name: string; hero: string; durg: string }
+
 export interface Scenario {
   id: string;
   title: string;
@@ -33,4 +35,6 @@ export interface Scenario {
   music?: { briefing?: string; calm?: string; intense?: string };
   /** a guided battle: the coach explains each step */
   coached?: boolean;
+  /** pass-and-play: two humans, no AI; sides[0] moves first. The battle turns the board between turns. */
+  duel?: { sides: [DuelSide, DuelSide] };
 }

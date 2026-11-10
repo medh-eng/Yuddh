@@ -1,0 +1,64 @@
+/* ============================================================
+   The Duel: two people, one device (pass-and-play). Each picks a
+   faction; the faction's deck is the one its campaign battle uses
+   (decks.json), its Durg and hero come from src/data/duel.json.
+   Both players are "human": the battle scene turns the board
+   around between turns (engine/duel.ts) and shows a pass-the-device
+   curtain. The second player draws one extra card to offset going
+   second. The season is drawn at random.
+   ============================================================ */
+import duelJson from '../data/duel.json';
+import { newGame } from '../engine/rules';
+import type { EmpireId, GameState, Season } from '../engine/types';
+import { decksOf } from '../data';
+import type { Scenario } from './scenario';
+
+export interface Faction {
+  id: string; name: string; hindi: string; empire: EmpireId; capital: string; faction: string;
+  deck: [string, 'player' | 'enemy']; durg: string; hero: string; ground: string; blurb: string;
+}
+export const FACTIONS = duelJson.factions as unknown as Faction[];
+export const factionById = (id: string): Faction | undefined => FACTIONS.find(f => f.id === id);
+
+const SEASON_LIST: Season[] = ['sharad', 'varsha', 'grishma', 'hemanta'];
+const deckOf = (f: Faction): string[] => { const d = decksOf(f.deck[0]); return f.deck[1] === 'player' ? d.player : d.enemy; };
+
+export function duelGame(a: Faction, b: Faction, seed: number): GameState {
+  const season = SEASON_LIST[Math.abs(Math.floor(seed)) % SEASON_LIST.length];
+  return newGame({
+    seed,
+    player: { empire: a.empire, ally: 'neutral', deck: deckOf(a), faction: a.faction, capital: a.capital },
+    enemy: { empire: b.empire, ally: 'neutral', deck: deckOf(b), faction: b.faction, capital: b.capital, handSize: 5 },
+    aiLevel: 'normal',
+    objective: { type: 'destroy' },
+    scenarioId: 'duel',
+    scenarioName: `${a.name} vs ${b.name}`,
+    rules: 'yuddh',
+    season
+  });
+}
+
+/** the scenario the battle screen plays for this pairing (a is player 1 and moves first) */
+export function duelScenario(a: Faction, b: Faction): Scenario {
+  const ground = Math.random() < 0.5 ? a.ground : b.ground;
+  return {
+    id: 'duel',
+    title: `${a.name} against ${b.name}`,
+    place: 'Pass and play',
+    year: 'Two commanders',
+    battlefield: ground,
+    briefing: `Two commanders share one table. ${a.name} moves first and ${b.name} draws one extra card to make up for it. When you end your turn the screen is hidden: pass the device and let the other player tap when they are ready. Nobody should look while the other plays; each player's hand shows only on their own turn.`,
+    objective: 'Break the other commander\'s Durg.',
+    heroCard: a.hero,
+    defeatCard: b.hero,
+    enemyName: `${b.name} host`,
+    durgArt: [a.durg, b.durg],
+    winText: turn => `The Durg falls in turn ${turn}.`,
+    loseText: '',
+    goLabel: 'Begin the duel',
+    playerDeck: deckOf(a),
+    enemyDeck: deckOf(b),
+    game: seed => duelGame(a, b, seed),
+    duel: { sides: [{ name: a.name, hero: a.hero, durg: a.durg }, { name: b.name, hero: b.hero, durg: b.durg }] }
+  };
+}

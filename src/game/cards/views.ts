@@ -256,6 +256,9 @@ export class DurgView extends Container {
     Ticker.shared.add(this.tick);
   }
 
+  /** show another Durg painting (pass-and-play turns the board around) */
+  setArt(artId: string): void { this.art.texture = durgFace(artId, this.owner); }
+
   /** larger lettering for small screens (k = 1 on desktop) */
   setTextScale(k: number): void {
     this.nameSize = Math.round(26 * k); this.nameText.style.fontSize = this.nameSize; this.nameText.style.lineHeight = Math.round(28 * k);

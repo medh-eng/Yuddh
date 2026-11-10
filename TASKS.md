@@ -18,7 +18,8 @@
 - [ ] Remaining sounds in `art/SOUND-LIST.md`.
 
 ## Next for Claude
-- [ ] **Two-human play** (Pon's idea, plan in DESIGN.md "Two-human play"): 1 pass-and-play Duel mode, 2 WebRTC two-phone play (QR pairing), 3 Nearby/Bluetooth in the Android wrapper.
+- [ ] **Two-human play, steps 2 and 3** (plan in DESIGN.md): WebRTC two-phone play (QR pairing), Nearby/Bluetooth in the Android wrapper. Step 1, pass-and-play, is built.
+- [ ] Duel follow-ups: balance per faction pairing (decks were made for campaign battles, some enemy factions are strong or weak without their scenario's Durg or Kosha tweaks); a coin-toss for who moves first; 'Two players' button on phones at 7 buttons is tight.
 - [ ] When `r_charan.png` arrives: move `r_charan` from cards.json pendingArt to "yuddh", add `r_charan*2` to the tarain2 player deck, re-check balance. When `map_rajput.png` arrives: `map: 'map_rajput'` on the rajput campaign.
 - [ ] Batch 14 (The Battle of Chandawar, 1194; `art/PROMPTS-BATCH14.md`, 9 images) once painted.
 - [ ] **Cinematics (proposed, not started):** 8-second illustrated clips (a still painting with slow push-in, short caption, sound) before and between battles; pilot = The First Throne, C01–C03 in `docs/HISTORY-RESEARCH.md`, with a skip button and a short "dramatised" footer.
@@ -30,6 +31,7 @@
 - [ ] Apply the DESIGN.md / TASKS.md / data-in-JSON / agent-README conventions to Pon's other game repos (Astral-command, Indistock, Corebound, BLACK SWAN, Yuddh is done) when a session is opened in each.
 
 ## Done 10 Nov (evening)
+- [x] **Pass-and-play Duel built**: title "Two players", faction picker (16 factions, any pairing), board turns round with a pass-the-device curtain, Player 2 draws +1 card, random season, own win screen with Rematch / Choose factions. `src/engine/duel.ts`, `src/campaign/duel.ts`, `src/data/duel.json`, `scenes/duelSetup.ts`, tests/duel.test.ts, tests/duelFactions.test.ts, tests/e2e/duel.cjs (A=, B=, FAST=1). 104 tests pass; played at 1280×720 and 844×390.
 - [x] **The Second Battle of Tarain built** (`tarain2.ts`, player leads the Rajputs; Ghurid Aibak / Mailed Reserve / Feigned Flight (`damageFront`) / Dawn Charge, Rajput Skandaraja / Rana's Clan Foot; enemy Durg 28; sim ~44% Rajput wins; History note; Rajput tab chain tarain1 → tarain2). Batch 14 sheet written.
 
 ## Done 10 Nov (afternoon)
