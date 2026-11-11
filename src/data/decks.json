@@ -582,5 +582,71 @@
 "s_agni",
 "y_pratikar"
 ]
+},
+"koppam": {
+"player": [
+"ch_rajadhiraja",
+"ch_rajendra2",
+"ch_veera_ani*2",
+"ch_navik*2",
+"ch_archer*3",
+"ch_pot*2",
+"ch_sena*2",
+"ch_velaikkarar*2",
+"ch_kalam*2",
+"ch_valangai*2",
+"ch_vanigar",
+"ch_marg",
+"ch_ganga_jal",
+"ch_vyapari"
+],
+"enemy": [
+"wc_someshvara",
+"wc_dhanu*3",
+"wc_gaja*3",
+"wc_barsha*3",
+"n_padati*2",
+"n_dhanurdhar*2",
+"n_ashvarohi*2",
+"n_rathi*2",
+"n_maharathi*2",
+"n_atirathi",
+"n_gaja*2",
+"n_aakraman*2",
+"y_pratikar"
+]
+},
+"vikram_return": {
+"player": [
+"c_vikramaditya1",
+"c_vatapi_praharak*3",
+"c_punarasthapana*2",
+"c_rakshak*2",
+"c_ashvarohi*2",
+"c_gaja",
+"c_senapati*2",
+"c_shilpa",
+"c_varaha_dhwaja",
+"c_narmada_ghat*2",
+"c_ravikirti",
+"c_kaveri_march*2",
+"n_padati*2",
+"n_dhanurdhar*2",
+"n_aakraman*2"
+],
+"enemy": [
+"pv_vatapi_adhikari",
+"pv_vatapi_rakshak*3",
+"pv_stambha_rakshak*3",
+"pv_vatapi_avarodh*2",
+"n_padati*2",
+"n_dhanurdhar*3",
+"n_ashvarohi*2",
+"n_rathi*2",
+"n_gaja*2",
+"n_senapati",
+"n_aakraman",
+"y_kavach"
+]
 }
 }

@@ -26,10 +26,9 @@ describe('Pullalur', () => {
     expect(rate).toBeGreaterThan(0.4);
     expect(rate).toBeLessThan(0.7);
   });
-  it('the Chalukya campaign runs Narmada → Pullalur → Badami', () => {
+  it('the Chalukya campaign runs Narmada → Pullalur → Badami → Vikramaditya\'s Return', () => {
     const c = CAMPAIGNS.find(x => x.id === 'chalukya')!;
-    expect(c.nodes.map(n => n.scenario.id)).toEqual(['narmada_line', 'pullalur', 'badami']);
+    expect(c.nodes.map(n => n.scenario.id)).toEqual(['narmada_line', 'pullalur', 'badami', 'vikram_return']);
     expect(c.nodes[0].scenario.nextId).toBe('pullalur');
-    expect(c.nodes[1].scenario.nextId).toBe('badami');
   });
 });

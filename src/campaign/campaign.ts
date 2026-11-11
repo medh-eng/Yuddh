@@ -22,6 +22,8 @@ import { TARAIN2_SCENARIO } from './tarain2';
 import { CHANDAWAR_SCENARIO } from './chandawar';
 import { PULLALUR_SCENARIO } from './pullalur';
 import { BADAMI_SCENARIO } from './badami';
+import { KOPPAM_SCENARIO } from './koppam';
+import { VIKRAM_RETURN_SCENARIO } from './vikramReturn';
 
 export interface CampaignNode {
   scenario: Scenario;
@@ -59,7 +61,8 @@ export const GUPTA_CAMPAIGN: CampaignNode[] = [
 export const CHALUKYA_CAMPAIGN: CampaignNode[] = [
   { scenario: NARMADA_LINE_SCENARIO, face: 'c_pulakeshin', blurb: 'Stop Harsha of Kanauj on the Narmada.' },
   { scenario: PULLALUR_SCENARIO, face: 'pv_mahendravarman', blurb: 'Break the clever king of Kanchi before the gates close.' },
-  { scenario: BADAMI_SCENARIO, face: 'pv_narasimhavarman', blurb: 'Hold Vatapi itself against the wrestler-king\'s grudge.' }
+  { scenario: BADAMI_SCENARIO, face: 'pv_narasimhavarman', blurb: 'Hold Vatapi itself against the wrestler-king\'s grudge.' },
+  { scenario: VIKRAM_RETURN_SCENARIO, face: 'c_vikramaditya1', blurb: 'Take Vatapi back and restore the Chalukya kingdom.' }
 ];
 
 export const RAJPUT_CAMPAIGN: CampaignNode[] = [
@@ -71,7 +74,8 @@ export const RAJPUT_CAMPAIGN: CampaignNode[] = [
 export const CHOLA_CAMPAIGN: CampaignNode[] = [
   { scenario: LANKA_SCENARIO, face: 'si_mahinda', blurb: 'Cross the strait and take Anuradhapura from Mahinda V.' },
   { scenario: GANGA_SCENARIO, face: 'pl_mahipala', blurb: 'March north to the Ganga and beat the Pala elephants on its bank.' },
-  { scenario: KADARAM_SCENARIO, face: 'sv_sangrama', blurb: 'Sail to Kadaram and break the harbour of the sea kings.' }
+  { scenario: KADARAM_SCENARIO, face: 'sv_sangrama', blurb: 'Sail to Kadaram and break the harbour of the sea kings.' },
+  { scenario: KOPPAM_SCENARIO, face: 'wc_someshvara', blurb: "Hold the field at Koppam against Someshvara I, whatever it costs." }
 ];
 
 export const CAMPAIGNS: Campaign[] = [

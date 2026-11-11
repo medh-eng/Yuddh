@@ -57,5 +57,7 @@ export const KADARAM_SCENARIO: Scenario = {
   winText: turn => `Kadaram falls in turn ${turn}. The Chola inscriptions will say the king was taken with his elephants and his treasure; Kadaram's own voice is silent.`,
   loseText: 'The fire boats find the fleet. The Chola ships turn back across the Bay, and the sea road stays closed.',
   goLabel: 'To battle',
+  nextId: 'koppam',
+  nextLabel: 'Koppam',
   game: seed => kadaramGame(seed, 'normal')
 };

@@ -292,6 +292,40 @@
    "hq": 30
   },
   {
+   "id": "pallava_garrison",
+   "name": "The Garrison of Vatapi",
+   "hindi": "पल्लव रक्षक दल",
+   "empire": "neutral",
+   "capital": "Vatapi (held)",
+   "faction": "Pallava garrison",
+   "deck": [
+    "vikram_return",
+    "enemy"
+   ],
+   "durg": "durg_vatapi_garrison",
+   "hero": "pv_vatapi_adhikari",
+   "ground": "vatapi",
+   "blurb": "Twelve years dug in behind another king's cliffs: patched shields and a pillar they still guard.",
+   "hq": 22
+  },
+  {
+   "id": "western_chalukya",
+   "name": "Someshvara's Chalukya",
+   "hindi": "पश्चिमी चालुक्य",
+   "empire": "neutral",
+   "capital": "Kalyani",
+   "faction": "Western Chalukya",
+   "deck": [
+    "koppam",
+    "enemy"
+   ],
+   "durg": "durg_kalyani",
+   "hero": "wc_someshvara",
+   "ground": "koppam",
+   "blurb": "The rival power of the Deccan: archers trained against elephants, and a downpour of arrows.",
+   "hq": 26
+  },
+  {
    "id": "pallava_badami",
    "name": "Mamalla's Pallava",
    "hindi": "पल्लव",

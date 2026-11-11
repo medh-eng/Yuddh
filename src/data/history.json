@@ -340,6 +340,46 @@
       ],
       "source": "Sources: Kuram plates and Velurpalaiyam plates of the Pallava dynasty; the Periya Puranam (12th c.) for the Paranjothi tradition; Aihole-line Chalukya records for Vikramaditya I's recovery of the kingdom.",
       "epilogue": "The Pallava held Vatapi for about twelve years. Pulakeshin II's son Vikramaditya I took it back by about 655–670 CE, and the Chalukya–Pallava war went on for generations after both kings were gone."
+    },
+    "koppam": {
+      "kicker": "KOPPAM · c. 1052–54 CE",
+      "happened": "Rajadhiraja I, Rajendra I's son, led the Chola army against Someshvara I (Ahavamalla) of the Western Chalukyas at Koppam, usually identified with Koppal on the Tungabhadra. Chola sources — above all the Manimangalam copper-plate record of Rajendra II (1055 CE) and later Thanjavur temple inscriptions — say Rajadhiraja rode his war elephant into the fighting and was killed on it by a downpour of arrows; his brother Rajendra II, wounded and held back early in the day, returned, rallied the broken army, turned the battle and was crowned on the field. Tamil tradition remembers Rajadhiraja as Yanai-mel-thunjina Devar, 'the king who died on the elephant.'",
+      "changed": [
+        {
+          "basis": "HISTORY",
+          "text": "Rajadhiraja's death on his elephant, the arrows, and Rajendra II's rally and coronation on the field come from the Manimangalam plates (1055 CE) and the Thanjavur inscriptions."
+        },
+        {
+          "basis": "DISPUTED",
+          "text": "The date is given as 1052 or 1054 CE depending on the source, and the site is argued over (Koppal is the usual reading). Both sides claim the outcome: the Chola inscriptions claim victory and heavy plunder (elephants, horses, even Someshvara's queens); Chalukya records are largely silent or claim the war for themselves, and the claim that Someshvara's brother Jayasimha died in the battle is doubted, since other records show him alive afterward. The game gives the Chola reading as 'the Chola record says,' not as settled fact."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "The course of the fight, the troop numbers (none survive, and the large figures in some retellings are not used) and the cards. Both armies are painted with dignity; Someshvara I is a serious king and general, not a villain."
+        }
+      ],
+      "source": "Sources: Manimangalam copper-plate inscription of Rajendra II (1055 CE); Thanjavur (Brihadeeswarar) temple inscriptions; Western Chalukya records, which are largely silent on the battle's outcome.",
+      "epilogue": "Rajendra II held the Chola throne after Koppam. The Chola–Western Chalukya rivalry over the Deccan border continued for decades after both kings who met at Koppam were gone."
+    },
+    "vikram_return": {
+      "kicker": "VIKRAMADITYA'S RETURN · c. 654–655 CE",
+      "happened": "Pulakeshin II's son Vikramaditya I became Chalukya king around 655 CE and, in his own copper-plate grants issued across his reign (the Gadval, Nerur and Kendur plates among them), claimed to have 'restored the fortunes of his family.' Historians read this, together with later Chalukya inscriptions that already treat Vatapi as back in Chalukya hands, as placing the recapture of the capital at around 654–655 CE, roughly twelve years after it fell. Vikramaditya I went on to reign into the 680s, rebuilding Chalukya power across the Deccan.",
+      "changed": [
+        {
+          "basis": "HISTORY",
+          "text": "Vikramaditya I's own claim to have restored his family's fortunes comes from his copper-plate grants. The approximate date of the recapture (c. 654–655 CE) is a historians' estimate from the gap between his accession and later inscriptions, not a date given by any single source."
+        },
+        {
+          "basis": "INVENTED",
+          "text": "No source describes the recapture of Vatapi as a battle, and none names the Pallava commander holding the city. Narasimhavarman I, the Pallava king from the Fall of Badami, did not die until around 668 CE, well after this date, so the man Vikramaditya actually fought was a garrison or governor left behind — the game invents no name for him and calls him simply 'the Governor of Vatapi.' The ground, the course of the fight and the cards are built entirely from the gap between before and after."
+        },
+        {
+          "basis": "HISTORY",
+          "text": "The Pillar of Victory that the Pallava cut with the title Vatapikonda is real and survives; no source says what, if anything, the Chalukyas did to it after retaking the city, and the game does not invent an answer to that."
+        }
+      ],
+      "source": "Sources: Gadval, Nerur and Kendur copper-plate grants of Vikramaditya I; later Chalukya inscriptions of his reign and his successors.",
+      "epilogue": "Vikramaditya I reigned into the 680s and rebuilt Chalukya power across the Deccan. The Chalukya–Pallava rivalry he inherited from his father continued under his own son, Vinayaditya, and beyond."
     }
   }
 }

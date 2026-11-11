@@ -60,5 +60,7 @@ export const BADAMI_SCENARIO: Scenario = {
   winText: turn => `Narasimhavarman's wrestlers break outside the gates in turn ${turn}, and the pillar he meant to cut at the city's centre stays uncarved. Badami stands, for now.`,
   loseText: "Pulakeshin II falls outside his own capital, or the sources fall silent and the game assumes he did. Narasimhavarman cuts \"Vatapikonda\" into a captured pillar and holds the city for twelve years, until Pulakeshin's son Vikramaditya I takes it back.",
   goLabel: 'To battle',
+  nextId: 'vikram_return',
+  nextLabel: "Vikramaditya's Return",
   game: seed => badamiGame(seed, 'normal')
 };

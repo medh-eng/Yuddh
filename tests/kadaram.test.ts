@@ -27,6 +27,7 @@ describe("Rajendra's Sea Road (Kadaram)", () => {
   });
   it('the Chola campaign has its own tab on the map', () => {
     const c = CAMPAIGNS.find(x => x.id === 'chola')!;
-    expect(c.nodes.map(n => n.scenario.id)).toEqual(['lanka', 'ganga', 'kadaram']);
+    expect(c.nodes.map(n => n.scenario.id)).toEqual(['lanka', 'ganga', 'kadaram', 'koppam']);
+    expect(c.nodes[2].scenario.nextId).toBe('koppam');
   });
 });
