@@ -1,6 +1,6 @@
 # YUDDH — tasks
 
-*Updated at the end of each session (last: 11 Nov 2026, night). Design and rules: `DESIGN.md`.*
+*Updated at the end of each session (last: 11 Nov 2026, third later night). Design and rules: `DESIGN.md`.*
 
 ## Waiting on Pon
 - [ ] Play **Koppam** (Chola tab, battle 4 on the map, the campaign's last stop; built 11 Nov, ~56% sim, close on purpose — "the Chola record says" victory, not a certainty). Does Rajadhiraja's elephant feel right as a 7-cost legendary that dies historically but doesn't have to in the game? Is A Downpour of Arrows (3 damage to the line) fair? Edit decks.json "koppam" or the hq values in koppam.ts.
@@ -17,7 +17,7 @@
 - [ ] Play **The First Battle of Tarain** (Rajput tab, new; ~55% sim). Do the horse archers and the Naqqara feel fair?
 - [x] Batch 13 complete: Charan Bard in the Tarain 2 deck, `map_rajput` wired, enemy Durg now 30 (~46% sim). Play **The Second Battle of Tarain** (Rajput tab; ~44% sim, meant to be hard): are Feigned Flight and the Mailed Reserve fair? Edit decks.json "tarain2" or `enemyHq` in tarain2.ts to ease it.
 - [x] Four campaign maps delivered and wired 10 Nov (`map:` in `campaign.ts`; backdrop dim lowered to 0.3 for maps).
-- [ ] Rajput regalia (6 pieces, `rg_rajput_1`–`6`) are optional and not yet prompted; the Mughal-style bow sample is reserved for `rg_rajput_2`. Until painted, Rajput shows numbered stand-ins.
+- [x] Rajput regalia (6 pieces, `rg_rajput_1`–`6`) painted and absorbed 11 Nov (third later night): spear, recurved bow with thumb ring, bossed-and-lotus shield, sheathed sword, a gold drinking horn, and a ceremonial parasol. All 24 regalia medallions across all five empires are now in the game — none left to paint.
 - [ ] Paint the four campaign maps when you like (`art/PROMPTS-MAPS.md`, optional) and pick which rank rewards to build (`DESIGN.md`, "Rank and renown").
 - [ ] Play **The Great Forest** and **The Walls of Kanchi** (Campaign → Gupta tab); say if Dhuan archers or the Kanchi gate line feel unfair. Balance is a JSON edit in decks.json.
 - [ ] Try morale/rout: does a broken unit read clearly (red ROUTED band, flee animation)? Too common or too rare (about 2 per battle now; the break line is in `rules.json`)?
@@ -121,6 +121,11 @@
 ## Done 7 Nov (night): The Digvijaya built
 - Gupta campaign battle 1 (Samudragupta vs the Naga kings at Padmavati, c. 340 CE; ~50% simulated). New cards na_* (Naga, own gallery tab) and g_veena; na_sarpa_vish is a Kuta card. Campaign order: Indus Line → Digvijaya → Golden Age. Tests: tests/digvijaya.test.ts. History notes: project doc / Claude Doc "Samudragupta's Digvijaya".
 - Next: more Gupta/South battles (the march to Mahakantara and Kanchi; second Aryavarta war), morale/rout, more cards, search AI → Gate 2.
+
+## Done 11 Nov (third later night): Rajput regalia complete
+- All six `rg_rajput_*` pieces arrived and were absorbed: spear with red pennon (1), recurved bow with quiver and thumb ring (2, the piece originally painted as a Gupta sample and reserved for Rajput), a bronze-bossed shield with a central lotus (3), a sheathed straight sword (4), a gold ceremonial drinking horn (5), and a fringed ceremonial parasol/chhatra (6). `npm run assets` registered them; verified by seeding `yuddh.standing.v1` in a scripted Chromium session to force Rajput to Chakravartin rank and screenshotting the Roll of Renown — all six render lit and correctly cropped, no console errors. 133/133 tests pass, typecheck and build clean.
+- This closes out `art/PROMPTS-REGALIA.md`: all 24 regalia medallions (Maurya, Gupta, Chalukya, Chola, Rajput) are now painted and in the game. No regalia work left.
+- With Koppam, Vikramaditya's Return, and now regalia all done, there are no open art batches of any kind waiting in the repo.
 
 ## Done 9 Nov (night): rank rewards
 - War Council chronicle (Nayaka), gilded frame (Senapati), regalia medallions + `art/PROMPTS-REGALIA.md` (24 prompts, Maurya first). tests/rewards.test.ts. Fixed: a custom hitArea on a column pruned buttons outside it.
