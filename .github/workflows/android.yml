@@ -14,6 +14,9 @@ on:
   push:
     tags: ['v*']
 
+permissions:
+  contents: write   # lets the build attach the files to a (draft) Release
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -68,3 +71,17 @@ jobs:
           name: yuddh-android
           path: out/*
           retention-days: 30
+
+      # The same files again as a DRAFT Release: each one downloads on its own (no zip),
+      # which is easiest on a phone. A draft is visible only to people with write access
+      # to the repo. Find it under the repo's Releases page.
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          tag_name: android-build-${{ github.run_number }}
+          name: YUDDH Android build ${{ github.run_number }}
+          body: |
+            yuddh-release.aab  -> upload this to the Google Play Console
+            yuddh-release.apk  -> signed, installs on a phone
+            yuddh-debug.apk    -> quick test install
+          files: out/*
