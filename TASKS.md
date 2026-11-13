@@ -9,6 +9,10 @@
 - [ ] **Pon**: add the four Actions secrets, run the `android` workflow, install `yuddh-debug.apk` on his phone and report.
 - [ ] Next: Play Console account + store listing; real-phone two-phone retest; Nearby Connections (Bluetooth) once the app shell is proven.
 
+## Done 13 Nov (late): attrition made visible
+- Pon lost a Kanchi campaign battle on his phone to **attrition** (empty deck: each draw costs that Durg 1, 2, 3 … — a rule from the prototype in `draw()`), and thought it was a glitch because nothing explained it. Now: engine event `attrition`, a red "DECK EMPTY −N" float + shake/flash on the Durg, the deck counter turns red at ≤3 cards, the enemy panel says ATTRITION at 0, and a one-time hint warns at 3 cards left. Rule unchanged (golden test intact).
+- [ ] Consider: a short "how a battle is won" note in the tutorial/title help (decks are 16–36 cards; sieges like Kanchi run long); possibly +2–3 cards for the player in siege battles.
+
 ## Waiting on Pon
 - [ ] Play **Koppam** (Chola tab, battle 4 on the map, the campaign's last stop; built 11 Nov, ~56% sim, close on purpose — "the Chola record says" victory, not a certainty). Does Rajadhiraja's elephant feel right as a 7-cost legendary that dies historically but doesn't have to in the game? Is A Downpour of Arrows (3 damage to the line) fair? Edit decks.json "koppam" or the hq values in koppam.ts.
 - [ ] Play **Vikramaditya's Return** (Chalukya tab, battle 4, closes the campaign; built 11 Nov, ~62% sim, meant to be kinder than Badami — the history actually gives you this win). Edit decks.json "vikram_return" or the hq values in vikramReturn.ts.

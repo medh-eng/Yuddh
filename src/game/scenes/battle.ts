@@ -641,7 +641,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     myKosha.text = `${me.kosha} / ${me.maxKosha}`;
     drawDiyas(myDiyas, me.kosha, me.maxKosha);
     drawDiyas(enemyDiyas, foe.kosha, foe.maxKosha);
-    enemyInfo.text = `${foe.faction} · Kosha ${foe.kosha}/${foe.maxKosha}\nDeck ${foe.deck.length}`;
+    enemyInfo.text = `${foe.faction} · Kosha ${foe.kosha}/${foe.maxKosha}\nDeck ${foe.deck.length}${foe.deck.length === 0 ? ' · ATTRITION' : ''}`;
     enemyInfo.scale.set(1); if (enemyInfo.width > 236) enemyInfo.scale.set(236 / enemyInfo.width);
     drawDeck(me.deck.length);
 
@@ -652,7 +652,12 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
 
   const yantraSlotY = (k: number, n: number) => (n === 1 ? 0 : (k - 0.5) * L.yantraGap);
 
+  let deckWarned = false;
   function drawDeck(n: number): void {
+    if (n <= 3 && n > 0 && !deckWarned && !st.over) {
+      deckWarned = true;
+      flashHint('YOUR DECK IS NEARLY EMPTY. Once it runs out, every draw costs your Durg 1, then 2, then 3 … Win before it does.');
+    }
     const want = Math.min(3, Math.ceil(n / 6));
     const backs = deckPile.children.filter(c => c !== deckCount);
     if (backs.length !== want) {
@@ -664,6 +669,8 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     }
     deckPile.addChild(deckCount);
     deckCount.text = String(n);
+    // the last three cards: warn in red (an empty deck hurts the Durg more each turn)
+    deckCount.style.fill = n <= 3 ? 0xff7a5a : INK.goldPale;
     deckCount.position.set(-(want - 1) * 3, -(want - 1) * 4);
   }
 
@@ -1188,6 +1195,14 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
         case 'rout': {
           const v = tokens.get(e.uid);
           if (v) await routFx(v, e.fled);
+          break;
+        }
+        case 'attrition': {
+          // an empty deck costs the Durg 1, 2, 3 … every draw: say so, loudly
+          const d = durg[e.owner];
+          audio.play('fortHit'); shake(8); flash(0xc0392b, 0.14);
+          floatNumber(d.x, d.y - 70, `DECK EMPTY  −${e.dmg}`, 0xff8a6a, 40);
+          await wait(450);
           break;
         }
         case 'rally': {

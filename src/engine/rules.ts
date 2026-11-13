@@ -99,6 +99,7 @@ function draw(st: GameState, pIdx: PlayerIndex, n?: number): void {
       p.fatigue += 1;
       p.hq.hp -= p.fatigue;
       log(st, `Deck exhausted — ${EMPIRES[p.empire].name} takes ${p.fatigue} attrition damage.`, pIdx);
+      pushEvent(st, { t: 'attrition', owner: pIdx, dmg: p.fatigue, fatigue: p.fatigue });
       checkDeath(st);
       continue;
     }

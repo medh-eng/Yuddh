@@ -136,7 +136,8 @@ export type GameEvent =
   | { t: 'heal'; owner: PlayerIndex; uid: number; amount: number; by: number }
   | { t: 'rout'; owner: PlayerIndex; uid: number; fled: boolean }
   | { t: 'rally'; owner: PlayerIndex; uid: number }
-  | { t: 'dharma'; owner: PlayerIndex; value: number; delta: number; why: string };
+  | { t: 'dharma'; owner: PlayerIndex; value: number; delta: number; why: string }
+  | { t: 'attrition'; owner: PlayerIndex; dmg: number; fatigue: number };
 
 export interface GameState {
   seed: number;
