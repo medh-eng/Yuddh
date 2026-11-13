@@ -66,6 +66,15 @@ jobs:
           [ -f android/app/build/outputs/bundle/release/app-release.aab ] && cp android/app/build/outputs/bundle/release/app-release.aab out/yuddh-release.aab || true
           ls -la out/
 
+      - name: Inspect the APKs (signature, SDK levels, package id)
+        run: |
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          for f in out/*.apk; do
+            echo "=== $f"
+            $BT/apksigner verify --verbose --print-certs "$f" 2>&1 | head -12 || true
+            $BT/aapt2 dump badging "$f" 2>&1 | grep -E "^package:|sdkVersion|targetSdkVersion|native-code|application-label:" || true
+          done
+
       - uses: actions/upload-artifact@v4
         with:
           name: yuddh-android
