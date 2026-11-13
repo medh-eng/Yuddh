@@ -17,6 +17,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # the secrets context is not allowed in a step's `if`, so test it here once
+      HAS_KEYS: ${{ secrets.KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,7 +43,7 @@ jobs:
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
 
       - name: Build signed release APK + AAB for Google Play
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: env.HAS_KEYS == 'true'
         env:
           VERSION_CODE: ${{ github.run_number }}
           VERSION_NAME: 0.2.${{ github.run_number }}
