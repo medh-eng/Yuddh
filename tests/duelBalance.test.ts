@@ -26,3 +26,26 @@ describe('Duel balance (pass-and-play)', () => {
     expect(r).toBeLessThan(0.62);
   });
 });
+
+describe('Duel balance across the whole field (add/trim tuning, 13 Nov 2026)', () => {
+  it('no faction wins or loses overwhelmingly against the field', () => {
+    // light sweep: every ordered pair, few seeds — a tripwire, not a measurement
+    const N = 4;
+    const wins: Record<string, number> = {}; const games: Record<string, number> = {};
+    for (const f of FACTIONS) { wins[f.id] = 0; games[f.id] = 0; }
+    for (const a of FACTIONS) for (const b of FACTIONS) {
+      if (a.id === b.id) continue;
+      for (let i = 0; i < N; i++) {
+        const st = duelGame(a, b, 500000 + i * 17);
+        let k = 0; while (!st.over && k++ < 500) aiTurn(st, st.active, 'normal');
+        games[a.id]++; games[b.id]++;
+        if (st.winner === 0) wins[a.id]++; else if (st.winner === 1) wins[b.id]++;
+      }
+    }
+    for (const f of FACTIONS) {
+      const r = wins[f.id] / games[f.id];
+      expect(r, `${f.id} wins ${(r * 100).toFixed(0)}% of its duels`).toBeGreaterThan(0.22);
+      expect(r, `${f.id} wins ${(r * 100).toFixed(0)}% of its duels`).toBeLessThan(0.78);
+    }
+  });
+});

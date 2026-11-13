@@ -17,7 +17,10 @@ import type { Link } from '../game/net/link';
 
 export interface Faction {
   id: string; name: string; hindi: string; empire: EmpireId; capital: string; faction: string;
-  deck: [string, 'player' | 'enemy']; /** Durg hit points in a duel: the balance lever, tuned by simulation (tests/_sim) */ hq?: number; /** starting Kosha ceiling (default 1): a second, lighter balance lever */ kosha?: number; durg: string; hero: string; ground: string; blurb: string;
+  deck: [string, 'player' | 'enemy']; /** Durg hit points in a duel: the balance lever, tuned by simulation (tests/_sim) */ hq?: number; /** starting Kosha ceiling (default 1): a second, lighter balance lever */ kosha?: number;
+  /** duel-only deck tuning (the strongest lever — one copy can swing 30 points): extra copies appended before padding… */ add?: string[];
+  /** …and copies removed before padding (one per listed id). Neither touches the campaign deck in decks.json. */ trim?: string[];
+  durg: string; hero: string; ground: string; blurb: string;
 }
 export const FACTIONS = duelJson.factions as unknown as Faction[];
 export const factionById = (id: string): Faction | undefined => FACTIONS.find(f => f.id === id);
@@ -27,7 +30,11 @@ const SEASON_LIST: Season[] = ['sharad', 'varsha', 'grishma', 'hemanta'];
 export const DUEL_DECK_SIZE = 52;
 const deckOf = (f: Faction): string[] => {
   const d = decksOf(f.deck[0]);
-  const base = f.deck[1] === 'player' ? d.player : d.enemy;
+  let base = (f.deck[1] === 'player' ? d.player : d.enemy).slice();
+  // duel-only tuning (duel.json): trim takes one copy out per listed id, add puts extra copies in.
+  // Both run before padding, so the padding repeats the tuned deck — a single edit carries weight.
+  for (const id of f.trim ?? []) { const i = base.indexOf(id); if (i >= 0) base.splice(i, 1); }
+  base = base.concat(f.add ?? []);
   const out = base.slice();
   const pool = base.filter(id => CARDS[id]?.rarity !== 'legendary');
   for (let i = 0; pool.length && out.length < DUEL_DECK_SIZE; i++) out.push(pool[i % pool.length]);

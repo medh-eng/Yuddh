@@ -1,0 +1,67 @@
+# Builds the Android app: an APK to install on a phone straight away, and
+# an AAB to upload to Google Play. Run it from the Actions tab ("Run workflow").
+#
+# The debug APK always builds. The release APK + AAB are signed only when the
+# repo has these Actions secrets (Settings → Secrets and variables → Actions):
+#   KEYSTORE_BASE64   the upload keystore, base64 one line
+#   KEYSTORE_PASSWORD its password
+#   KEY_ALIAS         yuddh
+#   KEY_PASSWORD      same password
+# Without them the release step is skipped and only the debug APK is produced.
+name: android
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build debug APK (installable on any phone)
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: 0.2.${{ github.run_number }}
+        run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+
+      - name: Build signed release APK + AAB for Google Play
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: 0.2.${{ github.run_number }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/upload.keystore
+          export KEYSTORE_FILE=/tmp/upload.keystore
+          cd android && ./gradlew assembleRelease bundleRelease
+
+      - name: Collect outputs
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/debug/app-debug.apk out/yuddh-debug.apk
+          [ -f android/app/build/outputs/apk/release/app-release.apk ] && cp android/app/build/outputs/apk/release/app-release.apk out/yuddh-release.apk || true
+          [ -f android/app/build/outputs/bundle/release/app-release.aab ] && cp android/app/build/outputs/bundle/release/app-release.aab out/yuddh-release.aab || true
+          ls -la out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: yuddh-android
+          path: out/*
+          retention-days: 30

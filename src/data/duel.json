@@ -1,5 +1,5 @@
 {
- "_about": "Factions a player can pick in the pass-and-play Duel. deck = [decks.json key, 'player'|'enemy']. empire is the rules empire (its passive applies). ground is the battlefield painting. Add a faction here to add it to the picker. hq (Durg hit points) is the balance lever, tuned by simulation (see DESIGN.md, Duel balance). Decks are padded to 52 cards in code (DUEL_DECK_SIZE). kosha (starting Kosha ceiling, default 1) is a second lever, used for Gupta.",
+ "_about": "Factions a player can pick in the pass-and-play Duel. deck = [decks.json key, 'player'|'enemy']. empire is the rules empire (its passive applies). ground is the battlefield painting. Add a faction here to add it to the picker. hq (Durg hit points) is the balance lever, tuned by simulation (see DESIGN.md, Duel balance). Decks are padded to 52 cards in code (DUEL_DECK_SIZE). kosha (starting Kosha ceiling, default 1) is a second lever, used for Gupta. add/trim are duel-only deck edits (extra copies in / one copy out, applied before padding): the strongest lever, tuned by simulation; they never touch decks.json.",
  "factions": [
   {
    "id": "maurya",
@@ -16,7 +16,10 @@
    "hero": "m_chandragupta",
    "ground": "pataliputra",
    "blurb": "Chakravartin's army: cheap Kosha, pikes, elephants and spies.",
-   "hq": 14
+   "hq": 14,
+   "add": [
+    "n_yudh_niti"
+   ]
   },
   {
    "id": "gupta",
@@ -33,8 +36,11 @@
    "hero": "g_vikramaditya",
    "ground": "ujjain",
    "blurb": "The Golden Age: Mantras that draw cards, cavalry and learning.",
-   "hq": 24,
-   "kosha": 3
+   "hq": 36,
+   "kosha": 3,
+   "add": [
+    "n_gaja"
+   ]
   },
   {
    "id": "chalukya",
@@ -51,7 +57,13 @@
    "hero": "c_pulakeshin",
    "ground": "narmada",
    "blurb": "Stone forts: hardy Raksha guards, elephants and the Boar Banner.",
-   "hq": 14
+   "hq": 14,
+   "trim": [
+    "c_gaja",
+    "c_gaja",
+    "c_varaha_dhwaja",
+    "c_rakshak"
+   ]
   },
   {
    "id": "chola",
@@ -68,7 +80,12 @@
    "hero": "ch_rajendra",
    "ground": "kadaram",
    "blurb": "The Tiger Banner: ranged units hit harder, fleets and elephants.",
-   "hq": 14
+   "hq": 14,
+   "trim": [
+    "ch_kalam",
+    "n_rakshak",
+    "ch_vanigar"
+   ]
   },
   {
    "id": "rajput",
@@ -85,7 +102,10 @@
    "hero": "r_prithviraj",
    "ground": "tarain",
    "blurb": "Vega riders that arrive stronger, fort guards and clan foot.",
-   "hq": 14
+   "hq": 14,
+   "trim": [
+    "r_sawar"
+   ]
   },
   {
    "id": "ghurid",
@@ -102,7 +122,12 @@
    "hero": "gh_muizz",
    "ground": "tarain",
    "blurb": "Horse archers, heavy reserve and the war-drums.",
-   "hq": 14
+   "hq": 14,
+   "trim": [
+    "gh_ghulam",
+    "gh_reserve",
+    "gh_ghulam"
+   ]
   },
   {
    "id": "nanda",
@@ -119,7 +144,12 @@
    "hero": "nd_dhana_nanda",
    "ground": "pataliputra",
    "blurb": "The rich old throne of Magadha: gold, elephants, chariots.",
-   "hq": 44
+   "hq": 44,
+   "add": [
+    "nd_gaja_sena",
+    "nd_gaja_sena",
+    "n_padati"
+   ]
   },
   {
    "id": "seleucid",
@@ -136,7 +166,10 @@
    "hero": "se_seleucus",
    "ground": "indus",
    "blurb": "Pike phalanx, Greek cavalry and siege engines.",
-   "hq": 20
+   "hq": 20,
+   "add": [
+    "n_maharathi"
+   ]
   },
   {
    "id": "naga",
@@ -153,7 +186,14 @@
    "hero": "na_ganapati_naga",
    "ground": "padmavati",
    "blurb": "The Naga kings of the north: poison, serpents and cunning.",
-   "hq": 44
+   "hq": 44,
+   "add": [
+    "nd_gaja_sena",
+    "nd_gaja_sena"
+   ],
+   "trim": [
+    "na_nagasena"
+   ]
   },
   {
    "id": "forest",
@@ -170,7 +210,14 @@
    "hero": "mk_vyaghraraja",
    "ground": "mahakantara",
    "blurb": "Mahakantara: ambush, archers and the green jungle.",
-   "hq": 44
+   "hq": 44,
+   "add": [
+    "mk_vana_gaja",
+    "mk_vana_dhanurdhar",
+    "mk_vana_gaja",
+    "mk_vana_gaja",
+    "mk_vana_gaja"
+   ]
   },
   {
    "id": "kanchi",
@@ -187,7 +234,15 @@
    "hero": "pk_vishnugopa",
    "ground": "kanchi",
    "blurb": "Walled Kanchi: a gate line and the Pallava king.",
-   "hq": 26
+   "hq": 26,
+   "add": [
+    "pk_gaja_sena",
+    "pk_gaja_sena"
+   ],
+   "trim": [
+    "pk_kota_rakshak",
+    "pk_ratha"
+   ]
   },
   {
    "id": "satrap",
@@ -204,7 +259,16 @@
    "hero": "sa_rudrasimha",
    "ground": "ujjain",
    "blurb": "The Satraps of the west: horse archers and silver coin.",
-   "hq": 44
+   "hq": 44,
+   "kosha": 3,
+   "add": [
+    "n_maharathi",
+    "n_maharathi",
+    "n_gaja",
+    "n_gaja",
+    "sa_bhalladhari",
+    "sa_bhalladhari"
+   ]
   },
   {
    "id": "vardhana",
@@ -221,7 +285,10 @@
    "hero": "vd_harsha",
    "ground": "narmada",
    "blurb": "Harsha's great host of elephants and foot.",
-   "hq": 14
+   "hq": 14,
+   "trim": [
+    "vd_gaja_vahini"
+   ]
   },
   {
    "id": "pala",
@@ -238,7 +305,13 @@
    "hero": "pl_mahipala",
    "ground": "ganga",
    "blurb": "The Pala empire of Bengal: war elephants on the Ganga.",
-   "hq": 29
+   "hq": 29,
+   "add": [
+    "pl_gaja"
+   ],
+   "trim": [
+    "pl_nauka"
+   ]
   },
   {
    "id": "srivijaya",
@@ -255,7 +328,11 @@
    "hero": "sv_sangrama",
    "ground": "kadaram",
    "blurb": "The sea kings: a boat wall and fire boats.",
-   "hq": 27
+   "hq": 27,
+   "add": [
+    "sv_perahu",
+    "sv_api"
+   ]
   },
   {
    "id": "sinhala",
@@ -272,7 +349,13 @@
    "hero": "si_mahinda",
    "ground": "anuradhapura",
    "blurb": "The island kingdom: elephants, archers and monks.",
-   "hq": 44
+   "hq": 44,
+   "kosha": 1,
+   "add": [
+    "si_gaja",
+    "si_gaja",
+    "si_gaja"
+   ]
   },
   {
    "id": "pallava",
@@ -289,7 +372,12 @@
    "hero": "pv_mahendravarman",
    "ground": "pullalur",
    "blurb": "Builders' guard, elephants and the retreat to Kanchi.",
-   "hq": 30
+   "hq": 30,
+   "trim": [
+    "pv_gaja_vahini",
+    "n_maharathi",
+    "n_padati"
+   ]
   },
   {
    "id": "pallava_garrison",
@@ -306,7 +394,11 @@
    "hero": "pv_vatapi_adhikari",
    "ground": "vatapi",
    "blurb": "Twelve years dug in behind another king's cliffs: patched shields and a pillar they still guard.",
-   "hq": 22
+   "hq": 22,
+   "trim": [
+    "pv_vatapi_adhikari",
+    "pv_vatapi_rakshak"
+   ]
   },
   {
    "id": "western_chalukya",
@@ -323,7 +415,11 @@
    "hero": "wc_someshvara",
    "ground": "koppam",
    "blurb": "The rival power of the Deccan: archers trained against elephants, and a downpour of arrows.",
-   "hq": 26
+   "hq": 26,
+   "trim": [
+    "n_gaja",
+    "wc_gaja"
+   ]
   },
   {
    "id": "pallava_badami",
@@ -340,7 +436,14 @@
    "hero": "pv_narasimhavarman",
    "ground": "vatapi",
    "blurb": "The wrestler-king's host: heavy foot, elephants and a pillar of victory.",
-   "hq": 28
+   "hq": 28,
+   "trim": [
+    "n_gaja",
+    "pv_gaja_vahini",
+    "s_agni",
+    "pv_gaja_vahini",
+    "pv_paranjothi"
+   ]
   },
   {
    "id": "kalinga",

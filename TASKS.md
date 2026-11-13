@@ -1,6 +1,13 @@
 # YUDDH — tasks
 
-*Updated at the end of each session (last: 11 Nov 2026, third later night). Design and rules: `DESIGN.md`.*
+*Updated at the end of each session (last: 13 Nov 2026). Design and rules: `DESIGN.md`.*
+
+## Done 13 Nov: duel balance round 2 + the Android app
+- **Duel field tuned by simulation**: new `add`/`trim` per-faction deck levers in `duel.json` (applied before the 52-card padding; campaign decks untouched), found by greedy search over every ordered pair. Field spread 21-76% → **36-61%**; elephants in, elephants out was the pattern. New tripwire test sweeps all 420 pairs (22-78% band). 134/134 tests pass.
+- **Android app scaffolded (Capacitor)**: `capacitor.config.ts` + `android/` (landscape, immersive fullscreen, keep-screen-on, camera for QR, adaptive icons from `resources/`). `.github/workflows/android.yml` builds `yuddh-debug.apk` always and signed `yuddh-release.apk`+`.aab` once Pon adds the four keystore secrets (keystore generated and handed over in chat). Whole game ships offline inside the app (~91 MB).
+- Full-game failcheck: desktop playtest (1280×720) played a whole battle to Victory — zero failed drags, zero console errors; screenshots checked.
+- [ ] **Pon**: add the four Actions secrets, run the `android` workflow, install `yuddh-debug.apk` on his phone and report.
+- [ ] Next: Play Console account + store listing; real-phone two-phone retest; Nearby Connections (Bluetooth) once the app shell is proven.
 
 ## Waiting on Pon
 - [ ] Play **Koppam** (Chola tab, battle 4 on the map, the campaign's last stop; built 11 Nov, ~56% sim, close on purpose — "the Chola record says" victory, not a certainty). Does Rajadhiraja's elephant feel right as a 7-cost legendary that dies historically but doesn't have to in the game? Is A Downpour of Arrows (3 damage to the line) fair? Edit decks.json "koppam" or the hq values in koppam.ts.

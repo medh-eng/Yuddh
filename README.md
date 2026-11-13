@@ -31,7 +31,8 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 | Morale / rout (who breaks, the line, who is steadfast) | `src/data/rules.json` ("morale"); logic is `checkRout` in `src/engine/rules.ts` |
 | How the Veteran (search) AI thinks and how long | `src/data/rules.json` ("ai": beam, depth, finalists, replies); code in `src/engine/search.ts`; the player's Standard/Veteran choice in `src/campaign/difficulty.ts` |
 | Pass-and-play Duel (factions, picker, turn swap, curtain) | factions: `src/data/duel.json`; `src/campaign/duel.ts`; picker `src/game/scenes/duelSetup.ts`; turn swap `src/engine/duel.ts`; curtain and win screen in `src/game/scenes/battle.ts` (`duel`, `duelHandOver`) |
-| Two-phone play (WebRTC, QR/paste pairing, lockstep) | `src/game/net/link.ts` (link + codes), `src/game/net/pairing.ts` (pairing overlay + handshake), `src/engine/duel.ts` (`mirrorAction`, `syncHash`), `src/game/scenes/battle.ts` (`online`, `pump`, `applyRemote`, `netLost`); test `tests/e2e/online.cjs`; Duel balance levers (`hq`, `kosha` per faction): `src/data/duel.json`, padding in `src/campaign/duel.ts` |
+| Two-phone play (WebRTC, QR/paste pairing, lockstep) | `src/game/net/link.ts` (link + codes), `src/game/net/pairing.ts` (pairing overlay + handshake), `src/engine/duel.ts` (`mirrorAction`, `syncHash`), `src/game/scenes/battle.ts` (`online`, `pump`, `applyRemote`, `netLost`); test `tests/e2e/online.cjs`; Duel balance levers (`hq`, `kosha`, and the deck edits `add`/`trim` per faction): `src/data/duel.json`, padding in `src/campaign/duel.ts` |
+| The Android app (Play Store APK/AAB) | `capacitor.config.ts`, `android/` (manifest: landscape + camera; MainActivity: immersive fullscreen; app/build.gradle: version from CI, signing from secrets); built by the `android` GitHub Actions workflow, instructions in `DESIGN.md` "Google Play" |
 | How a screen looks | `src/game/scenes/` (title, campaign, standing, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
 | Art or sound | Drop masters in `art/source/{cards,battlefields,sfx}/`, run `npm run assets`, commit `public/assets/` and `src/assets/*.json` |
 
@@ -47,6 +48,9 @@ art/               prompt sheets, sound list, credits; masters in art/source/
 scripts/           convert-assets.mjs: masters → small WebP / MP3 game files
 tests/             golden traces, rules, card mechanics, battle balance; tests/e2e/ = scripted real-mouse playtests
 legacy/            Sarwam's prototype source and tests, unchanged; public/prototype/ is its build
+android/           the Google Play app (Capacitor): the whole dist/ build ships inside it, offline. Built by .github/workflows/android.yml (never by hand here — the sandbox has no Android SDK)
+capacitor.config.ts  app id com.medheng.yuddh (permanent once the first AAB is uploaded to Play), webDir dist
+resources/         icon/splash masters that @capacitor/assets turns into the Android launcher icons
 ```
 
 **End of every session:** update `DESIGN.md` (if rules or decisions changed) and `TASKS.md` (tick what is done, add what is next).
