@@ -1,0 +1,2812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YUDDH — Rise of the Rajyas</title>
+<style>
+  :root{
+    --ink:#ece3cd; --dim:#a89f8b; --gold:#d9a441; --gold-dim:rgba(217,164,65,.28);
+    --bg0:#0a0e14; --panel:rgba(232,220,192,.045); --red:#c2543f; --green:#7fc79b;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;color:var(--ink);font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#1d2735 0%,transparent 60%),
+               radial-gradient(900px 500px at 50% 110%,#1a2130 0%,transparent 55%),var(--bg0);
+    overflow:hidden;
+  }
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  .backdrop{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  .wrap{display:flex;height:100vh;width:100vw;position:relative;z-index:1}
+  #stage{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 14px;min-width:0}
+  #board{width:100%;max-width:1060px;display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;justify-content:center}
+
+  /* ---------- tutorial coach ---------- */
+  #coach{max-width:1060px;width:100%;display:none;align-items:center;gap:12px;padding:9px 14px;margin-bottom:4px;
+    border-radius:10px;border:1px solid rgba(217,164,65,.45);background:linear-gradient(180deg,rgba(217,164,65,.16),rgba(217,164,65,.05))}
+  #coach.on{display:flex}
+  #coach .ct{flex:1;font-size:13px;color:#f3e7c8}
+  #coach .dots{display:flex;gap:5px}
+  #coach .dots i{width:6px;height:6px;border-radius:50%;background:rgba(236,227,205,.25)}
+  #coach .dots i.done{background:var(--green)}
+  #coach .dots i.now{background:var(--gold);box-shadow:0 0 8px rgba(217,164,65,.8)}
+  #coach button{background:transparent;border:1px solid rgba(236,227,205,.25);border-radius:6px;padding:5px 10px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+
+  /* ---------- headquarters ---------- */
+  .hq{display:flex;align-items:center;gap:12px;padding:6px 14px;border-radius:10px;
+    background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+    border:1px solid rgba(217,164,65,.2);transition:box-shadow .2s}
+  .hq.enemy{border-color:rgba(194,84,63,.5);background:linear-gradient(180deg,rgba(194,84,63,.12),rgba(255,255,255,.012))}
+  .hq .who{font-size:9px;letter-spacing:2.4px;text-transform:uppercase;color:rgba(236,227,205,.42);
+    border:1px solid rgba(236,227,205,.16);border-radius:4px;padding:2px 6px}
+  .hq.enemy .who{color:#e8b3a6;border-color:rgba(194,84,63,.45)}
+  .hq .crest{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:14px;color:#0d1117;font-weight:bold}
+  .hq .nm{font-size:14px;letter-spacing:.4px}
+  .hq .nm small{display:block;font-size:10px;color:var(--dim);letter-spacing:1.6px;text-transform:uppercase}
+  .hq .hp{font-size:19px;color:#f0d9a6;min-width:60px;text-align:center}
+  .hq .hp b{color:#fff}
+  .hq .stats{margin-left:auto;display:flex;gap:14px;font-size:11.5px;color:var(--dim);letter-spacing:.5px}
+  .hq .stats span b{color:var(--ink);font-size:12.5px}
+  .hq.targetable{cursor:pointer;box-shadow:0 0 0 2px var(--red),0 0 22px rgba(194,84,63,.5)}
+  .hq.flash{animation:hqflash .45s}
+  @keyframes hqflash{0%{background:rgba(194,84,63,.55)}100%{}}
+
+  /* ---------- lines ---------- */
+  .line{position:relative;display:flex;gap:8px;justify-content:center;align-items:center;
+    min-height:118px;padding:7px;border-radius:12px;background:var(--panel);border:1px solid rgba(236,227,205,.07)}
+  .line .tag{position:absolute;left:9px;top:6px;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;
+    color:rgba(236,227,205,.34);background:rgba(10,14,20,.8);padding:2px 7px;border-radius:4px;
+    border:1px solid rgba(236,227,205,.07);pointer-events:none;white-space:nowrap}
+  #front{background:linear-gradient(90deg,rgba(217,164,65,.03),rgba(217,164,65,.1),rgba(217,164,65,.03));border-color:rgba(217,164,65,.22)}
+  #front.held0{box-shadow:inset 0 0 0 1px rgba(120,180,255,.35),inset 0 0 40px rgba(90,140,220,.1)}
+  #front.held1{box-shadow:inset 0 0 0 1px rgba(194,84,63,.4),inset 0 0 40px rgba(194,84,63,.12)}
+  .slot{width:86px;height:108px;border-radius:9px;border:1px dashed rgba(236,227,205,.13);
+    display:grid;place-items:center;color:rgba(236,227,205,.16);font-size:10px;letter-spacing:1px}
+  .slot.live{border-color:rgba(120,200,150,.65);background:rgba(80,170,120,.09);cursor:pointer;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(120,200,150,.25)}50%{box-shadow:0 0 0 6px rgba(120,200,150,0)}}
+
+  /* ---------- units ---------- */
+  .unit{position:relative;width:86px;height:108px;border-radius:9px;overflow:hidden;
+    background:linear-gradient(165deg,#1b2330,#11161e);border:1px solid rgba(236,227,205,.16);
+    display:flex;flex-direction:column;transition:transform .12s ease,box-shadow .12s ease}
+  .unit .band{height:3px;flex:0 0 auto}
+  .unit .art{flex:1;position:relative;overflow:hidden}
+  .unit .art svg{width:100%;height:100%;display:block}
+  .unit .nm{font-size:9.5px;line-height:1.1;text-align:center;padding:1px 3px;color:#e7ddc6;height:22px;overflow:hidden}
+  .unit .foot{display:flex;justify-content:space-between;padding:0 5px 3px;font-size:12px;font-weight:bold}
+  .unit .atk{color:#f2c46a}
+  .unit .hp{color:#8fd6a6}
+  .unit .op{position:absolute;top:4px;right:4px;font-size:8.5px;padding:1px 4px;border-radius:4px;
+    background:rgba(0,0,0,.62);border:1px solid rgba(217,164,65,.4);color:#e8cf95}
+  .unit .kw{position:absolute;top:4px;left:4px;font-size:7.5px;letter-spacing:.4px;color:#9ec9e8;
+    background:rgba(0,0,0,.5);padding:1px 3px;border-radius:3px}
+  .unit .up{position:absolute;bottom:26px;right:5px;font-size:8px;color:#f0d9a6;text-shadow:0 1px 3px #000}
+  .unit.ready{box-shadow:0 0 0 1px rgba(120,200,150,.5),0 0 14px rgba(120,200,150,.16)}
+  .unit.acted{filter:grayscale(.6) brightness(.72)}
+  .unit.pickable{cursor:pointer}
+  .unit.pickable:hover{transform:translateY(-4px)}
+  .unit.sel{transform:translateY(-6px);box-shadow:0 0 0 2px var(--gold),0 0 24px rgba(217,164,65,.45)}
+  .unit.targetable{cursor:crosshair;box-shadow:0 0 0 2px var(--red),0 0 22px rgba(194,84,63,.45)}
+  .unit.guard::after{content:'';position:absolute;inset:0;border:1px solid rgba(140,190,235,.55);border-radius:9px;pointer-events:none}
+
+  /* ---------- animations ---------- */
+  .fx-deploy{animation:deployIn .38s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes deployIn{0%{transform:translateY(-30px) scale(.75);opacity:.1}100%{transform:none;opacity:1}}
+  .fx-attack{animation:lunge .3s ease}
+  @keyframes lunge{0%{transform:none}40%{transform:translateY(-10px) scale(1.08)}100%{transform:none}}
+  .fx-hit{animation:hitshake .34s}
+  @keyframes hitshake{0%,100%{transform:none;filter:none}20%{transform:translateX(-6px);filter:brightness(1.7) sepia(.4) hue-rotate(-20deg)}60%{transform:translateX(6px)}}
+  #board.shake{animation:bshake .35s}
+  @keyframes bshake{0%,100%{transform:none}20%{transform:translate(3px,-2px)}50%{transform:translate(-3px,2px)}80%{transform:translate(2px,1px)}}
+  .floatdmg{position:fixed;font-size:20px;font-weight:bold;pointer-events:none;z-index:90;
+    text-shadow:0 2px 8px rgba(0,0,0,.9);animation:floatup .95s ease-out forwards}
+  @keyframes floatup{0%{transform:translate(-50%,0) scale(.7);opacity:0}20%{transform:translate(-50%,-12px) scale(1.15);opacity:1}100%{transform:translate(-50%,-52px) scale(1);opacity:0}}
+
+  /* ---------- yantra strip ---------- */
+  .yantrarow{display:flex;align-items:center;gap:6px;justify-content:center;min-height:34px}
+  .yantrarow .lbl{font-size:8.5px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(236,227,205,.3);margin-right:4px}
+  .ychip{width:44px;height:30px;border-radius:5px;display:grid;place-items:center;font-size:12px;
+    border:1px solid rgba(140,190,235,.45);background:linear-gradient(160deg,#1d2a38,#131a23);color:#9ec9e8}
+  .ychip.hidden{color:rgba(158,201,232,.35);border-style:dashed}
+  .ychip.empty{border:1px dashed rgba(236,227,205,.12);color:rgba(236,227,205,.12);font-size:9px}
+
+  /* ---------- hand ---------- */
+  #handzone{padding-top:4px}
+  #hand{display:flex;gap:8px;justify-content:center;align-items:flex-end;min-height:150px}
+  .card{position:relative;width:100px;height:146px;border-radius:10px;overflow:hidden;flex:0 0 auto;
+    background:linear-gradient(168deg,#232d3b,#111721);border:1px solid rgba(236,227,205,.18);
+    display:flex;flex-direction:column;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+  .card:hover{transform:translateY(-10px)}
+  .card.sel{transform:translateY(-15px);box-shadow:0 0 0 2px var(--gold),0 0 26px rgba(217,164,65,.45)}
+  .card.poor{filter:grayscale(.55) brightness(.6);cursor:not-allowed}
+  .card .band{height:4px;flex:0 0 auto}
+  .card .art{flex:1;position:relative;overflow:hidden}
+  .card .art svg{width:100%;height:100%;display:block}
+  .card .cost{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;z-index:3;
+    display:grid;place-items:center;font-size:12px;font-weight:bold;color:#12171f;
+    background:linear-gradient(180deg,#f0d9a6,#d9a441);box-shadow:0 1px 5px rgba(0,0,0,.7)}
+  .card .lvl{position:absolute;top:7px;right:6px;z-index:3;font-size:9px;color:#f0d9a6;
+    background:rgba(0,0,0,.6);border-radius:4px;padding:1px 4px}
+  .card .nm{font-size:10px;text-align:center;padding:2px 4px 0;line-height:1.12;height:24px;overflow:hidden}
+  .card .sub{font-size:8px;text-align:center;color:var(--dim);letter-spacing:.6px;text-transform:uppercase;padding-bottom:2px}
+  .card .foot{display:flex;justify-content:space-between;padding:0 6px 4px;font-size:11.5px;font-weight:bold}
+  .card .kind{position:absolute;bottom:22px;left:0;right:0;text-align:center;font-size:7.5px;
+    letter-spacing:1.4px;color:rgba(236,227,205,.45);z-index:2}
+
+  /* ---------- side ---------- */
+  #side{width:284px;flex:0 0 auto;border-left:1px solid rgba(236,227,205,.08);display:flex;flex-direction:column;background:rgba(0,0,0,.28)}
+  #objective{padding:38px 14px 10px;border-bottom:1px solid rgba(236,227,205,.08)}
+  #objTitle{font-size:14px;color:#f0d9a6}
+  #objYear{font-size:9.5px;color:var(--dim);letter-spacing:1.6px;text-transform:uppercase;margin-bottom:5px}
+  #objText{font-size:11.5px;line-height:1.5;color:#c9c0ab}
+  #objText b{color:var(--gold)}
+  #side h3{margin:0;padding:10px 14px 6px;font-size:10px;letter-spacing:2.2px;text-transform:uppercase;color:var(--dim);font-weight:normal}
+  #log{flex:1;overflow-y:auto;padding:0 14px 10px;font-size:11.5px;line-height:1.45}
+  #log div{padding:2px 0;border-bottom:1px solid rgba(236,227,205,.05);color:#c9c0ab}
+  #log div.me{color:#cfd9e6}
+  #log div.foe{color:#e0b7ac}
+  #status{padding:9px 14px;font-size:11.5px;color:var(--gold);border-top:1px solid rgba(236,227,205,.08);min-height:36px}
+  .btn{display:block;width:calc(100% - 28px);margin:0 14px 8px;padding:10px;border-radius:8px;
+    background:linear-gradient(180deg,#3a4a63,#25303f);border:1px solid rgba(217,164,65,.45);
+    letter-spacing:1.6px;text-transform:uppercase;font-size:11px}
+  .btn:hover{background:linear-gradient(180deg,#46586f,#2b3747)}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.ghost{background:transparent;border-color:rgba(236,227,205,.2);color:var(--dim)}
+
+  /* ---------- screens ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(5,8,12,.93);display:none;place-items:center;z-index:50;padding:18px;overflow-y:auto}
+  .overlay.on{display:grid}
+  .modal{max-width:900px;width:100%;background:linear-gradient(180deg,#151d27,#0d1219);
+    border:1px solid rgba(217,164,65,.3);border-radius:14px;padding:24px 26px}
+  .modal h1{font-size:28px;margin:0 0 4px;letter-spacing:3px;color:#f0d9a6;font-weight:normal}
+  .modal h2{font-size:13px;margin:20px 0 8px;color:var(--gold);font-weight:normal;letter-spacing:1.5px;text-transform:uppercase}
+  .modal p{font-size:13px;line-height:1.65;color:#c9c0ab;margin:6px 0}
+  .tagline{color:var(--dim);font-size:11.5px;letter-spacing:2px;text-transform:uppercase}
+  .emps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px}
+  .emp{border:1px solid rgba(236,227,205,.14);border-radius:10px;padding:11px;cursor:pointer;background:rgba(255,255,255,.02);transition:all .13s}
+  .emp:hover{border-color:rgba(217,164,65,.6);background:rgba(217,164,65,.07)}
+  .emp.on{border-color:var(--gold);background:rgba(217,164,65,.13);box-shadow:0 0 0 1px var(--gold)}
+  .emp .top{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .emp .cr{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;font-size:12px;color:#0d1117;font-weight:bold}
+  .emp .n{font-size:14px}
+  .emp .p{font-size:11px;line-height:1.45;color:var(--dim)}
+  .row2{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .kwlist{display:grid;grid-template-columns:1fr 1fr;gap:8px 22px;margin-top:8px}
+  .kwlist div{font-size:12.5px;line-height:1.5;color:#c9c0ab}
+  .kwlist b{color:#f0d9a6}
+
+  /* ---------- campaign ---------- */
+  .missions{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+  .mission{display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:10px;cursor:pointer;
+    border:1px solid rgba(236,227,205,.12);background:rgba(255,255,255,.02);transition:all .13s}
+  .mission:hover{border-color:rgba(217,164,65,.55);background:rgba(217,164,65,.06);transform:translateX(2px)}
+  .mission.locked{opacity:.36;cursor:not-allowed;filter:grayscale(.6)}
+  .mission.locked:hover{transform:none;border-color:rgba(236,227,205,.12);background:rgba(255,255,255,.02)}
+  .mission.done{border-color:rgba(127,199,155,.4)}
+  .mission .num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;
+    border:1px solid rgba(217,164,65,.4);color:#f0d9a6;flex:0 0 auto}
+  .mission.done .num{background:rgba(127,199,155,.15);border-color:rgba(127,199,155,.6);color:#a8e3c0}
+  .mission .info{flex:1;min-width:0}
+  .mission .t{font-size:14.5px}
+  .mission .s{font-size:10.5px;color:var(--dim);letter-spacing:1.4px;text-transform:uppercase;margin-top:2px}
+  .mission .tier{font-size:9px;letter-spacing:1.6px;text-transform:uppercase;padding:3px 8px;border-radius:20px;
+    border:1px solid rgba(236,227,205,.2);color:var(--dim);flex:0 0 auto}
+  .mission .tier.Tutorial{color:#9ec9e8;border-color:rgba(140,190,235,.5)}
+  .mission .tier.Intro{color:#a8e3c0;border-color:rgba(127,199,155,.45)}
+  .mission .tier.Hard{color:#e8b3a6;border-color:rgba(194,84,63,.45)}
+  .mission .tier.Final{color:#f0d9a6;border-color:rgba(217,164,65,.6)}
+
+  .bigbtn{display:inline-block;padding:12px 26px;border-radius:9px;letter-spacing:2px;text-transform:uppercase;
+    font-size:11.5px;background:linear-gradient(180deg,#3a4a63,#25303f);border:1px solid rgba(217,164,65,.45)}
+  .bigbtn:hover{background:linear-gradient(180deg,#46586f,#2b3747)}
+  .bigbtn.gold{background:linear-gradient(180deg,#d9a441,#a97b23);color:#171207;border-color:#f0d9a6;font-weight:bold}
+  .bigbtn.small{font-size:10px;padding:9px 16px}
+  .titlewrap{text-align:center;max-width:680px}
+  .titlewrap h1{font-size:54px;letter-spacing:13px;margin:0;color:#f0d9a6;font-weight:normal;text-shadow:0 4px 34px rgba(217,164,65,.28)}
+  .titlewrap .sub{letter-spacing:4px;text-transform:uppercase;font-size:10.5px;color:var(--dim);margin:4px 0 22px}
+  .kirti{display:inline-flex;align-items:center;gap:7px;font-size:12px;letter-spacing:1.4px;color:#f0d9a6;
+    border:1px solid rgba(217,164,65,.4);border-radius:20px;padding:5px 14px;background:rgba(217,164,65,.08)}
+
+  /* ---------- army ---------- */
+  .armyhead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .filters button{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;padding:6px 12px;border-radius:16px;
+    border:1px solid rgba(236,227,205,.18);background:transparent;color:var(--dim)}
+  .filters button.on{border-color:var(--gold);color:#f0d9a6;background:rgba(217,164,65,.1)}
+  .armygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin-top:14px;max-height:52vh;overflow-y:auto;padding-right:4px}
+  .acard{border:1px solid rgba(236,227,205,.14);border-radius:9px;overflow:hidden;background:linear-gradient(170deg,#1a222e,#10161e)}
+  .acard .art{height:74px;position:relative;overflow:hidden}
+  .acard .art svg{width:100%;height:100%;display:block}
+  .acard .b{padding:6px 7px 8px}
+  .acard .n{font-size:11px;line-height:1.2;height:26px;overflow:hidden}
+  .acard .s{font-size:8.5px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+  .acard .pips{display:flex;gap:3px;margin:5px 0}
+  .acard .pips i{width:14px;height:4px;border-radius:2px;background:rgba(236,227,205,.18)}
+  .acard .pips i.on{background:var(--gold);box-shadow:0 0 6px rgba(217,164,65,.6)}
+  .acard button{width:100%;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;padding:5px;border-radius:5px;
+    border:1px solid rgba(217,164,65,.45);background:rgba(217,164,65,.1);color:#f0d9a6}
+  .acard button:disabled{opacity:.35;border-color:rgba(236,227,205,.15);background:transparent;color:var(--dim)}
+  .acard.max button{border-color:rgba(127,199,155,.5);background:rgba(127,199,155,.1);color:#a8e3c0}
+
+  /* ---------- codex ---------- */
+  .tabs{display:flex;gap:6px;margin:14px 0 4px;flex-wrap:wrap}
+  .tabs button{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;padding:7px 14px;border-radius:7px;
+    border:1px solid rgba(236,227,205,.16);background:transparent;color:var(--dim)}
+  .tabs button.on{border-color:var(--gold);color:#f0d9a6;background:rgba(217,164,65,.1)}
+  .codexbody{max-height:58vh;overflow-y:auto;padding-right:6px}
+
+  .audioctl{position:fixed;top:9px;right:10px;z-index:60;display:flex;gap:6px}
+  .audioctl button{width:30px;height:30px;border-radius:8px;border:1px solid rgba(236,227,205,.18);
+    background:rgba(10,14,20,.7);font-size:14px;color:var(--dim)}
+  .audioctl button.on{color:#f0d9a6;border-color:rgba(217,164,65,.5)}
+
+  @media (max-width:900px){
+    .wrap{flex-direction:column}
+    #stage{padding:6px 8px 2px}
+    #side{width:100%;flex:0 0 auto;flex-direction:row;align-items:center;gap:6px;
+      border-left:none;border-top:1px solid rgba(236,227,205,.1);background:rgba(0,0,0,.45);padding:5px 8px;height:auto}
+    #side h3,#log,#objective{display:none}
+    #status{flex:1;border-top:none;padding:3px;font-size:10.5px;min-height:0}
+    .btn{width:auto;margin:0;padding:9px 12px;font-size:10px}
+    .line{min-height:96px;padding:5px}
+    .slot,.unit{width:68px;height:88px}
+    .unit .nm{font-size:8px;height:18px}
+    #hand{min-height:118px;gap:4px}
+    .card{width:76px;height:112px}
+    .card .nm{font-size:8.5px;height:20px}
+    .hq{padding:4px 9px;gap:8px}
+    .hq .hp{font-size:15px;min-width:46px}
+    .hq .stats{gap:8px;font-size:9.5px}
+    .modal{padding:16px}
+    .titlewrap h1{font-size:34px;letter-spacing:7px}
+    .kwlist{grid-template-columns:1fr}
+    .armygrid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));max-height:44vh}
+    #coach{font-size:11px;padding:7px 10px}
+  }
+</style>
+</head>
+<body>
+
+<div id="audioctl" class="audioctl">
+  <button id="btnMusic" data-act="toggleMusic" title="Music">♪</button>
+  <button id="btnSfx" data-act="toggleSfx" title="Sound effects">◈</button>
+</div>
+
+<!-- ============ TITLE ============ -->
+<div id="screenTitle" class="overlay on">
+  <div class="titlewrap">
+    <h1>YUDDH</h1>
+    <div class="sub">Rise of the Rajyas</div>
+    <p style="font-size:13px;line-height:1.7;color:#c9c0ab;margin-bottom:18px">
+      A tactical card game of ancient India. Two capitals, one contested line, and a treasury
+      that never stretches far enough.
+    </p>
+    <div style="margin-bottom:20px"><span class="kirti" id="titleKirti">Kirti 0</span></div>
+    <div class="row2" style="justify-content:center">
+      <button class="bigbtn gold" data-act="goCampaign">Campaign</button>
+      <button class="bigbtn" data-act="goArmy">Army</button>
+      <button class="bigbtn" data-act="goSkirmish">Skirmish</button>
+      <button class="bigbtn" data-act="codex">How to play</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CAMPAIGN ============ -->
+<div id="screenCampaign" class="overlay">
+  <div class="modal">
+    <div class="armyhead">
+      <div style="flex:1"><h1 style="font-size:22px;margin:0">The Chronicle</h1>
+        <div class="tagline" id="campaignProgress">—</div></div>
+      <span class="kirti" id="campKirti">Kirti 0</span>
+    </div>
+    <div class="missions" id="missionList"></div>
+    <div class="row2" style="margin-top:16px;justify-content:space-between">
+      <button class="bigbtn small" data-act="goTitle">Back</button>
+      <div class="row2">
+        <button class="bigbtn small" data-act="goArmy">Army</button>
+        <button class="bigbtn small" data-act="resetProgress" style="opacity:.5">Reset progress</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SKIRMISH ============ -->
+<div id="screenSkirmish" class="overlay">
+  <div class="modal">
+    <h1 style="font-size:22px">Skirmish</h1>
+    <div class="tagline">Any empire, any ally, any enemy. Upgrades carry over.</div>
+    <h2>Your empire</h2>
+    <div class="emps" id="pickEmpire"></div>
+    <h2>Ally kingdom</h2>
+    <div class="emps" id="pickAlly"></div>
+    <h2>Enemy skill</h2>
+    <div class="row2" id="pickLevel"></div>
+    <div class="row2" style="margin-top:18px">
+      <button class="bigbtn gold" data-act="startSkirmish" id="skStart" disabled>March to war</button>
+      <button class="bigbtn" data-act="goTitle">Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ARMY ============ -->
+<div id="screenArmy" class="overlay">
+  <div class="modal">
+    <div class="armyhead">
+      <div style="flex:1">
+        <h1 style="font-size:22px;margin:0">Your Army</h1>
+        <div class="tagline">Kirti buys permanent upgrades — they apply in every battle</div>
+      </div>
+      <span class="kirti" id="armyKirti">Kirti 0</span>
+    </div>
+    <p style="font-size:12px;color:var(--dim);margin-top:10px">
+      A unit gains <b style="color:#f0d9a6">+1 attack and +1 defence</b> per level. A Mantra, Yantra or Shakti
+      card costs <b style="color:#f0d9a6">1 less Kosha</b> per level. Two levels maximum.
+    </p>
+    <div class="filters" id="armyFilters"></div>
+    <div class="armygrid" id="armyGrid"></div>
+    <div class="row2" style="margin-top:16px;justify-content:space-between">
+      <button class="bigbtn small" data-act="goTitle">Back</button>
+      <button class="bigbtn small" data-act="codex">How upgrades work</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ GAME ============ -->
+<div class="wrap" id="gameWrap" style="display:none">
+  <div id="stage">
+    <div id="coach"></div>
+    <div id="board">
+      <div class="hq enemy" id="hqEnemy"></div>
+      <div class="yantrarow" id="enemyYantra"></div>
+      <div class="line" id="enemySupport"><span class="tag">Enemy Rajya</span></div>
+      <div class="line" id="front"><span class="tag">Yudhbhumi</span></div>
+      <div class="line" id="mySupport"><span class="tag">Your Rajya</span></div>
+      <div class="yantrarow" id="myYantra"></div>
+      <div class="hq" id="hqMine"></div>
+      <div id="handzone"><div id="hand"></div></div>
+    </div>
+  </div>
+  <aside id="side">
+    <div id="objective">
+      <div id="objTitle">—</div>
+      <div id="objYear"></div>
+      <div id="objText"></div>
+    </div>
+    <h3>War Chronicle</h3>
+    <div id="log"></div>
+    <div id="status">—</div>
+    <button class="btn" id="endBtn" data-act="end">End Turn</button>
+    <button class="btn ghost" data-act="quit">Abandon</button>
+  </aside>
+</div>
+
+<div id="modal" class="overlay"></div>
+
+<script>'use strict';
+/* ============================================================
+   YUDDH — Rise of the Rajyas   (engine v2)
+   A tactical card game of ancient India. Pure rules engine:
+   no DOM, no external deps. Runs in node and in the browser.
+   v2 adds: scenarios (custom decks / board / HQ), objectives,
+   modifiers, and a three-level single-player AI.
+   ============================================================ */
+
+const EMPIRES = {
+  maurya: {
+    id: 'maurya', name: 'Maurya', capital: 'Pataliputra', color: '#d99a2b', glyph: 'मौ',
+    passive: 'Arthashastra — the first unit costing 3 or more that you deploy each turn costs 1 less Kosha.'
+  },
+  gupta: {
+    id: 'gupta', name: 'Gupta', capital: 'Ujjain', color: '#2f8f74', glyph: 'गु',
+    passive: 'Golden Age — the first Mantra you cast each turn draws a card.'
+  },
+  chalukya: {
+    id: 'chalukya', name: 'Chalukya', capital: 'Badami', color: '#b4532a', glyph: 'चा',
+    passive: 'Stone Forts — your Durg starts with 28 defence, and your Raksha units get +1 attack.'
+  },
+  chola: {
+    id: 'chola', name: 'Chola', capital: 'Thanjavur', color: '#3f6fa8', glyph: 'चो',
+    passive: 'Naval Supremacy — your ranged units get +1 attack.'
+  },
+  rajput: {
+    id: 'rajput', name: 'Rajput', capital: 'Kannauj', color: '#a83f5b', glyph: 'रा',
+    passive: 'Kshatra — your Vega units get +1 attack when deployed.'
+  },
+  neutral: { id: 'neutral', name: 'Mercenary', capital: '—', color: '#7c7466', glyph: 'सा', passive: 'Hired swords, available to every throne.' }
+};
+const EMPIRE_ORDER = ['maurya', 'gupta', 'chalukya', 'chola', 'rajput'];
+
+/* ---------------- card table ---------------- */
+const CARD_LIST = [
+  /* ---------- neutral ---------- */
+  { id: 'n_padati', name: 'Padati', sub: 'Swordsman', empire: 'neutral', type: 'unit', cost: 1, op: 1, atk: 1, hp: 2, range: 'melee', glyph: 'प', text: 'The backbone of every army.' },
+  { id: 'n_dhanurdhar', name: 'Dhanurdhar', sub: 'Archer', empire: 'neutral', type: 'unit', cost: 2, op: 1, atk: 1, hp: 2, range: 'ranged', glyph: 'ध', text: 'Strikes from the Rajya line without taking a counter-blow.' },
+  { id: 'n_ashvarohi', name: 'Ashvarohi', sub: 'Cavalry', empire: 'neutral', type: 'unit', cost: 2, op: 1, atk: 2, hp: 2, range: 'melee', kw: ['veg'], glyph: 'अ', text: 'Vega — can act the turn it is deployed.' },
+  { id: 'n_rakshak', name: 'Rakshak', sub: 'Shield Wall', empire: 'neutral', type: 'unit', cost: 2, op: 1, atk: 1, hp: 4, range: 'melee', kw: ['raksha'], glyph: 'र', text: 'Raksha — enemy attacks must strike this unit first.' },
+  { id: 'n_rathi', name: 'Rathi', sub: 'Chariot', empire: 'neutral', type: 'unit', cost: 3, op: 1, atk: 3, hp: 2, range: 'melee', kw: ['veg'], glyph: 'र', text: 'Vega. Fast, fragile, and always first over the line.' },
+  { id: 'n_maharathi', name: 'Maharathi', sub: 'Elite Chariot', empire: 'neutral', type: 'unit', cost: 4, op: 2, atk: 4, hp: 4, range: 'melee', kw: ['veg'], glyph: 'म', text: 'Vega. A commander of ten thousand.' },
+  { id: 'n_gaja', name: 'Gaja', sub: 'War Elephant', empire: 'neutral', type: 'unit', cost: 4, op: 2, atk: 4, hp: 5, range: 'melee', kw: ['raksha'], glyph: 'ग', text: 'Raksha. The wall that walks.' },
+  { id: 'n_senapati', name: 'Senapati', sub: 'Commander', empire: 'neutral', type: 'unit', cost: 3, op: 1, atk: 2, hp: 3, range: 'melee', glyph: 'से', text: 'Deploy — your other units in this line get +1 attack.', deploy: 'buffLine' },
+  { id: 'n_atirathi', name: 'Atirathi', sub: 'Legendary Warrior', empire: 'neutral', type: 'unit', cost: 5, op: 2, atk: 6, hp: 5, range: 'melee', kw: ['veg'], glyph: 'अ', text: 'Vega. One who fights a thousand chariots alone.' },
+  { id: 'n_aakraman', name: 'Aakraman', sub: 'Assault', empire: 'neutral', type: 'order', cost: 2, target: 'enemyUnit', glyph: 'आ', text: 'Deal 2 damage to an enemy unit.' },
+  { id: 'n_sena_bhojan', name: 'Sena Bhojan', sub: 'Supply Column', empire: 'neutral', type: 'order', cost: 2, glyph: 'भ', text: 'Restore 4 defence to your Durg.' },
+  { id: 'n_yudh_niti', name: 'Yudh Niti', sub: 'Strategy', empire: 'neutral', type: 'order', cost: 3, glyph: 'नी', text: 'Draw 2 cards.' },
+
+  /* ---------- Yantra — played face-down, springs on the enemy's turn ---------- */
+  { id: 'y_vighna', name: 'Vighna Yantra', sub: 'Obstruction', empire: 'neutral', type: 'yantra', kind: 'yantra',
+    cost: 2, glyph: 'वि', trigger: 'onEnemyDeploy', power: 0,
+    text: 'Yantra — when the enemy deploys a unit, destroy it.' },
+  { id: 'y_kavach', name: 'Kavach Yantra', sub: 'Ward', empire: 'neutral', type: 'yantra', kind: 'yantra',
+    cost: 2, glyph: 'क', trigger: 'onHQAttack', power: 4,
+    text: 'Yantra — when the enemy attacks your Durg, prevent 4 damage.' },
+  { id: 'y_pratikar', name: 'Pratikar Yantra', sub: 'Reprisal', empire: 'neutral', type: 'yantra', kind: 'yantra',
+    cost: 2, glyph: 'प्र', trigger: 'onUnitAttack', power: 3,
+    text: 'Yantra — when an enemy unit attacks one of yours, deal 3 damage to it.' },
+
+  /* ---------- Shakti — the decisive stroke ---------- */
+  { id: 's_agni', name: 'Agni Baan', sub: 'Fire Arrow', empire: 'neutral', type: 'order', kind: 'shakti',
+    cost: 4, target: 'enemyUnit', glyph: 'अ', text: 'Shakti — deal 5 damage to an enemy unit.' },
+  { id: 's_chakravyuha', name: 'Chakravyuha', sub: 'Encircling Formation', empire: 'neutral', type: 'order', kind: 'shakti',
+    cost: 5, glyph: 'च', text: 'Shakti — deal 2 damage to every enemy unit.' },
+  { id: 's_ashwamedha', name: 'Ashwamedha', sub: 'Horse Sacrifice', empire: 'neutral', type: 'order', kind: 'shakti',
+    cost: 6, glyph: 'अ', text: 'Shakti — all your units get +2 attack and +2 defence.' },
+  { id: 'n_visha_baan', name: 'Visha Baan', sub: 'Poisoned Arrows', empire: 'neutral', type: 'order', cost: 4, glyph: 'वि', text: 'Deal 1 damage to every enemy unit.' },
+
+  /* ---------- Maurya ---------- */
+  { id: 'm_padati', name: 'Mauryan Padati', sub: 'Swordsman', empire: 'maurya', type: 'unit', cost: 1, op: 1, atk: 2, hp: 1, range: 'melee', glyph: 'प', text: 'Cheap, drilled, endless.' },
+  { id: 'm_gudhchar', name: 'Gudhchar', sub: 'Spy', empire: 'maurya', type: 'unit', cost: 2, op: 1, atk: 1, hp: 1, range: 'ranged', glyph: 'गू', text: 'Deploy — draw a card.', deploy: 'draw1' },
+  { id: 'm_hasti', name: 'Hasti Sena', sub: 'Elephant Corps', empire: 'maurya', type: 'unit', cost: 5, op: 2, atk: 5, hp: 5, range: 'melee', glyph: 'ह', text: 'The arm that broke Seleucus.' },
+  { id: 'm_chanakya', name: 'Chanakya', sub: 'Strategist', empire: 'maurya', type: 'unit', cost: 4, op: 1, atk: 2, hp: 4, range: 'melee', glyph: 'चा', text: 'Deploy — draw a card and gain 1 Kosha.', deploy: 'drawKosha' },
+  { id: 'm_chandragupta', name: 'Chandragupta', sub: 'Samrat', empire: 'maurya', type: 'unit', cost: 7, op: 2, atk: 6, hp: 7, range: 'melee', kw: ['veg'], glyph: 'स', text: 'Vega. Deploy — all your units get +1 attack.', deploy: 'buffAll' },
+  { id: 'm_arthashastra', name: 'Arthashastra', sub: 'Treatise', empire: 'maurya', type: 'order', cost: 3, glyph: 'अ', text: 'Draw a card and gain 2 Kosha.' },
+
+  /* ---------- Gupta ---------- */
+  { id: 'g_dhanurdhar', name: 'Gupta Dhanurdhar', sub: 'Archer', empire: 'gupta', type: 'unit', cost: 2, op: 1, atk: 2, hp: 2, range: 'ranged', glyph: 'ध', text: 'Trained in the akhadas of the golden age.' },
+  { id: 'g_pandit', name: 'Nalanda Pandit', sub: 'Scholar', empire: 'gupta', type: 'unit', cost: 3, op: 1, atk: 1, hp: 4, range: 'melee', glyph: 'पं', text: 'Deploy — draw a card.', deploy: 'draw1' },
+  { id: 'g_ashvarohi', name: 'Gupta Ashvarohi', sub: 'Cavalry', empire: 'gupta', type: 'unit', cost: 3, op: 1, atk: 3, hp: 2, range: 'melee', kw: ['veg'], glyph: 'अ', text: 'Vega.' },
+  { id: 'g_mandir', name: 'Mandir Shilpi', sub: 'Temple Builder', empire: 'gupta', type: 'unit', cost: 2, op: 1, atk: 1, hp: 3, range: 'melee', glyph: 'शि', text: 'Deploy — gain 1 Kosha.', deploy: 'kosha1' },
+  { id: 'g_samudragupta', name: 'Samudragupta', sub: 'Samrat', empire: 'gupta', type: 'unit', cost: 7, op: 2, atk: 6, hp: 7, range: 'melee', kw: ['veg'], glyph: 'स', text: 'Vega. Deploy — all your units get +1 attack.', deploy: 'buffAll' },
+  { id: 'g_swarn_yug', name: 'Swarn Yug', sub: 'Golden Age', empire: 'gupta', type: 'order', cost: 4, glyph: 'स्व', text: 'Draw 2 cards and restore 3 to your Durg.' },
+
+  /* ---------- Chalukya ---------- */
+  { id: 'c_rakshak', name: 'Durg Rakshak', sub: 'Fort Guard', empire: 'chalukya', type: 'unit', cost: 2, op: 1, atk: 2, hp: 5, range: 'melee', kw: ['raksha'], glyph: 'र', text: 'Raksha. Carved into the rock of Badami.' },
+  { id: 'c_ashvarohi', name: 'Chalukya Ashvarohi', sub: 'Cavalry', empire: 'chalukya', type: 'unit', cost: 3, op: 1, atk: 3, hp: 4, range: 'melee', kw: ['veg'], glyph: 'अ', text: 'Vega.' },
+  { id: 'c_gaja', name: 'Chalukya Gaja', sub: 'War Elephant', empire: 'chalukya', type: 'unit', cost: 5, op: 2, atk: 5, hp: 5, range: 'melee', kw: ['raksha'], glyph: 'ग', text: 'Raksha.' },
+  { id: 'c_pulakeshin', name: 'Pulakeshin II', sub: 'Samrat', empire: 'chalukya', type: 'unit', cost: 7, op: 2, atk: 6, hp: 6, range: 'melee', kw: ['veg', 'raksha'], glyph: 'स', text: 'Vega, Raksha. He turned back Harsha at the Narmada.' },
+  { id: 'c_senapati', name: 'Chalukya Senapati', sub: 'Commander', empire: 'chalukya', type: 'unit', cost: 4, op: 1, atk: 3, hp: 4, range: 'melee', glyph: 'से', text: 'Deploy — your other units in this line get +1 attack.', deploy: 'buffLine' },
+  { id: 'c_shilpa', name: 'Shilpa Kala', sub: 'Temple Engineering', empire: 'chalukya', type: 'order', cost: 3, glyph: 'शि', text: 'Restore 5 to your Durg and gain 1 Kosha.' },
+
+  /* ---------- Chola ---------- */
+  { id: 'ch_navik', name: 'Chola Navik', sub: 'Marine', empire: 'chola', type: 'unit', cost: 2, op: 1, atk: 3, hp: 3, range: 'melee', glyph: 'न', text: 'Fights as well ashore as afloat.' },
+  { id: 'ch_archer', name: 'Chola Dhanurdhar', sub: 'Archer', empire: 'chola', type: 'unit', cost: 2, op: 1, atk: 2, hp: 3, range: 'ranged', glyph: 'ध', text: 'Ranged.' },
+  { id: 'ch_pot', name: 'Yuddh Pot', sub: 'Warship', empire: 'chola', type: 'unit', cost: 4, op: 2, atk: 5, hp: 5, range: 'ranged', glyph: 'पो', text: 'Ranged. The Bay of Bengal was a Chola lake.' },
+  { id: 'ch_rajaraja', name: 'Rajaraja Chola', sub: 'Samrat', empire: 'chola', type: 'unit', cost: 7, op: 2, atk: 6, hp: 6, range: 'ranged', glyph: 'स', text: 'Deploy — draw a card.', deploy: 'draw1' },
+  { id: 'ch_sena', name: 'Chola Senapati', sub: 'Commander', empire: 'chola', type: 'unit', cost: 3, op: 1, atk: 3, hp: 3, range: 'melee', glyph: 'से', text: 'Deploy — your other units in this line get +1 attack.', deploy: 'buffLine' },
+  { id: 'ch_vyapari', name: 'Chola Vyapari', sub: 'Sea Trader', empire: 'chola', type: 'order', cost: 1, glyph: 'व्या', text: 'Gain 2 Kosha.' },
+
+  /* ---------- Rajput ---------- */
+  { id: 'r_yoddha', name: 'Rajput Yoddha', sub: 'Warrior', empire: 'rajput', type: 'unit', cost: 2, op: 1, atk: 3, hp: 2, range: 'melee', kw: ['veg'], glyph: 'यो', text: 'Vega.' },
+  { id: 'r_archer', name: 'Pratihara Dhanurdhar', sub: 'Archer', empire: 'rajput', type: 'unit', cost: 2, op: 1, atk: 2, hp: 2, range: 'ranged', glyph: 'ध', text: 'Ranged.' },
+  { id: 'r_gaja', name: 'Pratihara Gaja', sub: 'War Elephant', empire: 'rajput', type: 'unit', cost: 4, op: 2, atk: 4, hp: 4, range: 'melee', kw: ['raksha'], glyph: 'ग', text: 'Raksha.' },
+  { id: 'r_maharathi', name: 'Rajput Maharathi', sub: 'Elite Chariot', empire: 'rajput', type: 'unit', cost: 5, op: 2, atk: 5, hp: 5, range: 'melee', kw: ['veg'], glyph: 'म', text: 'Vega.' },
+  { id: 'r_prithviraj', name: 'Prithviraj Chauhan', sub: 'Samrat', empire: 'rajput', type: 'unit', cost: 7, op: 2, atk: 6, hp: 6, range: 'melee', kw: ['veg'], glyph: 'स', text: 'Vega. Deploy — all your units get +1 attack.', deploy: 'buffAll' },
+  { id: 'r_sena', name: 'Rajput Senapati', sub: 'Commander', empire: 'rajput', type: 'unit', cost: 4, op: 1, atk: 3, hp: 4, range: 'melee', glyph: 'से', text: 'Deploy — your other units in this line get +1 attack.', deploy: 'buffLine' },
+  { id: 'r_kshatra', name: 'Kshatra Dharma', sub: 'Code of War', empire: 'rajput', type: 'order', cost: 2, glyph: 'क्ष', text: 'Your units in the Yudhbhumi get +2 attack.' }
+];
+
+const CARDS = {};
+CARD_LIST.forEach(c => { CARDS[c.id] = c; });
+const KW_LABEL = { veg: 'Vega', raksha: 'Raksha', dhuan: 'Dhuan' };
+
+/* ---------------- helpers ---------------- */
+function rngFactory(seed) {
+  let s = (seed >>> 0) || 1;
+  return function () {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffle(arr, rng) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function buildDeck(empire, ally) {
+  const deck = [];
+  CARD_LIST.filter(c => c.empire === empire).forEach(c => { deck.push(c.id); deck.push(c.id); });
+  CARD_LIST.filter(c => c.empire === ally).forEach(c => deck.push(c.id));
+  CARD_LIST.filter(c => c.empire === 'neutral').forEach(c => deck.push(c.id));
+  return deck;
+}
+function log(st, msg, side) {
+  st.log.push({ turn: st.turn, msg, side: side === undefined ? st.active : side });
+  if (st.log.length > 240) st.log.shift();
+}
+
+function makeUnit(st, cardId, owner) {
+  const c = CARDS[cardId];
+  const u = {
+    uid: st.nextUid++, cardId, name: c.name, sub: c.sub, glyph: c.glyph, empire: c.empire,
+    atk: c.atk, hp: c.hp, maxHp: c.hp, op: c.op, range: c.range,
+    kw: (c.kw || []).slice(), owner,
+    canAct: false, moved: false, attacked: false, smokeBroken: false
+  };
+  const lvl = (st.players[owner].upgrades && st.players[owner].upgrades[cardId]) || 0;
+  if (lvl) { u.atk += lvl; u.hp += lvl; u.maxHp += lvl; u.upgraded = lvl; }
+  const emp = st.players[owner].empire;
+  if (emp === 'rajput' && u.kw.includes('veg')) u.atk += 1;
+  if (emp === 'chola' && u.range === 'ranged') u.atk += 1;
+  if (emp === 'chalukya' && u.kw.includes('raksha')) u.atk += 1;
+  return u;
+}
+
+function makePlayer(st, side, cfg) {
+  const empire = cfg.empire, ally = cfg.ally || 'neutral';
+  const emp = EMPIRES[empire];
+  const baseHq = cfg.hq || (empire === 'chalukya' ? 28 : 24);
+  const deckList = cfg.deck && cfg.deck.length ? cfg.deck.slice() : buildDeck(empire, ally);
+  const p = {
+    side, empire, ally,
+    faction: cfg.faction || emp.name,
+    hq: { name: cfg.capital || emp.capital, hp: baseHq, maxHp: baseHq },
+    kosha: 1, maxKosha: cfg.startKosha || 1,
+    deck: shuffle(deckList, st.rng),
+    hand: [], discard: [],
+    support: [], yantras: [], fatigue: 0,
+    upgrades: cfg.upgrades || {},
+    drawBonus: cfg.drawBonus || 0,
+    counters: { ordersPlayed: 0, unitsThisTurn: 0 }
+  };
+  return p;
+}
+
+function draw(st, pIdx, n) {
+  const p = st.players[pIdx];
+  for (let i = 0; i < (n || 1); i++) {
+    if (p.deck.length === 0) {
+      p.fatigue += 1;
+      p.hq.hp -= p.fatigue;
+      log(st, `Deck exhausted — ${EMPIRES[p.empire].name} takes ${p.fatigue} attrition damage.`, pIdx);
+      checkDeath(st);
+      continue;
+    }
+    if (p.hand.length >= 10) { p.discard.push(p.deck.pop()); continue; }
+    p.hand.push(p.deck.pop());
+  }
+}
+
+function checkDeath(st) {
+  if (st.over) return;
+  const a = st.players[0].hq.hp <= 0;
+  const b = st.players[1].hq.hp <= 0;
+  if (!a && !b) return;
+  st.over = true;
+  if (a && b) st.winner = null;
+  else st.winner = a ? 1 : 0;
+  st.winReason = a && b ? 'both' : 'destroy';
+  log(st, st.winner === null ? 'Both capitals burn. A draw.' : `${EMPIRES[st.players[st.winner].empire].name} wins the war.`, st.winner === null ? 0 : st.winner);
+}
+
+function findUnit(st, owner, uid) {
+  const p = st.players[owner];
+  let u = p.support.find(x => x.uid === uid);
+  if (u) return { unit: u, line: 'support' };
+  if (st.front.owner === owner) {
+    u = st.front.units.find(x => x.uid === uid);
+    if (u) return { unit: u, line: 'front' };
+  }
+  return null;
+}
+function allUnits(st, owner) {
+  const out = st.players[owner].support.map(u => ({ unit: u, line: 'support' }));
+  if (st.front.owner === owner) st.front.units.forEach(u => out.push({ unit: u, line: 'front' }));
+  return out;
+}
+function destroyUnit(st, owner, uid) {
+  const p = st.players[owner];
+  let idx = p.support.findIndex(x => x.uid === uid);
+  if (idx >= 0) {
+    const [u] = p.support.splice(idx, 1);
+    p.discard.push(u.cardId);
+    log(st, `${u.name} is destroyed.`, owner);
+  } else if (st.front.owner === owner) {
+    idx = st.front.units.findIndex(x => x.uid === uid);
+    if (idx >= 0) {
+      const [u] = st.front.units.splice(idx, 1);
+      p.discard.push(u.cardId);
+      log(st, `${u.name} falls on the Yudhbhumi.`, owner);
+      if (st.front.units.length === 0) st.front.owner = null;
+    }
+  }
+}
+function damageUnit(st, owner, uid, amount) {
+  const f = findUnit(st, owner, uid);
+  if (!f) return;
+  f.unit.hp -= amount;
+  if (f.unit.hp <= 0) destroyUnit(st, owner, uid);
+}
+function damageAll(st, owner, amount) {
+  allUnits(st, owner).slice().forEach(x => damageUnit(st, owner, x.unit.uid, amount));
+}
+function damageHQ(st, owner, amount) {
+  const p = st.players[owner];
+  p.hq.hp -= amount;
+  log(st, `${EMPIRES[p.empire].name}'s Durg takes ${amount} damage.`, owner);
+  checkDeath(st);
+}
+function koshaCost(st, owner, card) {
+  let c = card.cost;
+  const pl = st.players[owner];
+  const lvl = (pl.upgrades && pl.upgrades[card.id]) || 0;
+  if (card.type !== 'unit' && lvl) c = Math.max(1, c - lvl);
+  if (card.type === 'unit' && card.cost >= 3 && pl.empire === 'maurya' && (pl.counters.unitsThisTurn || 0) === 0) c = c - 1;
+  return c;
+}
+
+/* ---------------- game creation ---------------- */
+function newGame(opts) {
+  const st = {
+    seed: opts.seed === undefined ? 1 : opts.seed,
+    turn: 1, active: 0, over: false, winner: null, winReason: null,
+    log: [], nextUid: 1, events: [],
+    front: { owner: null, units: [] },
+    players: [],
+    aiLevel: opts.aiLevel || 'normal',
+    objective: opts.objective || { type: 'destroy' },
+    scenarioId: opts.scenarioId || null,
+    scenarioName: opts.scenarioName || null
+  };
+  st.rng = rngFactory(st.seed);
+  st.players.push(makePlayer(st, 'p0', opts.player));
+  st.players.push(makePlayer(st, 'p1', opts.enemy));
+
+  // preset battlefield
+  const preset = opts.preset || {};
+  (preset.enemyFront || []).forEach(cardId => {
+    const u = makeUnit(st, cardId, 1);
+    u.canAct = true;
+    st.front.units.push(u);
+  });
+  if (st.front.units.length) st.front.owner = 1;
+  (preset.playerFront || []).forEach(cardId => {
+    if (st.front.owner !== null) return;
+    const u = makeUnit(st, cardId, 0);
+    u.canAct = true;
+    st.front.units.push(u);
+    st.front.owner = 0;
+  });
+  (preset.enemySupport || []).forEach(cardId => { const u = makeUnit(st, cardId, 1); u.canAct = true; st.players[1].support.push(u); });
+  (preset.playerSupport || []).forEach(cardId => { const u = makeUnit(st, cardId, 0); u.canAct = true; st.players[0].support.push(u); });
+
+  draw(st, 0, opts.player.handSize || 4);
+  draw(st, 1, opts.enemy.handSize || 4);
+  if (opts.player.openingHand && opts.player.openingHand.length) {
+    const p0 = st.players[0];
+    const wanted = opts.player.openingHand.slice();
+    // put the randomly drawn cards back, then take the scripted ones out
+    p0.deck.push(...p0.hand);
+    shuffle(p0.deck, st.rng);
+    wanted.forEach(cid => {
+      const i = p0.deck.indexOf(cid);
+      if (i >= 0) p0.deck.splice(i, 1);
+    });
+    p0.hand = wanted;
+  }
+  startTurn(st, 0, true);
+  log(st, 'The war begins.', 0);
+  return st;
+}
+
+function startTurn(st, idx, first) {
+  if (st.over) return;
+  const p = st.players[idx];
+  st.active = idx;
+  p.maxKosha = Math.min(12, p.maxKosha + 1);
+  p.kosha = p.maxKosha;
+  p.counters.unitsThisTurn = 0;
+  p.counters.mantraThisTurn = false;
+  allUnits(st, idx).forEach(x => {
+    x.unit.canAct = true;
+    x.unit.moved = false;
+    x.unit.attacked = false;
+  });
+  if (!first) draw(st, idx, 1 + (p.drawBonus || 0));
+  log(st, `${EMPIRES[p.empire].name} — turn begins.`, idx);
+
+  // clock objectives, checked when a new round begins
+  if (idx === 0 && st.objective.turns && st.turn > st.objective.turns) {
+    if (st.objective.type === 'survive') {
+      st.over = true; st.winner = 0; st.winReason = 'survive';
+      log(st, 'The enemy host disperses. The line held.', 0);
+    } else if (st.objective.type === 'deadline') {
+      st.over = true; st.winner = 1; st.winReason = 'deadline';
+      log(st, 'Reinforcements arrive. The moment has passed.', 1);
+    }
+  }
+}
+
+
+/* ---------- Yantra resolution ---------- */
+function fireYantra(st, owner, trigger, ctx) {
+  const p = st.players[owner];
+  if (!p || !p.yantras || !p.yantras.length) return null;
+  const idx = p.yantras.findIndex(y => {
+    const c = CARDS[y.cardId];
+    return c && c.trigger === trigger;
+  });
+  if (idx < 0) return null;
+  const [y] = p.yantras.splice(idx, 1);
+  const c = CARDS[y.cardId];
+  p.discard.push(y.cardId);
+  log(st, `${EMPIRES[p.empire].name} springs a ${c.name}.`, owner);
+  pushEvent(st, { t: 'yantra', owner, cardId: y.cardId });
+  return { card: c, power: c.power || 0 };
+}
+
+function pushEvent(st, e) {
+  if (!st.events) st.events = [];
+  st.events.push(e);
+}
+
+/* ---------------- legality ---------------- */
+function hasGuard(list) { return list.some(u => u.kw.includes('raksha')); }
+
+function canAttack(st, pIdx, attackerUid, target) {
+  if (st.over) return { ok: false, reason: 'Game over' };
+  if (pIdx !== st.active) return { ok: false, reason: 'Not your turn' };
+  const p = st.players[pIdx];
+  const found = findUnit(st, pIdx, attackerUid);
+  if (!found) return { ok: false, reason: 'No such unit' };
+  const a = found.unit;
+  if (!a.canAct || a.attacked) return { ok: false, reason: 'Already acted' };
+  if (p.kosha < a.op) return { ok: false, reason: 'Not enough Kosha' };
+  const fromSupport = found.line === 'support';
+
+  if (target.kind === 'hq') {
+    if (target.owner === pIdx) return { ok: false, reason: 'Own capital' };
+    if (fromSupport) return { ok: false, reason: 'Only from the Yudhbhumi' };
+    if (st.front.owner !== pIdx) return { ok: false, reason: 'You do not hold the Yudhbhumi' };
+    // Raksha guards protect units, not the capital: only the Yudhbhumi gates a Durg assault.
+    return { ok: true };
+  }
+
+  if (target.owner === pIdx) return { ok: false, reason: 'Friendly unit' };
+  const f = findUnit(st, target.owner, target.uid);
+  if (!f) return { ok: false, reason: 'No such target' };
+  if (f.unit.kw.includes('dhuan') && !f.unit.smokeBroken) return { ok: false, reason: 'Hidden by Dhuan' };
+  if (fromSupport && f.line !== 'front') return { ok: false, reason: 'From your Rajya line you can only strike the Yudhbhumi' };
+
+  const sameLine = f.line === 'front' ? st.front.units : st.players[target.owner].support;
+  if (hasGuard(sameLine) && !f.unit.kw.includes('raksha')) return { ok: false, reason: 'A Raksha unit shields this one' };
+  return { ok: true };
+}
+
+function canMove(st, pIdx, uid) {
+  if (st.over) return { ok: false, reason: 'Game over' };
+  if (pIdx !== st.active) return { ok: false, reason: 'Not your turn' };
+  const p = st.players[pIdx];
+  const found = findUnit(st, pIdx, uid);
+  if (!found || found.line !== 'support') return { ok: false, reason: 'Only from the Rajya line' };
+  const u = found.unit;
+  if (!u.canAct || u.moved) return { ok: false, reason: 'Already acted' };
+  if (p.kosha < u.op) return { ok: false, reason: 'Not enough Kosha' };
+  if (st.front.owner !== null && st.front.owner !== pIdx) return { ok: false, reason: 'The enemy holds the Yudhbhumi' };
+  if (st.front.units.length >= 4) return { ok: false, reason: 'The Yudhbhumi is full' };
+  return { ok: true };
+}
+
+function canPlay(st, pIdx, handIdx, target) {
+  if (st.over) return { ok: false, reason: 'Game over' };
+  if (pIdx !== st.active) return { ok: false, reason: 'Not your turn' };
+  const p = st.players[pIdx];
+  const cardId = p.hand[handIdx];
+  if (!cardId) return { ok: false, reason: 'No such card' };
+  const c = CARDS[cardId];
+  if (p.kosha < koshaCost(st, pIdx, c)) return { ok: false, reason: 'Not enough Kosha' };
+  if (c.type === 'unit' && p.support.length >= 4) return { ok: false, reason: 'Rajya line is full' };
+  if (c.type === 'yantra' && p.yantras.length >= 2) return { ok: false, reason: 'You have two Yantras set' };
+  if (c.target === 'enemyUnit') {
+    if (!target || target.kind !== 'unit') return { ok: false, reason: 'Choose an enemy unit' };
+    const f = findUnit(st, target.owner, target.uid);
+    if (!f || target.owner === pIdx) return { ok: false, reason: 'Choose an enemy unit' };
+    if (f.unit.kw.includes('dhuan') && !f.unit.smokeBroken) return { ok: false, reason: 'Hidden by Dhuan' };
+  }
+  return { ok: true };
+}
+
+/* ---------------- effects ---------------- */
+function applyDeploy(st, pIdx, unit, line) {
+  const c = CARDS[unit.cardId];
+  const p = st.players[pIdx];
+  switch (c.deploy) {
+    case 'draw1': draw(st, pIdx, 1); break;
+    case 'drawKosha': draw(st, pIdx, 1); p.kosha = Math.min(p.maxKosha + 1, p.kosha + 1); break;
+    case 'kosha1': p.kosha = Math.min(p.maxKosha + 1, p.kosha + 1); break;
+    case 'buffLine': {
+      const list = line === 'front' ? st.front.units : p.support;
+      list.forEach(u => { if (u.uid !== unit.uid) u.atk += 1; });
+      break;
+    }
+    case 'buffAll': allUnits(st, pIdx).forEach(x => { x.unit.atk += 1; }); break;
+  }
+}
+
+function applyOrder(st, pIdx, cardId, target) {
+  const p = st.players[pIdx];
+  switch (cardId) {
+    case 'n_aakraman': damageUnit(st, target.owner, target.uid, 2); break;
+    case 'n_sena_bhojan': p.hq.hp = Math.min(p.hq.maxHp, p.hq.hp + 4); break;
+    case 'n_yudh_niti': draw(st, pIdx, 2); break;
+    case 'n_visha_baan': damageAll(st, 1 - pIdx, 1); break;
+    case 'm_arthashastra': draw(st, pIdx, 1); p.kosha = Math.min(p.maxKosha + 1, p.kosha + 2); break;
+    case 'g_swarn_yug': draw(st, pIdx, 2); p.hq.hp = Math.min(p.hq.maxHp, p.hq.hp + 3); break;
+    case 'c_shilpa': p.hq.hp = Math.min(p.hq.maxHp, p.hq.hp + 5); p.kosha = Math.min(p.maxKosha + 1, p.kosha + 1); break;
+    case 'ch_vyapari': p.kosha = Math.min(p.maxKosha + 1, p.kosha + 2); break;
+    case 'r_kshatra': if (st.front.owner === pIdx) st.front.units.forEach(u => { u.atk += 2; }); break;
+    case 's_agni': damageUnit(st, target.owner, target.uid, 5); break;
+    case 's_chakravyuha': damageAll(st, 1 - pIdx, 2); break;
+    case 's_ashwamedha':
+      allUnits(st, pIdx).forEach(x => { x.unit.atk += 2; x.unit.hp += 2; x.unit.maxHp += 2; });
+      break;
+  }
+  p.counters.ordersPlayed += 1;
+  if (p.empire === 'gupta' && CARDS[cardId].kind !== 'shakti' && !p.counters.mantraThisTurn) {
+    p.counters.mantraThisTurn = true;
+    draw(st, pIdx, 1);
+  }
+  checkDeath(st);
+}
+
+/* ---------------- actions ---------------- */
+function applyAction(st, action) {
+  if (st.over) return { ok: false, reason: 'Game over' };
+  const pIdx = st.active;
+  const p = st.players[pIdx];
+
+  if (action.type === 'play') {
+    const chk = canPlay(st, pIdx, action.handIndex, action.target);
+    if (!chk.ok) return chk;
+    const cardId = p.hand[action.handIndex];
+    const c = CARDS[cardId];
+    p.kosha -= koshaCost(st, pIdx, c);
+    p.hand.splice(action.handIndex, 1);
+
+    if (c.type === 'unit') {
+      const u = makeUnit(st, cardId, pIdx);
+      p.support.push(u);
+      u.canAct = u.kw.includes('veg');
+      p.counters.unitsThisTurn = (p.counters.unitsThisTurn || 0) + 1;
+      log(st, `${EMPIRES[p.empire].name} deploys ${u.name}.`, pIdx);
+      pushEvent(st, { t: 'deploy', owner: pIdx, uid: u.uid, cardId });
+      applyDeploy(st, pIdx, u, 'support');
+      // an enemy Vighna Yantra may unmake the deployment
+      const trap = fireYantra(st, 1 - pIdx, 'onEnemyDeploy', { unit: u });
+      if (trap) destroyUnit(st, pIdx, u.uid);
+    } else if (c.type === 'yantra') {
+      p.yantras.push({ cardId, uid: st.nextUid++ });
+      log(st, `${EMPIRES[p.empire].name} sets a Yantra, face down.`, pIdx);
+      pushEvent(st, { t: 'yantraSet', owner: pIdx });
+    } else {
+      log(st, `${EMPIRES[p.empire].name} casts ${c.name}.`, pIdx);
+      pushEvent(st, { t: 'order', owner: pIdx, cardId });
+      p.discard.push(cardId);
+      applyOrder(st, pIdx, cardId, action.target);
+    }
+    checkDeath(st);
+    return { ok: true };
+  }
+
+  if (action.type === 'move') {
+    const chk = canMove(st, pIdx, action.uid);
+    if (!chk.ok) return chk;
+    const f = findUnit(st, pIdx, action.uid);
+    const u = f.unit;
+    p.kosha -= u.op;
+    p.support.splice(p.support.findIndex(x => x.uid === u.uid), 1);
+    if (st.front.owner === null) st.front.owner = pIdx;
+    st.front.units.push(u);
+    u.moved = true;
+    log(st, `${u.name} advances to the Yudhbhumi.`, pIdx);
+    pushEvent(st, { t: 'move', owner: pIdx, uid: u.uid });
+    return { ok: true };
+  }
+
+  if (action.type === 'attack') {
+    const chk = canAttack(st, pIdx, action.uid, action.target);
+    if (!chk.ok) return chk;
+    const f = findUnit(st, pIdx, action.uid);
+    const a = f.unit;
+    p.kosha -= a.op;
+    a.attacked = true;
+    if (a.kw.includes('dhuan')) a.smokeBroken = true;
+
+    if (action.target.kind === 'hq') {
+      let dmg = a.atk;
+      const ward = fireYantra(st, action.target.owner, 'onHQAttack', { attacker: a });
+      if (ward) dmg = Math.max(0, dmg - ward.power);
+      log(st, dmg > 0
+        ? `${a.name} strikes the enemy Durg for ${dmg}.`
+        : `${a.name}'s blow is turned aside by the ward.`, pIdx);
+      pushEvent(st, { t: 'hq', owner: action.target.owner, dmg, attacker: pIdx });
+      if (dmg > 0) damageHQ(st, action.target.owner, dmg);
+      return { ok: true };
+    }
+    const tf = findUnit(st, action.target.owner, action.target.uid);
+    const d = tf.unit;
+    log(st, `${a.name} attacks ${d.name}.`, pIdx);
+    pushEvent(st, { t: 'attack', owner: pIdx, uid: a.uid, target: { owner: action.target.owner, uid: d.uid }, dmg: a.atk });
+    d.hp -= a.atk;
+    const dmgBack = (a.range === 'melee' && d.range === 'melee') ? d.atk : 0;
+    if (dmgBack > 0) a.hp -= dmgBack;
+    if (d.hp <= 0) { pushEvent(st, { t: 'death', owner: action.target.owner, uid: d.uid }); destroyUnit(st, action.target.owner, d.uid); }
+    if (a.hp <= 0) { pushEvent(st, { t: 'death', owner: pIdx, uid: a.uid }); destroyUnit(st, pIdx, a.uid); }
+    // a Pratikar Yantra punishes the attacker
+    const reprisal = fireYantra(st, action.target.owner, 'onUnitAttack', { attacker: a });
+    if (reprisal) damageUnit(st, pIdx, a.uid, reprisal.power);
+    checkDeath(st);
+    return { ok: true };
+  }
+
+  if (action.type === 'end') {
+    log(st, `${EMPIRES[p.empire].name} ends the turn.`, pIdx);
+    const next = 1 - pIdx;
+    if (next === 0) st.turn += 1;
+    startTurn(st, next);
+    return { ok: true };
+  }
+  return { ok: false, reason: 'Unknown action' };
+}
+
+/* ============================================================
+   AI — three levels. All decisions go through the public rules
+   API, so the AI can never cheat.
+   ============================================================ */
+function unitValue(u) {
+  return u.atk * 1.35 + u.hp + (u.kw.includes('raksha') ? 1.5 : 0) + (u.kw.includes('veg') ? 1 : 0);
+}
+
+/* total damage we could put into the enemy HQ this turn */
+function faceDamageAvailable(st, pIdx) {
+  const enemy = 1 - pIdx;
+  const cands = allUnits(st, pIdx)
+    .filter(x => canAttack(st, pIdx, x.unit.uid, { kind: 'hq', owner: enemy }).ok)
+    .map(x => x.unit)
+    .sort((a, b) => a.op - b.op);
+  let kosha = st.players[pIdx].kosha, total = 0;
+  for (const u of cands) { if (kosha >= u.op) { kosha -= u.op; total += u.atk; } }
+  return total;
+}
+function hasLethal(st, pIdx) {
+  return faceDamageAvailable(st, pIdx) >= st.players[1 - pIdx].hq.hp;
+}
+
+/* score a single attack */
+function boardPower(st, owner) {
+  let v = 0;
+  allUnits(st, owner).forEach(x => { v += unitValue(x.unit); });
+  return v;
+}
+function attackScore(st, pIdx, a, target, aggr) {
+  const enemy = 1 - pIdx;
+  const k = aggr || 1;
+  if (target.kind === 'hq') {
+    const hp = st.players[enemy].hq.hp;
+    return a.atk >= hp ? 5000 : a.atk * 1.6 * k;
+  }
+  const f = findUnit(st, enemy, target.uid);
+  if (!f) return -1;
+  const d = f.unit;
+  const kills = a.atk >= d.hp;
+  const retaliation = (a.range === 'melee' && d.range === 'melee') ? d.atk : 0;
+  const weDie = retaliation >= a.hp;
+  let s = 0;
+  if (kills) s += unitValue(d) + 2.5;
+  else s += Math.min(a.atk, d.hp) * 0.45;
+  if (retaliation) s -= Math.min(retaliation, a.hp) * 0.7;
+  if (weDie) s -= unitValue(a) * 0.85;
+  if (kills && !weDie) s += 2;
+  if (f.line === 'front' && kills) s += 1.5;   // breaking their hold on the line
+  if (d.atk >= 5) s += 1.5;                     // kill their big threats
+  return s;
+}
+
+function bestAttackFor(st, pIdx, unit) {
+  const enemy = 1 - pIdx;
+  const opts = [];
+  const hqChk = canAttack(st, pIdx, unit.uid, { kind: 'hq', owner: enemy });
+  if (hqChk.ok) opts.push({ target: { kind: 'hq', owner: enemy }, score: attackScore(st, pIdx, unit, { kind: 'hq', owner: enemy }) });
+  allUnits(st, enemy).forEach(x => {
+    const t = { kind: 'unit', owner: enemy, uid: x.unit.uid };
+    if (!canAttack(st, pIdx, unit.uid, t).ok) return;
+    opts.push({ target: t, score: attackScore(st, pIdx, unit, t) });
+  });
+  opts.sort((a, b) => b.score - a.score);
+  return opts[0] || null;
+}
+
+function playableCards(st, pIdx) {
+  const p = st.players[pIdx];
+  const out = [];
+  p.hand.forEach((cardId, i) => {
+    const c = CARDS[cardId];
+    if (p.kosha < koshaCost(st, pIdx, c)) return;
+    if (c.type === 'unit') {
+      if (!canPlay(st, pIdx, i).ok) return;
+      out.push({ i, c, target: null, kind: 'unit' });
+    } else if (c.target === 'enemyUnit') {
+      const enemy = 1 - pIdx;
+      allUnits(st, enemy).forEach(x => {
+        const t = { kind: 'unit', owner: enemy, uid: x.unit.uid };
+        if (canPlay(st, pIdx, i, t).ok) out.push({ i, c, target: t, kind: 'removal', victim: x.unit });
+      });
+    } else {
+      if (canPlay(st, pIdx, i).ok) out.push({ i, c, target: null, kind: 'order' });
+    }
+  });
+  return out;
+}
+
+function orderValue(st, pIdx, entry) {
+  const p = st.players[pIdx];
+  const enemy = 1 - pIdx;
+  const id = entry.c.id;
+  if (id === 'n_aakraman' || id === 's_agni') {
+    const v = entry.victim;
+    if (!v) return 0;
+    const dmg = id === 's_agni' ? 5 : 2;
+    return (dmg >= v.hp ? unitValue(v) + 2 : dmg * 0.6);
+  }
+  if (id === 's_chakravyuha') {
+    const n = allUnits(st, enemy).length;
+    return n >= 2 ? 4 + n * 2 : 0;
+  }
+  if (id === 's_ashwamedha') return allUnits(st, pIdx).length >= 3 ? 9 : 1;
+  if (id === 'y_vighna' || id === 'y_kavach' || id === 'y_pratikar') {
+    return p.yantras.length >= 2 ? 0 : 3.5;
+  }
+  if (id === 'n_sena_bhojan' || id === 'c_shilpa') return (p.hq.maxHp - p.hq.hp) >= 6 ? 7 : 0;
+  if (id === 'g_swarn_yug') return p.hand.length <= 6 ? 7.5 : 3;
+  if (id === 'n_yudh_niti' || id === 'm_arthashastra') return p.hand.length <= 5 ? 7 : 2;
+  if (id === 'n_visha_baan') return allUnits(st, enemy).length >= 3 ? 9 : (allUnits(st, enemy).length === 2 ? 3 : 0);
+  if (id === 'r_kshatra') return (st.front.owner === pIdx && st.front.units.length >= 2) ? 8 : 0;
+  if (id === 'ch_vyapari') return 5.5;
+  return 3;
+}
+
+function unitPlayScore(st, pIdx, entry) {
+  const c = entry.c;
+  const p = st.players[pIdx];
+  const cost = koshaCost(st, pIdx, c);
+  let s = (c.atk * 1.35 + c.hp) - cost * 0.55;
+  if (c.kw && c.kw.includes('veg')) s += 2.2;              // acts immediately = tempo
+  if (c.kw && c.kw.includes('raksha')) s += 1.4;
+  if (c.deploy) s += 1.2;
+  if (st.players[1 - pIdx].support.length + (st.front.owner === 0 ? 0 : 0) >= 3 && c.hp <= 2) s -= 0.8;
+  if (p.hand.length >= 8) s += 1;                          // dumping cards
+  return s;
+}
+
+function aiPlayPhase(st, pIdx, level) {
+  let guard = 0;
+  const rng = st.rng;
+  while (guard++ < 14) {
+    const p = st.players[pIdx];
+    const options = playableCards(st, pIdx);
+    if (!options.length) break;
+
+    let scored = options.map(o => ({
+      o,
+      score: o.kind === 'unit' ? unitPlayScore(st, pIdx, o) : orderValue(st, pIdx, o)
+    })).filter(x => x.score > 0);
+
+    if (!scored.length) break;
+
+    if (level === 'easy') {
+      // easy: play something random and affordable, sometimes nothing
+      if (rng() < 0.2) break;
+      const pick = scored[Math.floor(rng() * scored.length)];
+      const res = applyAction(st, { type: 'play', handIndex: pick.o.i, target: pick.o.target });
+      if (!res.ok) break;
+      continue;
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+    const pick = scored[0];
+    const res = applyAction(st, { type: 'play', handIndex: pick.o.i, target: pick.o.target });
+    if (!res.ok) break;
+  }
+}
+
+function aiCombatPhase(st, pIdx, level) {
+  const rng = st.rng;
+
+  // 1. move units into the contested line
+  let guard = 0;
+  while (guard++ < 12) {
+    const p = st.players[pIdx];
+    if (st.front.owner !== null && st.front.owner !== pIdx) break;
+    if (st.front.units.length >= 4) break;
+    const movable = p.support.filter(u => canMove(st, pIdx, u.uid).ok);
+    if (!movable.length) break;
+    movable.sort((a, b) => (b.atk + b.hp) - (a.atk + a.hp));
+    const candidate = movable[0];
+    // keep a body at home if the enemy is already on our doorstep
+    const enemyOnLine = st.front.owner === 1 - pIdx;
+    if (enemyOnLine && p.support.length >= 3 && candidate.atk <= 1 && level !== 'easy') break;
+    if (level === 'easy' && rng() < 0.3) break;
+    const res = applyAction(st, { type: 'move', uid: candidate.uid });
+    if (!res.ok) break;
+  }
+
+  // 2. attacks
+  guard = 0;
+  while (guard++ < 24) {
+    const p = st.players[pIdx];
+    const ready = allUnits(st, pIdx).filter(x => !x.unit.attacked && x.unit.canAct && p.kosha >= x.unit.op);
+    if (!ready.length) break;
+
+    // lethal check first
+    if (level === 'hard' && hasLethal(st, pIdx)) {
+      const cand = ready
+        .filter(x => canAttack(st, pIdx, x.unit.uid, { kind: 'hq', owner: 1 - pIdx }).ok)
+        .sort((a, b) => a.unit.op - b.unit.op)[0];
+      if (cand) {
+        applyAction(st, { type: 'attack', uid: cand.unit.uid, target: { kind: 'hq', owner: 1 - pIdx } });
+        continue;
+      }
+    }
+
+    let best = null;
+    ready.forEach(x => {
+      if (level === 'easy' && rng() < 0.45) return;
+      const pick = bestAttackFor(st, pIdx, x.unit);
+      if (!pick) return;
+      if (!best || pick.score > best.score) best = { uid: x.unit.uid, target: pick.target, score: pick.score };
+    });
+
+    if (!best) break;
+    if (level !== 'easy' && best.score <= 0.4) break;
+    const res = applyAction(st, { type: 'attack', uid: best.uid, target: best.target });
+    if (!res.ok) break;
+  }
+}
+
+
+/* ---------- hard level: one-ply search over a cloned board ---------- */
+function cloneState(st) {
+  return {
+    seed: st.seed, turn: st.turn, active: st.active, over: st.over, winner: st.winner,
+    winReason: st.winReason, log: [], nextUid: st.nextUid,
+    front: { owner: st.front.owner, units: st.front.units.map(u => ({ ...u, kw: u.kw.slice() })) },
+    players: st.players.map(p => ({
+      ...p,
+      hq: { ...p.hq },
+      deck: p.deck.slice(), hand: p.hand.slice(), discard: p.discard.slice(),
+      support: p.support.map(u => ({ ...u, kw: u.kw.slice() })),
+      counters: { ...p.counters }
+    })),
+    rng: st.rng,
+    aiLevel: st.aiLevel, objective: st.objective,
+    scenarioId: st.scenarioId, scenarioName: st.scenarioName
+  };
+}
+
+function boardScore(st, me) {
+  const enemy = 1 - me;
+  let s = 0;
+  allUnits(st, me).forEach(x => { s += unitValue(x.unit); });
+  allUnits(st, enemy).forEach(x => { s -= unitValue(x.unit) * 1.05; });
+  s += (st.players[me].hq.hp - st.players[enemy].hq.hp) * 2.2;
+  s += st.players[me].kosha * 0.15;
+  s += st.players[me].hand.length * 0.25;
+  if (st.front.owner === me) s += 2.5;
+  else if (st.front.owner === enemy) s -= 2.5;
+  return s;
+}
+
+function koshaReserve(st, pIdx) {
+  let need = 0;
+  allUnits(st, pIdx).forEach(x => { if (x.unit.canAct && !x.unit.attacked) need += x.unit.op; });
+  return 0;
+}
+
+function hardPlayPhase(st, pIdx) {
+  let guard = 0;
+  while (guard++ < 12) {
+    const p = st.players[pIdx];
+    const reserve = koshaReserve(st, pIdx);
+    const base = boardScore(st, pIdx);
+    const options = playableCards(st, pIdx).filter(o => {
+      const cost = koshaCost(st, pIdx, o.c);
+      return p.kosha - cost >= reserve || o.kind !== 'unit';
+    });
+    if (!options.length) break;
+
+    let best = null;
+    for (const o of options) {
+      const sim = cloneState(st);
+      const res = applyAction(sim, { type: 'play', handIndex: o.i, target: o.target });
+      if (!res.ok) continue;
+      const delta = boardScore(sim, pIdx) - base;
+      if (!best || delta > best.delta) best = { o, delta };
+    }
+    if (!best || best.delta <= -1) break;
+    const res = applyAction(st, { type: 'play', handIndex: best.o.i, target: best.o.target });
+    if (!res.ok) break;
+  }
+}
+
+function hardCombatPhase(st, pIdx) {
+  // advance: contest an empty line, but never over-commit — units on the
+  // Yudhbhumi can be shot from the enemy Rajya line.
+  let guard = 0;
+  while (guard++ < 12) {
+    const p = st.players[pIdx];
+    if (st.front.owner !== null && st.front.owner !== pIdx) break;
+    if (st.front.units.length >= 4) break;
+    const movable = p.support.filter(u => canMove(st, pIdx, u.uid).ok);
+    if (!movable.length) break;
+    movable.sort((a, b) => (b.atk + b.hp) - (a.atk + a.hp));
+    const cand = movable[0];
+    if (st.front.owner === 1 - pIdx && p.support.length >= 3 && cand.atk <= 1) break;
+    const res = applyAction(st, { type: 'move', uid: cand.uid });
+    if (!res.ok) break;
+  }
+
+  // attacks: heuristic scoring, with aggression scaled by who owns the board
+  guard = 0;
+  while (guard++ < 24) {
+    const p = st.players[pIdx];
+    const ready = allUnits(st, pIdx).filter(x => !x.unit.attacked && x.unit.canAct && p.kosha >= x.unit.op);
+    if (!ready.length) break;
+
+    const mine = boardPower(st, pIdx), theirs = boardPower(st, 1 - pIdx);
+    const aggr = Math.max(0.7, Math.min(2.2, 1 + (mine - theirs) / 12));
+
+    // finish the game if we can
+    if (hasLethal(st, pIdx)) {
+      const cand = ready
+        .filter(x => canAttack(st, pIdx, x.unit.uid, { kind: 'hq', owner: 1 - pIdx }).ok)
+        .sort((a, b) => a.unit.op - b.unit.op)[0];
+      if (cand) { applyAction(st, { type: 'attack', uid: cand.unit.uid, target: { kind: 'hq', owner: 1 - pIdx } }); continue; }
+    }
+
+    let best = null;
+    for (const x of ready) {
+      const targets = [];
+      if (canAttack(st, pIdx, x.unit.uid, { kind: 'hq', owner: 1 - pIdx }).ok) targets.push({ kind: 'hq', owner: 1 - pIdx });
+      allUnits(st, 1 - pIdx).forEach(t => {
+        const tg = { kind: 'unit', owner: 1 - pIdx, uid: t.unit.uid };
+        if (canAttack(st, pIdx, x.unit.uid, tg).ok) targets.push(tg);
+      });
+      for (const tg of targets) {
+        const sc = attackScore(st, pIdx, x.unit, tg, aggr);
+        if (!best || sc > best.score) best = { uid: x.unit.uid, target: tg, score: sc };
+      }
+    }
+    if (!best || best.score <= 0.4) break;
+    const res = applyAction(st, { type: 'attack', uid: best.uid, target: best.target });
+    if (!res.ok) break;
+  }
+}
+
+function aiTurn(st, pIdx, level) {
+  if (st.over) return;
+  const lvl = level || st.aiLevel || 'normal';
+  if (lvl === 'hard') {
+    aiPlayPhase(st, pIdx, 'normal');
+    hardCombatPhase(st, pIdx);
+  } else {
+    aiPlayPhase(st, pIdx, lvl);
+    aiCombatPhase(st, pIdx, lvl);
+  }
+  if (!st.over) applyAction(st, { type: 'end' });
+}
+
+/* objective helpers for the UI */
+function objectiveStatus(st) {
+  const o = st.objective || { type: 'destroy' };
+  if (o.type === 'survive' || o.type === 'deadline') {
+    const remaining = Math.max(0, o.turns - st.turn + 1);
+    return { type: o.type, remaining, total: o.turns };
+  }
+  return { type: 'destroy' };
+}
+
+function drainEvents(st) {
+  const e = st.events || [];
+  st.events = [];
+  return e;
+}
+
+const API = {
+  EMPIRES, EMPIRE_ORDER, CARDS, CARD_LIST, KW_LABEL, drainEvents,
+  newGame, applyAction, canPlay, canMove, canAttack,
+  findUnit, allUnits, koshaCost, aiTurn, aiPlayPhase, aiCombatPhase,
+  buildDeck, objectiveStatus, hasLethal, faceDamageAvailable
+};
+if (typeof module !== 'undefined' && module.exports) module.exports = API;
+if (typeof window !== 'undefined') window.YUDDH = API;
+</script>
+<script>'use strict';
+(function () {
+/* ============================================================
+   YUDDH — campaign data.
+   Eight single-player missions, each a fixed deck and a fixed
+   situation. The engine reads these; the UI renders them.
+   ============================================================ */
+
+const rep = (id, n) => Array.from({ length: n }, () => id);
+
+const CAMPAIGN = [
+
+  /* ---------------------------------------------------------- 0 — tutorial */
+  {
+    id: 't0',
+    title: 'The Training Ground',
+    place: 'Magadha',
+    year: 'The first lesson',
+    tier: 'Tutorial',
+    reward: 80,
+    player: { empire: 'maurya', ally: 'neutral', hq: 24, faction: 'Maurya', capital: 'Pataliputra' },
+    openingHand: ['n_padati', 'n_ashvarohi', 'y_kavach', 'n_aakraman'],
+    enemy: {
+      empire: 'rajput', ally: 'neutral', hq: 12, faction: 'Bandits', capital: 'The Camp',
+      deck: [...rep('n_padati', 4), ...rep('n_dhanurdhar', 2), ...rep('n_ashvarohi', 2), ...rep('n_rakshak', 2)]
+    },
+    playerDeck: [...rep('n_padati', 3), ...rep('m_padati', 2), ...rep('n_ashvarohi', 2),
+                 ...rep('n_dhanurdhar', 2), ...rep('n_aakraman', 2), ...rep('y_kavach', 1),
+                 ...rep('y_pratikar', 1), ...rep('n_rathi', 2), ...rep('n_gaja', 1),
+                 ...rep('n_senapati', 1), ...rep('n_maharathi', 1)],
+    objective: { type: 'destroy' },
+    aiLevel: 'easy',
+    tutorial: [
+      { id: 'deploy', done: 'deploy', text: 'Deploy a unit — click a card in your hand, then a lit slot in your Rajya.' },
+      { id: 'advance', done: 'move', text: 'Now advance it — click your unit, then the lit slot on the Yudhbhumi.' },
+      { id: 'attack', done: 'attackHq', text: 'Click your unit on the Yudhbhumi, then click the enemy Durg to strike it.' },
+      { id: 'mantra', done: 'mantra', text: 'Cast a Mantra — click an order card in your hand; it resolves at once.' },
+      { id: 'yantra', done: 'yantra', text: 'Set a Yantra — it lies face down and springs on the enemy turn.' },
+      { id: 'win', done: 'win', text: 'Break their Durg to finish the lesson.' }
+    ],
+    briefing: 'Before the chronicle begins, learn the trade. A bandit camp holds the far bank. You have more men and better officers; what you do not yet have is practice.',
+    hint: 'Nothing here can hurt you badly. Try every button — including the ones you think are a mistake.'
+  },
+  /* ---------------------------------------------------------- 1 */
+  {
+    id: 'c1',
+    reward: 100,
+    title: 'The First Throne',
+    place: 'Pataliputra',
+    year: 'c. 321 BCE',
+    tier: 'Intro',
+    player: { empire: 'maurya', ally: 'neutral', hq: 24, faction: 'Maurya', capital: 'Pataliputra' },
+    enemy: {
+      empire: 'maurya', ally: 'neutral', hq: 18, faction: 'Nanda', capital: 'Pataliputra',
+      deck: [...rep('n_padati', 4), ...rep('n_dhanurdhar', 2), ...rep('n_rakshak', 2),
+             ...rep('n_ashvarohi', 1), ...rep('n_rathi', 1), ...rep('n_gaja', 1),
+             ...rep('n_aakraman', 1), ...rep('n_sena_bhojan', 1), ...rep('n_yudh_niti', 1)]
+    },
+    playerDeck: [...rep('n_padati', 3), ...rep('m_padati', 2), ...rep('n_dhanurdhar', 2),
+                 ...rep('n_ashvarohi', 2), ...rep('n_rathi', 2), ...rep('n_rakshak', 2),
+                 ...rep('n_gaja', 1), ...rep('n_maharathi', 1), ...rep('m_hasti', 1),
+                 ...rep('n_senapati', 1), ...rep('n_aakraman', 2), ...rep('n_yudh_niti', 1),
+                 ...rep('n_sena_bhojan', 1), ...rep('n_atirathi', 1)],
+    objective: { type: 'destroy' },
+    aiLevel: 'easy',
+    briefing: 'A young adventurer from Magadha has gathered an army at the edge of the Nanda capital. The Nanda treasury is vast, but their frontier levies are thin and badly led. Take the Yudhbhumi, hold it, and their Durg will fall.',
+    hint: 'Units cannot attack the turn they are deployed unless they have Vega. Deploy, wait a turn, then advance into the Yudhbhumi and strike.'
+  },
+
+  /* ---------------------------------------------------------- 2 */
+  {
+    id: 'c2',
+    reward: 120,
+    title: 'The Indus Line',
+    place: 'The Indus',
+    year: 'c. 305 BCE',
+    tier: 'Standard',
+    player: { empire: 'maurya', ally: 'gupta', hq: 26, faction: 'Maurya', capital: 'Pataliputra' },
+    enemy: {
+      empire: 'chalukya', ally: 'neutral', hq: 24, faction: 'Seleucid', capital: 'Alexandria',
+      deck: [...rep('n_rakshak', 2), ...rep('n_gaja', 2), ...rep('n_padati', 4),
+             ...rep('n_maharathi', 2), ...rep('c_rakshak', 2), ...rep('c_senapati', 1),
+             ...rep('n_ashvarohi', 2), ...rep('n_dhanurdhar', 2), ...rep('n_aakraman', 2),
+             ...rep('n_sena_bhojan', 1), ...rep('c_shilpa', 1)]
+    },
+    playerDeck: [...rep('m_padati', 2), ...rep('n_padati', 2), ...rep('n_ashvarohi', 2),
+                 ...rep('n_rathi', 2), ...rep('n_dhanurdhar', 2), ...rep('n_rakshak', 2),
+                 ...rep('m_hasti', 2), ...rep('n_gaja', 1), ...rep('m_chanakya', 1),
+                 ...rep('n_senapati', 1), ...rep('n_maharathi', 1), ...rep('n_atirathi', 1),
+                 ...rep('m_arthashastra', 1), ...rep('n_aakraman', 2), ...rep('n_sena_bhojan', 1)],
+    preset: { enemyFront: ['n_rakshak'] },
+    objective: { type: 'destroy' },
+    aiLevel: 'normal',
+    briefing: 'A Macedonian successor army has crossed the river and planted its elephants on the Yudhbhumi. Their heavy infantry will not be shifted by chariots alone. Break the guards first — a Raksha unit shields everything behind it.',
+    hint: 'Raksha units must be destroyed before the units beside them can be attacked. Ranged units strike from your Rajya line without taking a counter-blow.'
+  },
+
+  /* ---------------------------------------------------------- 3 */
+  {
+    id: 'c3',
+    reward: 130,
+    title: 'The Golden Age',
+    place: 'Ujjain',
+    year: '4th century CE',
+    tier: 'Standard',
+    player: { empire: 'gupta', ally: 'chola', hq: 28, faction: 'Gupta', capital: 'Ujjain', drawBonus: 1 },
+    enemy: {
+      empire: 'rajput', ally: 'neutral', hq: 22, faction: 'Western Satraps', capital: 'Ujjain',
+      deck: [...rep('r_yoddha', 2), ...rep('n_ashvarohi', 3), ...rep('n_rathi', 2),
+             ...rep('r_archer', 2), ...rep('n_rakshak', 2), ...rep('r_gaja', 2),
+             ...rep('n_padati', 3), ...rep('n_maharathi', 2), ...rep('n_aakraman', 2),
+             ...rep('r_kshatra', 1), ...rep('n_sena_bhojan', 1)]
+    },
+    playerDeck: [...rep('g_dhanurdhar', 3), ...rep('g_pandit', 2), ...rep('g_mandir', 3),
+                 ...rep('g_ashvarohi', 3), ...rep('n_rakshak', 3), ...rep('n_padati', 3),
+                 ...rep('n_senapati', 2), ...rep('n_gaja', 2), ...rep('ch_pot', 1),
+                 ...rep('n_dhanurdhar', 2), ...rep('n_rathi', 1), ...rep('g_samudragupta', 1),
+                 ...rep('g_swarn_yug', 1), ...rep('n_yudh_niti', 1),
+                 ...rep('n_aakraman', 2), ...rep('n_sena_bhojan', 2)],
+    objective: { type: 'destroy' },
+    aiLevel: 'normal',
+    briefing: 'The Satrap cavalry raids faster than your levies can answer. But this is an age of academies and endowments: your court draws two cards a turn, and every Mantra you cast draws another. Out-supply them.',
+    hint: 'Gupta draws a card whenever you cast a Mantra. Card advantage compounds — do not hoard Mantras in hand.'
+  },
+
+  /* ---------------------------------------------------------- 4 */
+  {
+    id: 'c4',
+    reward: 150,
+    title: "Pulakeshin's Stand",
+    place: 'The Narmada',
+    year: 'c. 620 CE',
+    tier: 'Hard',
+    player: { empire: 'chalukya', ally: 'rajput', hq: 24, faction: 'Chalukya', capital: 'Badami' },
+    enemy: {
+      empire: 'gupta', ally: 'neutral', hq: 30, faction: 'Harsha', capital: 'Kannauj',
+      deck: [...rep('g_dhanurdhar', 4), ...rep('g_ashvarohi', 4), ...rep('n_rathi', 3),
+             ...rep('n_maharathi', 3), ...rep('n_gaja', 3), ...rep('g_pandit', 2),
+             ...rep('n_padati', 3), ...rep('n_rakshak', 2), ...rep('n_atirathi', 1),
+             ...rep('n_aakraman', 3), ...rep('n_visha_baan', 2), ...rep('n_sena_bhojan', 1),
+             ...rep('g_swarn_yug', 1)],
+      drawBonus: 1, startKosha: 2
+    },
+    playerDeck: [...rep('c_rakshak', 2), ...rep('c_ashvarohi', 3), ...rep('n_rakshak', 2),
+                 ...rep('n_gaja', 1), ...rep('n_padati', 3), ...rep('c_senapati', 2),
+                 ...rep('c_gaja', 1), ...rep('n_dhanurdhar', 2), ...rep('c_shilpa', 1),
+                 ...rep('n_sena_bhojan', 1), ...rep('n_aakraman', 2), ...rep('n_yudh_niti', 1)],
+    preset: { enemyFront: ['n_rathi', 'g_ashvarohi', 'n_maharathi', 'n_gaja'], enemySupport: ['g_dhanurdhar', 'g_ashvarohi'] },
+    objective: { type: 'survive', turns: 9 },
+    aiLevel: 'normal',
+    briefing: 'The emperor of the north has brought the whole weight of the Ganga plain to the river. You do not have to win — you have to still be standing. Hold for nine turns and his host will melt away for want of supply.',
+    hint: 'This is a defensive mission. Raksha units in your Rajya line also shield your Durg from direct assault. Do not throw units away attacking.'
+  },
+
+  /* ---------------------------------------------------------- 5 */
+  {
+    id: 'c5',
+    reward: 140,
+    title: 'The Sea Road',
+    place: 'Thanjavur',
+    year: 'c. 1014 CE',
+    tier: 'Standard',
+    player: { empire: 'chola', ally: 'maurya', hq: 24, faction: 'Chola', capital: 'Thanjavur' },
+    enemy: {
+      empire: 'chalukya', ally: 'neutral', hq: 26, faction: 'Srivijaya', capital: 'Kadaram',
+      deck: [...rep('n_rakshak', 3), ...rep('n_dhanurdhar', 3), ...rep('c_rakshak', 2),
+             ...rep('n_gaja', 2), ...rep('n_padati', 2), ...rep('c_gaja', 1),
+             ...rep('n_maharathi', 1), ...rep('n_aakraman', 2), ...rep('c_shilpa', 1)]
+    },
+    playerDeck: [...rep('ch_archer', 3), ...rep('ch_navik', 3), ...rep('ch_sena', 2),
+                 ...rep('n_rakshak', 2), ...rep('ch_pot', 2), ...rep('n_padati', 2),
+                 ...rep('n_rathi', 1), ...rep('n_gaja', 1), ...rep('ch_rajaraja', 1),
+                 ...rep('ch_vyapari', 2), ...rep('n_aakraman', 2), ...rep('n_sena_bhojan', 1)],
+    preset: { enemySupport: ['n_dhanurdhar', 'c_rakshak'] },
+    objective: { type: 'destroy' },
+    aiLevel: 'normal',
+    briefing: 'Across the bay, a rival thalassocracy has barred the straits. Their archers are dug in behind shield walls. Your own bowmen hit harder than anyone else in the Indian Ocean — use them to clear the line, then send the marines in.',
+    hint: 'Chola ranged units get +1 attack. Ranged units in your Rajya line can only strike enemy units in the Yudhbhumi — they cannot reach the enemy rear.'
+  },
+
+  /* ---------------------------------------------------------- 6 */
+  {
+    id: 'c6',
+    reward: 150,
+    title: "Prithviraj's Charge",
+    place: 'Tarain',
+    year: '1191 CE',
+    tier: 'Hard',
+    player: { empire: 'rajput', ally: 'chalukya', hq: 24, faction: 'Chahamana', capital: 'Ajmer' },
+    enemy: {
+      empire: 'maurya', ally: 'neutral', hq: 26, faction: 'Ghurid', capital: 'Ghazni',
+      deck: [...rep('n_rathi', 3), ...rep('n_ashvarohi', 3), ...rep('n_maharathi', 2),
+             ...rep('n_atirathi', 1), ...rep('n_rakshak', 2), ...rep('n_padati', 2),
+             ...rep('n_aakraman', 2), ...rep('n_yudh_niti', 1), ...rep('n_sena_bhojan', 1)]
+    },
+    playerDeck: [...rep('r_yoddha', 3), ...rep('r_maharathi', 2), ...rep('r_gaja', 2),
+                 ...rep('r_archer', 2), ...rep('n_ashvarohi', 2), ...rep('r_sena', 1),
+                 ...rep('n_rakshak', 2), ...rep('r_prithviraj', 1), ...rep('n_padati', 2),
+                 ...rep('r_kshatra', 2), ...rep('n_aakraman', 2), ...rep('n_sena_bhojan', 1)],
+    objective: { type: 'deadline', turns: 12 },
+    aiLevel: 'normal',
+    briefing: 'The Ghurid cavalry is faster than yours and will grow stronger every turn the war drags on. Your Rajput Vega units deploy ready to fight — but you have ten turns before their reinforcements make the field impossible. Win before then.',
+    hint: 'Rajput Vega units arrive able to act immediately and get +1 attack. You lose this battle if the enemy Durg still stands after turn 10.'
+  },
+
+  /* ---------------------------------------------------------- 7 */
+  {
+    id: 'c7',
+    reward: 160,
+    title: 'The Burning Library',
+    place: 'Nalanda',
+    year: 'c. 8th century CE',
+    tier: 'Hard',
+    player: { empire: 'gupta', ally: 'rajput', hq: 26, faction: 'Gupta', capital: 'Nalanda' },
+    enemy: {
+      empire: 'rajput', ally: 'neutral', hq: 20, faction: 'Raiders', capital: 'The Camps',
+      deck: [...rep('n_padati', 4), ...rep('n_ashvarohi', 4), ...rep('n_rathi', 3),
+             ...rep('n_maharathi', 2), ...rep('n_aakraman', 2), ...rep('n_visha_baan', 2),
+             ...rep('n_rakshak', 3), ...rep('n_atirathi', 1), ...rep('n_gaja', 2),
+             ...rep('n_yudh_niti', 2), ...rep('n_sena_bhojan', 1)],
+      drawBonus: 1, startKosha: 2
+    },
+    playerDeck: [...rep('g_dhanurdhar', 3), ...rep('g_pandit', 2), ...rep('g_ashvarohi', 2),
+                 ...rep('g_mandir', 2), ...rep('n_rakshak', 3), ...rep('n_gaja', 1),
+                 ...rep('n_senapati', 1), ...rep('n_dhanurdhar', 2), ...rep('n_aakraman', 2),
+                 ...rep('n_sena_bhojan', 2), ...rep('g_swarn_yug', 1), ...rep('n_yudh_niti', 1)],
+    preset: { enemyFront: ['n_ashvarohi'] },
+    objective: { type: 'destroy' },
+    aiLevel: 'hard',
+    briefing: 'Raiders are burning the monasteries and they keep coming — they draw faster and they started with a war chest. There is no wall left to hide behind. Break the warband before it breaks the library.',
+    hint: 'The enemy draws two cards a turn and began with extra Kosha. Expect to be out-numbered: trade efficiently and use Aakraman to finish wounded units.'
+  },
+
+  /* ---------------------------------------------------------- 8 */
+  {
+    id: 'c8',
+    reward: 200,
+    title: 'Samrat',
+    place: 'The Deccan',
+    year: 'c. 1160 CE',
+    tier: 'Final',
+    player: { empire: 'chalukya', ally: 'chola', hq: 30, faction: 'Chalukya', capital: 'Kalyani' },
+    enemy: {
+      empire: 'rajput', ally: 'maurya', hq: 24, faction: 'Kalachuri', capital: 'Tripuri',
+      deck: [...rep('r_yoddha', 3), ...rep('r_maharathi', 2), ...rep('r_gaja', 2),
+             ...rep('n_atirathi', 1), ...rep('n_maharathi', 2), ...rep('n_rakshak', 2),
+             ...rep('r_sena', 1), ...rep('r_kshatra', 2), ...rep('n_aakraman', 2),
+             ...rep('n_sena_bhojan', 1), ...rep('n_visha_baan', 1)],
+      startKosha: 2
+    },
+    playerDeck: [...rep('c_rakshak', 3), ...rep('c_ashvarohi', 2), ...rep('c_gaja', 2),
+                 ...rep('c_senapati', 2), ...rep('n_rakshak', 2), ...rep('n_dhanurdhar', 2),
+                 ...rep('ch_pot', 1), ...rep('c_pulakeshin', 1), ...rep('n_gaja', 1),
+                 ...rep('c_shilpa', 2), ...rep('n_aakraman', 2), ...rep('n_sena_bhojan', 1),
+                 ...rep('n_yudh_niti', 1), ...rep('n_padati', 2)],
+    preset: { enemyFront: ['r_maharathi'] },
+    objective: { type: 'destroy' },
+    aiLevel: 'hard',
+    briefing: 'A rival claimant holds the Deccan with a larger treasury and a heavier army, and he is already standing on the Yudhbhumi. There is no clever trick left — only the long grind of shield walls, elephants and attrition. Take the line, and keep it.',
+    hint: 'The enemy opens with +2 Kosha and a chariot on the Yudhbhumi. Raksha units are your answer: they absorb the first blow of every attack.'
+  }
+];
+
+function buildGame(E, m, seed, upgrades) {
+  const side = (cfg) => ({
+    empire: cfg.empire, ally: cfg.ally || 'neutral',
+    deck: cfg.deck, hq: cfg.hq, faction: cfg.faction, capital: cfg.capital,
+    drawBonus: cfg.drawBonus || 0, startKosha: cfg.startKosha || 1,
+    upgrades: cfg.upgrades || {}, openingHand: cfg.openingHand
+  });
+  return E.newGame({
+    seed: seed === undefined ? (Date.now() % 1000000) : seed,
+    player: side({ ...m.player, deck: m.playerDeck, upgrades: upgrades || {}, openingHand: m.openingHand }),
+    enemy: side(m.enemy),
+    preset: m.preset || {},
+    objective: m.objective,
+    aiLevel: m.aiLevel,
+    scenarioId: m.id,
+    scenarioName: m.title
+  });
+}
+
+const API = { CAMPAIGN, buildGame };
+if (typeof module !== 'undefined' && module.exports) module.exports = API;
+if (typeof window !== 'undefined') window.YUDDH_CAMPAIGN = API;
+})();
+</script>
+<script>'use strict';
+/* ============================================================
+   YUDDH — meta progression.
+   Kirti (fame) is earned by fighting. It buys permanent upgrades
+   to individual cards, which then appear in every battle.
+   ============================================================ */
+(function () {
+
+  const KEY = 'yuddh.meta.v2';
+  const LEGACY_KEY = 'yuddh.progress.v1';
+  const MAX_LEVEL = 2;
+  const UPGRADE_COST = [60, 140];      // cost to reach level 1, then level 2
+
+  const Meta = {
+    data: { kirti: 0, upgrades: {}, done: {} },
+
+    load() {
+      let d = null;
+      try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+      if (!d) {
+        // migrate the old progress-only save
+        try {
+          const old = JSON.parse(localStorage.getItem(LEGACY_KEY));
+          d = { kirti: 0, upgrades: {}, done: (old && old.done) || {} };
+        } catch (e) { d = { kirti: 0, upgrades: {}, done: {} }; }
+      }
+      this.data = {
+        kirti: d.kirti || 0,
+        upgrades: d.upgrades || {},
+        done: d.done || {}
+      };
+      return this.data;
+    },
+
+    save() {
+      try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) {}
+    },
+
+    reset() {
+      this.data = { kirti: 0, upgrades: {}, done: {} };
+      this.save();
+    },
+
+    kirti() { return this.data.kirti; },
+
+    award(n) {
+      this.data.kirti += Math.max(0, Math.round(n));
+      this.save();
+      return this.data.kirti;
+    },
+
+    level(cardId) { return this.data.upgrades[cardId] || 0; },
+
+    cost(cardId) {
+      const lvl = this.level(cardId);
+      return lvl >= MAX_LEVEL ? null : UPGRADE_COST[lvl];
+    },
+
+    canUpgrade(cardId) {
+      const c = this.cost(cardId);
+      return c !== null && this.data.kirti >= c;
+    },
+
+    upgrade(cardId) {
+      const c = this.cost(cardId);
+      if (c === null || this.data.kirti < c) return { ok: false, reason: 'Not enough Kirti' };
+      this.data.kirti -= c;
+      this.data.upgrades[cardId] = this.level(cardId) + 1;
+      this.save();
+      return { ok: true, level: this.data.upgrades[cardId] };
+    },
+
+    /* the upgrades map handed to the engine */
+    upgrades() { return { ...this.data.upgrades }; },
+
+    isDone(id) { return !!this.data.done[id]; },
+
+    markDone(id) {
+      const first = !this.data.done[id];
+      this.data.done[id] = true;
+      this.save();
+      return first;                       // true the first time this mission was won
+    },
+
+    resetProgress() {
+      this.data.done = {};
+      this.save();
+    }
+  };
+
+  Meta.load();
+  if (typeof window !== 'undefined') window.YUDDH_META = Meta;
+  if (typeof module !== 'undefined' && module.exports) module.exports = Meta;
+})();
+</script>
+<script>'use strict';
+/* ============================================================
+   YUDDH — procedural card art.
+   No image files: every card's illustration is drawn as SVG from
+   the card's own identity, so the game stays one self-contained
+   file and works offline.
+   ============================================================ */
+(function () {
+
+  const C = 'currentColor';
+
+  /* ---- motifs: each returns SVG markup inside a 100x100 box ---- */
+  const D = '#0b1016';                 // dark, for interior detail
+  const MOTIF = {
+    sword: `<path d="M50 12 L57 32 L57 60 L43 60 L43 32 Z"/>
+      <rect x="33" y="60" width="34" height="7" rx="3"/>
+      <rect x="46" y="67" width="8" height="16" rx="3"/>
+      <circle cx="50" cy="88" r="5"/>
+      <path d="M50 20 v38" stroke="${D}" stroke-width="1.6" opacity=".35"/>`,
+    bow: `<path d="M66 14 Q32 50 66 86" fill="none" stroke="${C}" stroke-width="4"/>
+      <line x1="66" y1="14" x2="66" y2="86" stroke="${C}" stroke-width="1.4" opacity=".65"/>
+      <line x1="24" y1="50" x2="72" y2="50" stroke="${D}" stroke-width="3"/>
+      <path d="M20 50 l12 -6 v12 z"/>`,
+    chariot: `<circle cx="50" cy="60" r="19" fill="none" stroke="${C}" stroke-width="4"/>
+      <circle cx="50" cy="60" r="4" fill="${D}"/>
+      <g stroke="${D}" stroke-width="2.5" opacity=".55">
+        <line x1="50" y1="43" x2="50" y2="77"/><line x1="33" y1="60" x2="67" y2="60"/>
+        <line x1="38" y1="48" x2="62" y2="72"/><line x1="62" y1="48" x2="38" y2="72"/>
+      </g>
+      <rect x="30" y="26" width="40" height="15" rx="4"/>
+      <rect x="34" y="31" width="32" height="4" fill="${D}" opacity=".3"/>`,
+    elephant: `<ellipse cx="44" cy="50" rx="26" ry="18"/>
+      <circle cx="70" cy="42" r="13"/>
+      <path d="M78 48 q11 13 5 27 q-2 5 -7 3 q-4 -2 -1 -7 q5 -9 -2 -16 z"/>
+      <ellipse cx="64" cy="38" rx="7" ry="9" fill="${D}" opacity=".22"/>
+      <rect x="28" y="62" width="8" height="20" rx="3"/>
+      <rect x="44" y="64" width="8" height="18" rx="3"/>
+      <path d="M76 52 q10 4 8 12" fill="none" stroke="${D}" stroke-width="2.5" opacity=".45"/>`,
+    horse: `<path d="M36 76 A17 17 0 1 1 64 76" fill="none" stroke="${C}" stroke-width="8"/>
+      <line x1="50" y1="16" x2="50" y2="88" stroke="${D}" stroke-width="3" opacity=".55"/>
+      <path d="M50 18 l10 7 -10 7 z"/>`,
+    banner: `<rect x="45" y="18" width="5" height="70" rx="2"/>
+      <path d="M50 22 L86 33 L50 46 Z"/>
+      <circle cx="47" cy="13" r="5"/>
+      <path d="M50 46 L74 53 L50 60 Z" fill="${D}" opacity=".3"/>`,
+    parasol: `<path d="M18 44 Q50 14 82 44 Z"/>
+      <path d="M18 44 q32 11 64 0" fill="none" stroke="${D}" stroke-width="2.2" opacity=".4"/>
+      <line x1="50" y1="44" x2="50" y2="86" stroke="${D}" stroke-width="4" opacity=".8"/>
+      <circle cx="50" cy="12" r="4"/>
+      <path d="M34 30 q16 -8 32 0" fill="none" stroke="${D}" stroke-width="1.6" opacity=".3"/>`,
+    ship: `<path d="M16 64 q34 15 68 0 l-7 15 q-27 9 -54 0 z"/>
+      <line x1="50" y1="18" x2="50" y2="64" stroke="${D}" stroke-width="3.5" opacity=".7"/>
+      <path d="M53 22 L80 58 L53 58 Z"/>
+      <path d="M53 30 L68 54" stroke="${D}" stroke-width="1.5" opacity=".3" fill="none"/>`,
+    flame: `<path d="M50 16 q18 24 9 41 q-5 11 -9 13 q-4 -2 -9 -13 q-9 -17 9 -41 z"/>
+      <path d="M50 46 q8 11 4 19 q-4 5 -4 5 q0 0 -4 -5 q-4 -8 4 -19 z" fill="${D}" opacity=".28"/>`,
+    shield: `<path d="M50 14 L80 27 V54 q0 23 -30 34 q-30 -11 -30 -34 V27 Z"/>
+      <circle cx="50" cy="50" r="11" fill="none" stroke="${D}" stroke-width="3" opacity=".4"/>
+      <path d="M50 30 v40" stroke="${D}" stroke-width="2" opacity=".28"/>
+      <circle cx="50" cy="50" r="3" fill="${D}" opacity=".5"/>`,
+    trident: `<line x1="50" y1="26" x2="50" y2="88" stroke="${C}" stroke-width="4"/>
+      <path d="M26 16 v20 M50 8 v28 M74 16 v20" stroke="${C}" stroke-width="4" fill="none"/>
+      <path d="M26 36 q24 13 48 0" fill="none" stroke="${C}" stroke-width="3.5"/>
+      <path d="M50 40 v40" stroke="${D}" stroke-width="1.4" opacity=".3"/>`,
+    book: `<path d="M18 32 q17 -9 32 0 q15 -9 32 0 v36 q-17 -9 -32 0 q-15 -9 -32 0 z"/>
+      <line x1="50" y1="32" x2="50" y2="68" stroke="${D}" stroke-width="2.5" opacity=".45"/>
+      <g stroke="${D}" stroke-width="1.4" opacity=".22">
+        <line x1="26" y1="42" x2="44" y2="40"/><line x1="26" y1="50" x2="44" y2="48"/>
+        <line x1="56" y1="40" x2="74" y2="42"/><line x1="56" y1="48" x2="74" y2="50"/>
+      </g>`,
+    eye: `<path d="M16 50 q34 -28 68 0 q-34 28 -68 0 z"/>
+      <circle cx="50" cy="50" r="10" fill="none" stroke="${D}" stroke-width="3" opacity=".55"/>
+      <circle cx="50" cy="50" r="4" fill="${D}" opacity=".7"/>`,
+    temple: `<path d="M20 84 V48 L50 22 L80 48 V84 Z"/>
+      <rect x="43" y="58" width="14" height="26" fill="${D}" opacity=".38"/>
+      <path d="M20 48 h60" stroke="${D}" stroke-width="2.6" opacity=".35"/>
+      <path d="M28 84 V56 M72 84 V56" stroke="${D}" stroke-width="1.6" opacity=".2"/>`,
+    tower: `<path d="M26 84 V34 h48 v50 z"/>
+      <path d="M26 34 l6 -10 h12 l6 10 z M56 34 l6 -10 h12 l6 10 z"/>
+      <rect x="44" y="56" width="12" height="28" fill="${D}" opacity=".38"/>
+      <path d="M32 46 h36" stroke="${D}" stroke-width="1.6" opacity=".25"/>`,
+    fist: `<circle cx="50" cy="50" r="26" fill="none" stroke="${C}" stroke-width="4"/>
+      <path d="M50 24 v52 M24 50 h52" stroke="${D}" stroke-width="2.5" opacity=".4"/>
+      <circle cx="50" cy="50" r="6" fill="${D}" opacity=".4"/>`,
+    lotus: `<g opacity=".95">
+      <ellipse cx="50" cy="40" rx="9" ry="20"/>
+      <ellipse cx="50" cy="40" rx="9" ry="20" transform="rotate(40 50 58)"/>
+      <ellipse cx="50" cy="40" rx="9" ry="20" transform="rotate(-40 50 58)"/>
+      <ellipse cx="50" cy="40" rx="9" ry="20" transform="rotate(72 50 58)" opacity=".7"/>
+      <ellipse cx="50" cy="40" rx="9" ry="20" transform="rotate(-72 50 58)" opacity=".7"/>
+    </g>
+    <path d="M24 62 q26 16 52 0" fill="none" stroke="${D}" stroke-width="2.5" opacity=".35"/>`
+  };
+
+  /* which motif suits a card */
+  function motifFor(card) {
+    if (card.type === 'yantra') return 'shield';
+    if (card.kind === 'shakti') return 'trident';
+    if (card.type === 'order') return card.sub && /draw|treatise|strategy|golden|code/i.test(card.sub) ? 'lotus' : 'flame';
+    const s = ((card.sub || '') + ' ' + (card.name || '')).toLowerCase();
+    if (/elephant|gaja|hasti/.test(s)) return 'elephant';
+    if (/chariot|rathi/.test(s)) return 'chariot';
+    if (/archer|dhanurdhar|bow/.test(s)) return 'bow';
+    if (/cavalry|ashvarohi|horse/.test(s)) return 'horse';
+    if (/commander|senapati/.test(s)) return 'banner';
+    if (/samrat|emperor/.test(s)) return 'parasol';
+    if (/ship|warship|naval|pot/.test(s)) return 'ship';
+    if (/scholar|pandit/.test(s)) return 'book';
+    if (/spy|gudhchar/.test(s)) return 'eye';
+    if (/builder|shilpi/.test(s)) return 'temple';
+    if (/guard|rakshak|wall|shield/.test(s)) return 'tower';
+    if (/marine|navik/.test(s)) return 'fist';
+    return 'sword';
+  }
+
+  function hash(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  }
+
+  /* ---- the full card illustration ---- */
+  function cardArt(card, empireColor) {
+    const seed = hash(card.id || card.name || 'x');
+    const rot = seed % 360;
+    const rings = 2 + (seed % 2);
+    const motif = MOTIF[motifFor(card)] || MOTIF.sword;
+    const gid = 'ag_' + (card.id || seed);
+    const col = empireColor || '#d9a441';
+
+    let ringSvg = '';
+    for (let i = 0; i < rings; i++) {
+      const r = 26 + i * 11;
+      ringSvg += `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${col}" stroke-width="${i === 0 ? 1.2 : 0.7}"
+        stroke-dasharray="${i === 0 ? '3 5' : '1 7'}" opacity="${0.5 - i * 0.12}"/>`;
+    }
+
+    return `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" class="cardart" aria-hidden="true">
+      <defs>
+        <radialGradient id="${gid}" cx="50%" cy="34%" r="72%">
+          <stop offset="0%" stop-color="${col}" stop-opacity="0.34"/>
+          <stop offset="55%" stop-color="${col}" stop-opacity="0.10"/>
+          <stop offset="100%" stop-color="#0a0e14" stop-opacity="0.96"/>
+        </radialGradient>
+      </defs>
+      <rect width="100" height="100" fill="url(#${gid})"/>
+      <g transform="rotate(${rot} 50 50)" opacity=".9">${ringSvg}</g>
+      <path d="M0 74 q50 -14 100 0" fill="none" stroke="${col}" stroke-width=".8" opacity=".35"/>
+      <g transform="translate(0,2)" fill="currentColor" color="#efe4c8" opacity=".93">${motif}</g>
+      <rect width="100" height="100" fill="none" stroke="${col}" stroke-width=".6" opacity=".25"/>
+    </svg>`;
+  }
+
+  /* ---- backdrop for the battlefield ---- */
+  function backdrop() {
+    let arches = '';
+    for (let i = 0; i < 9; i++) {
+      const x = i * 130 - 40;
+      arches += `<path d="M${x} 620 V300 q0 -90 65 -90 q65 0 65 90 V620" fill="none"
+        stroke="#d9a441" stroke-width="1" opacity="0.05"/>`;
+    }
+    let dots = '';
+    for (let i = 0; i < 40; i++) {
+      const x = (i * 137) % 1200, y = (i * 271) % 800, r = 0.6 + (i % 3) * 0.5;
+      dots += `<circle cx="${x}" cy="${y}" r="${r}" fill="#efe4c8" opacity="${0.05 + (i % 5) * 0.012}"/>`;
+    }
+    return `<svg class="backdrop" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      ${arches}${dots}
+    </svg>`;
+  }
+
+  const API = { cardArt, backdrop, motifFor, MOTIF };
+  if (typeof window !== 'undefined') window.YUDDH_ART = API;
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+})();
+</script>
+<script>'use strict';
+/* ============================================================
+   YUDDH — procedural audio.
+   Every sound is synthesised at runtime with the Web Audio API:
+   no audio files, nothing to download, works offline.
+   ============================================================ */
+(function () {
+
+  const KEY = 'yuddh.audio.v1';
+  let ctx = null, master = null, musicBus = null, drone = null;
+  let musicTimer = null, musicStep = 0;
+  let prefs = { sfx: true, music: true };
+
+  try { prefs = Object.assign(prefs, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) {}
+  }
+
+  function init() {
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return ctx; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = 0.55;
+    master.connect(ctx.destination);
+    musicBus = ctx.createGain();
+    musicBus.gain.value = 0.0;
+    musicBus.connect(master);
+    return ctx;
+  }
+
+  const now = () => ctx.currentTime;
+
+  function env(gainNode, t0, attack, decay, peak) {
+    gainNode.gain.setValueAtTime(0.0001, t0);
+    gainNode.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), t0 + attack);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, t0 + attack + decay);
+  }
+
+  function tone(opts) {
+    if (!ctx) return;
+    const t0 = now();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = opts.type || 'sine';
+    o.frequency.setValueAtTime(opts.freq, t0);
+    if (opts.to) o.frequency.exponentialRampToValueAtTime(Math.max(20, opts.to), t0 + (opts.dur || 0.2));
+    let node = o;
+    if (opts.filter) {
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.value = opts.filter;
+      o.connect(f); node = f;
+    }
+    node.connect(g); g.connect(opts.bus || master);
+    env(g, t0, opts.attack || 0.006, opts.dur || 0.2, opts.gain || 0.15);
+    o.start(t0);
+    o.stop(t0 + (opts.dur || 0.2) + (opts.attack || 0.006) + 0.05);
+  }
+
+  function noise(opts) {
+    if (!ctx) return;
+    const t0 = now();
+    const dur = opts.dur || 0.15;
+    const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const f = ctx.createBiquadFilter();
+    f.type = opts.type || 'bandpass';
+    f.frequency.setValueAtTime(opts.freq || 1200, t0);
+    if (opts.to) f.frequency.exponentialRampToValueAtTime(Math.max(60, opts.to), t0 + dur);
+    f.Q.value = opts.q || 1.2;
+    const g = ctx.createGain();
+    env(g, t0, 0.004, dur, opts.gain || 0.12);
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start(t0);
+  }
+
+  /* ---------------- sound effects ---------------- */
+  const SFX = {
+    click() { tone({ freq: 760, to: 620, dur: 0.06, gain: 0.05, type: 'triangle' }); },
+    draw() { tone({ freq: 520, to: 720, dur: 0.09, gain: 0.05, type: 'sine' }); },
+    deploy() {
+      tone({ freq: 190, to: 84, dur: 0.22, gain: 0.18, type: 'sine' });
+      noise({ freq: 900, to: 300, dur: 0.12, gain: 0.07 });
+    },
+    move() { noise({ freq: 500, to: 1400, dur: 0.14, gain: 0.05, q: 0.7 }); },
+    attack() {
+      noise({ freq: 2400, to: 700, dur: 0.13, gain: 0.14, q: 0.9 });
+      tone({ freq: 170, to: 90, dur: 0.16, gain: 0.12, type: 'square', filter: 900 });
+    },
+    hit() {
+      noise({ freq: 700, to: 220, dur: 0.1, gain: 0.1, type: 'lowpass' });
+      tone({ freq: 120, to: 70, dur: 0.14, gain: 0.1, type: 'sine' });
+    },
+    death() { tone({ freq: 260, to: 62, dur: 0.36, gain: 0.14, type: 'sawtooth', filter: 700 }); },
+    hq() {
+      tone({ freq: 84, to: 40, dur: 0.5, gain: 0.26, type: 'sine' });
+      noise({ freq: 320, to: 90, dur: 0.35, gain: 0.12, type: 'lowpass' });
+    },
+    yantra() {
+      tone({ freq: 880, to: 1500, dur: 0.3, gain: 0.09, type: 'triangle' });
+      tone({ freq: 1320, to: 1980, dur: 0.22, gain: 0.05, type: 'sine' });
+    },
+    coin() {
+      tone({ freq: 940, dur: 0.1, gain: 0.07, type: 'triangle' });
+      setTimeout(() => tone({ freq: 1400, dur: 0.14, gain: 0.06, type: 'triangle' }), 80);
+    },
+    victory() {
+      tone({ freq: 180, to: 300, dur: 1.3, gain: 0.16, type: 'sawtooth', filter: 1100 });
+      setTimeout(() => tone({ freq: 300, to: 420, dur: 1.0, gain: 0.1, type: 'sine' }), 260);
+      setTimeout(() => tone({ freq: 452, dur: 0.9, gain: 0.08, type: 'triangle' }), 620);
+    },
+    defeat() {
+      tone({ freq: 220, to: 74, dur: 1.2, gain: 0.16, type: 'sawtooth', filter: 600 });
+      setTimeout(() => tone({ freq: 150, to: 58, dur: 1.1, gain: 0.1, type: 'sine' }), 200);
+    }
+  };
+
+  function sfx(name) {
+    if (!prefs.sfx) return;
+    if (!init()) return;
+    const f = SFX[name];
+    if (f) { try { f(); } catch (e) {} }
+  }
+
+  /* ---------------- generative raga bed ---------------- */
+  const SA = 146.83;                                   // D
+  const SCALE = [1, 16 / 15, 6 / 5, 4 / 3, 3 / 2, 8 / 5, 9 / 5, 2];
+
+  function startDrone() {
+    if (!ctx || drone) return;
+    drone = ctx.createGain();
+    drone.gain.value = 0.05;
+    drone.connect(musicBus);
+    [SA, SA * 1.5, SA * 2].forEach((f, i) => {
+      const o = ctx.createOscillator();
+      o.type = i === 2 ? 'triangle' : 'sine';
+      o.frequency.value = f;
+      const g = ctx.createGain();
+      g.gain.value = i === 2 ? 0.25 : 0.5;
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 0.07 + i * 0.03;
+      const lg = ctx.createGain();
+      lg.gain.value = 0.12;
+      lfo.connect(lg); lg.connect(g.gain);
+      o.connect(g); g.connect(drone);
+      o.start(); lfo.start();
+    });
+  }
+
+  function pluck(freq, when, gain) {
+    const t0 = now() + when;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.6);
+    o.connect(g); g.connect(musicBus);
+    o.start(t0); o.stop(t0 + 1.7);
+  }
+
+  function scheduleMusic() {
+    if (!prefs.music || !ctx) return;
+    musicStep++;
+    const deg = [0, 2, 3, 4, 2, 5, 4, 3, 1, 3, 0, 4][musicStep % 12];
+    const oct = musicStep % 7 === 0 ? 2 : 1;
+    pluck(SA * SCALE[deg] * oct, 0, 0.09);
+    if (musicStep % 4 === 0) pluck(SA * SCALE[(deg + 2) % 8] * 2, 0.42, 0.05);
+    musicTimer = setTimeout(scheduleMusic, 1150 + Math.random() * 500);
+  }
+
+  function setMusic(on) {
+    prefs.music = on; save();
+    if (!init()) return;
+    if (on) {
+      musicBus.gain.cancelScheduledValues(now());
+      musicBus.gain.linearRampToValueAtTime(1, now() + 1.2);
+      startDrone();
+      if (!musicTimer) scheduleMusic();
+    } else {
+      musicBus.gain.linearRampToValueAtTime(0, now() + 0.4);
+      if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
+    }
+  }
+
+  function setSfx(on) { prefs.sfx = on; save(); }
+
+  const API = {
+    init, sfx, setMusic, setSfx,
+    get musicOn() { return prefs.music; },
+    get sfxOn() { return prefs.sfx; },
+    /* first gesture unlocks audio in every browser */
+    unlock() {
+      if (!init()) return;
+      if (prefs.music && !musicTimer) setMusic(true);
+    }
+  };
+
+  if (typeof window !== 'undefined') window.YUDDH_AUDIO = API;
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+})();
+</script>
+<script>
+const E = window.YUDDH, C = window.YUDDH_CAMPAIGN, M = window.YUDDH_META;
+const Art = window.YUDDH_ART, A = window.YUDDH_AUDIO;
+const ME = 0, FOE = 1;
+const $ = id => document.getElementById(id);
+const emp = id => E.EMPIRES[id];
+
+let state = null, sel = null, busy = false;
+let currentMission = null;
+let skirmish = { empire: null, ally: null, level: 'normal' };
+let armyFilter = 'all';
+let tut = null;                       // tutorial progress
+
+document.body.insertAdjacentHTML('afterbegin', Art.backdrop());
+
+/* ---------------- art cache ---------------- */
+const artCache = new Map();
+function artFor(card) {
+  if (!artCache.has(card.id)) artCache.set(card.id, Art.cardArt(card, emp(card.empire).color));
+  return artCache.get(card.id);
+}
+
+/* ---------------- audio wiring ---------------- */
+function syncAudioButtons() {
+  $('btnMusic').classList.toggle('on', A.musicOn);
+  $('btnSfx').classList.toggle('on', A.sfxOn);
+}
+document.addEventListener('pointerdown', () => A.unlock(), { once: true });
+
+/* ---------------- screens ---------------- */
+function showScreen(id) {
+  ['screenTitle', 'screenCampaign', 'screenSkirmish', 'screenArmy'].forEach(s => $(s).classList.remove('on'));
+  $('gameWrap').style.display = id === 'game' ? 'flex' : 'none';
+  if (id !== 'game' && $(id)) $(id).classList.add('on');
+  $('audioctl').style.display = id === 'game' ? 'flex' : 'flex';
+  if (id === 'screenTitle') $('titleKirti').textContent = 'Kirti ' + M.kirti();
+}
+
+function unlockedCount() {
+  let n = 0;
+  for (const m of C.CAMPAIGN) { if (M.isDone(m.id)) n++; else break; }
+  return n;
+}
+
+function renderCampaign() {
+  const unlocked = unlockedCount();
+  $('campaignProgress').textContent = `${unlocked} of ${C.CAMPAIGN.length} campaigns won`;
+  $('campKirti').textContent = 'Kirti ' + M.kirti();
+  $('missionList').innerHTML = C.CAMPAIGN.map((m, i) => {
+    const done = M.isDone(m.id);
+    const locked = i > unlocked;
+    return `<div class="mission ${done ? 'done' : ''} ${locked ? 'locked' : ''}"
+      ${locked ? '' : `data-act="openMission" data-id="${m.id}"`}>
+      <div class="num">${done ? '✓' : i + 1}</div>
+      <div class="info"><div class="t">${m.title}</div>
+        <div class="s">${m.place} · ${m.year}</div></div>
+      <div class="tier ${m.tier}">${m.tier}</div></div>`;
+  }).join('');
+}
+
+function renderSkirmish() {
+  $('pickEmpire').innerHTML = E.EMPIRE_ORDER.map(id => {
+    const e = emp(id);
+    return `<div class="emp ${skirmish.empire === id ? 'on' : ''}" data-act="pickEmpire" data-id="${id}">
+      <div class="top"><div class="cr" style="background:${e.color}">${e.glyph}</div><div class="n">${e.name}</div></div>
+      <div class="p">${e.passive}</div></div>`;
+  }).join('');
+  $('pickAlly').innerHTML = E.EMPIRE_ORDER.filter(id => id !== skirmish.empire).map(id => {
+    const e = emp(id);
+    return `<div class="emp ${skirmish.ally === id ? 'on' : ''}" data-act="pickAlly" data-id="${id}" style="padding:8px 10px">
+      <div class="top"><div class="cr" style="background:${e.color};width:20px;height:20px;font-size:10px">${e.glyph}</div>
+      <div class="n" style="font-size:12.5px">${e.name}</div></div></div>`;
+  }).join('');
+  $('pickLevel').innerHTML = [['easy', 'Untried'], ['normal', 'Seasoned'], ['hard', 'Veteran']]
+    .map(([id, label]) => `<button class="bigbtn small ${skirmish.level === id ? 'gold' : ''}"
+      data-act="pickLevel" data-id="${id}">${label}</button>`).join('');
+  $('skStart').disabled = !(skirmish.empire && skirmish.ally);
+}
+
+function renderArmy() {
+  $('armyKirti').textContent = 'Kirti ' + M.kirti();
+  const filters = [['all', 'All'], ...E.EMPIRE_ORDER.map(id => [id, emp(id).name])];
+  $('armyFilters').innerHTML = filters.map(([id, label]) =>
+    `<button class="${armyFilter === id ? 'on' : ''}" data-act="armyFilter" data-id="${id}">${label}</button>`).join('');
+  const cards = E.CARD_LIST.filter(c => armyFilter === 'all' || c.empire === armyFilter);
+  $('armyGrid').innerHTML = cards.map(c => {
+    const lvl = M.level(c.id), cost = M.cost(c.id);
+    const max = lvl >= 2;
+    const can = M.canUpgrade(c.id);
+    const pips = [1, 2].map(i => `<i class="${lvl >= i ? 'on' : ''}"></i>`).join('');
+    return `<div class="acard ${max ? 'max' : ''}">
+      <div class="art">${artFor(c)}</div>
+      <div class="b">
+        <div class="n">${c.name}</div>
+        <div class="s">${c.sub || (c.type === 'unit' ? '' : c.type)}</div>
+        <div class="pips">${pips}</div>
+        <button data-act="upgrade" data-id="${c.id}" ${max || !can ? 'disabled' : ''}>
+          ${max ? 'Max' : (can ? cost + ' ⬥' : cost + ' ⬥')}
+        </button>
+      </div></div>`;
+  }).join('');
+}
+
+/* ---------------- briefing ---------------- */
+function openBriefing(m) {
+  currentMission = m;
+  const objText = {
+    destroy: `Destroy the ${m.enemy.faction} Durg.`,
+    survive: `Hold the line for ${m.objective.turns} turns.`,
+    deadline: `Destroy the ${m.enemy.faction} Durg within ${m.objective.turns} turns.`
+  }[m.objective.type];
+  $('modal').classList.add('on');
+  $('modal').innerHTML = `<div class="modal">
+    <div class="tagline">${m.place} · ${m.year}</div>
+    <h1 style="font-size:25px;margin-top:4px">${m.title}</h1>
+    <p style="margin-top:12px">${m.briefing}</p>
+    <div style="margin-top:16px;padding:11px 14px;border-left:2px solid var(--gold);background:rgba(217,164,65,.06)">
+      <div style="font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:var(--gold)">Objective</div>
+      <div style="font-size:13px;color:#e7ddc6;margin-top:3px">${objText}</div>
+    </div>
+    <p style="margin-top:14px;font-size:12px;color:var(--dim)"><b style="color:#f0d9a6">Tactics —</b> ${m.hint}</p>
+    <p style="margin-top:10px;font-size:12px;color:var(--gold)">Victory earns ${m.reward} Kirti.</p>
+    <div class="row2" style="margin-top:18px">
+      <button class="bigbtn gold" data-act="beginMission">Begin</button>
+      <button class="bigbtn" data-act="goCampaign">Back</button>
+    </div></div>`;
+}
+
+/* ---------------- card / unit markup ---------------- */
+function unitHTML(u, owner, opts) {
+  const o = opts || {};
+  const cls = ['unit'];
+  if (o.pickable) cls.push('pickable');
+  if (o.sel) cls.push('sel');
+  if (o.targetable) cls.push('targetable');
+  if (u.kw.includes('raksha')) cls.push('guard');
+  if (owner === ME) cls.push(u.canAct && !(u.attacked && u.moved) ? 'ready' : 'acted');
+  const kw = u.kw.map(k => E.KW_LABEL[k]).join('·');
+  const card = E.CARDS[u.cardId] || { id: u.cardId, name: u.name, sub: u.sub, type: 'unit', empire: u.empire };
+  return `<div class="${cls.join(' ')}" ${o.attrs || ''} data-uid="${u.uid}" title="${u.name} — ${u.sub}">
+    <div class="band" style="background:${emp(u.empire).color}"></div>
+    <div class="art">${artFor(card)}</div>
+    ${kw ? `<div class="kw">${kw}</div>` : ''}
+    <div class="op">${u.op}K</div>
+    ${u.upgraded ? `<div class="up">+${u.upgraded}</div>` : ''}
+    <div class="nm">${u.name}</div>
+    <div class="foot"><span class="atk">${u.atk}</span><span class="hp">${u.hp}</span></div>
+  </div>`;
+}
+
+function cardHTML(cardId, i, affordable) {
+  const c = E.CARDS[cardId], e = emp(c.empire);
+  const cls = ['card'];
+  if (sel && sel.kind === 'hand' && sel.idx === i) cls.push('sel');
+  if (!affordable) cls.push('poor');
+  const lvl = M.level(cardId);
+  const kindLabel = c.type === 'unit' ? '' : (c.kind === 'shakti' ? 'SHAKTI' : c.type === 'yantra' ? 'YANTRA' : 'MANTRA');
+  return `<div class="${cls.join(' ')}" data-act="hand" data-i="${i}" title="${c.text}">
+    <div class="band" style="background:${e.color}"></div>
+    <div class="cost">${E.koshaCost(state, ME, c)}</div>
+    ${lvl ? `<div class="lvl">+${lvl}</div>` : ''}
+    <div class="art">${artFor(c)}</div>
+    ${kindLabel ? `<div class="kind">${kindLabel}</div>` : ''}
+    <div class="nm">${c.name}</div>
+    <div class="sub">${c.sub || ''}</div>
+    ${c.type === 'unit'
+      ? `<div class="foot"><span class="atk">${c.atk + lvl}</span><span class="hp">${c.hp + lvl}</span></div>`
+      : `<div class="foot"><span></span><span></span></div>`}
+  </div>`;
+}
+
+function hqHTML(p, side) {
+  const e = emp(p.empire);
+  return `<div class="who">${side === ME ? 'You' : 'Enemy'}</div>
+    <div class="crest" style="background:${e.color}">${e.glyph}</div>
+    <div class="nm">${p.hq.name}<small>${p.faction} · Durg</small></div>
+    <div class="hp"><b>${Math.max(0, p.hq.hp)}</b> / ${p.hq.maxHp}</div>
+    <div class="stats">
+      <span>Kosha <b>${p.kosha}</b>/${p.maxKosha}</span>
+      <span>Hand <b>${p.hand.length}</b></span>
+      <span>Deck <b>${p.deck.length}</b></span>
+    </div>`;
+}
+
+function yantraRow(p, side) {
+  const chips = [];
+  for (let i = 0; i < 2; i++) {
+    const y = p.yantras[i];
+    if (y) {
+      const c = E.CARDS[y.cardId];
+      if (side === ME) chips.push(`<div class="ychip" title="${c.name} — ${c.text}">${c.glyph}</div>`);
+      else chips.push(`<div class="ychip hidden" title="A Yantra lies in wait">?</div>`);
+    } else {
+      chips.push(`<div class="ychip empty">${side === ME ? 'yantra' : ''}</div>`);
+    }
+  }
+  return `<span class="lbl">Yantra</span>${chips.join('')}`;
+}
+
+/* ---------------- render ---------------- */
+function render() {
+  if (!state) return;
+  const my = state.players[ME], foe = state.players[FOE];
+  const myTurn = state.active === ME && !state.over;
+
+  $('hqEnemy').innerHTML = hqHTML(foe, FOE);
+  $('hqEnemy').className = 'hq enemy' + (hqTargetable() ? ' targetable' : '');
+  $('hqEnemy').dataset.act = hqTargetable() ? 'hq' : '';
+  $('hqMine').innerHTML = hqHTML(my, ME);
+  $('enemyYantra').innerHTML = yantraRow(foe, FOE);
+  $('myYantra').innerHTML = yantraRow(my, ME);
+
+  const es = $('enemySupport');
+  es.innerHTML = '<span class="tag">Enemy Rajya</span>';
+  for (let i = 0; i < 4; i++) {
+    const u = foe.support[i];
+    if (u) {
+      const t = attackTargetable(u.uid, FOE) || orderTargetable(u.uid, FOE);
+      const d = document.createElement('div');
+      d.innerHTML = unitHTML(u, FOE, { targetable: t, attrs: `data-act="attackUnit" data-owner="${FOE}"` });
+      es.appendChild(d.firstElementChild);
+    } else { const d = document.createElement('div'); d.className = 'slot'; es.appendChild(d); }
+  }
+
+  const fr = $('front');
+  fr.className = 'line' + (state.front.owner === ME ? ' held0' : state.front.owner === FOE ? ' held1' : '');
+  fr.innerHTML = '<span class="tag">Yudhbhumi</span>';
+  for (let i = 0; i < 4; i++) {
+    const u = state.front.units[i];
+    if (u) {
+      const owner = state.front.owner, mine = owner === ME;
+      const t = !mine && (attackTargetable(u.uid, FOE) || orderTargetable(u.uid, FOE));
+      const pick = mine && myTurn && unitCanAttack(u.uid);
+      const selU = sel && sel.kind === 'unit' && sel.uid === u.uid;
+      const attrs = mine ? `data-act="myUnit"` : `data-act="attackUnit" data-owner="${FOE}"`;
+      const d = document.createElement('div');
+      d.innerHTML = unitHTML(u, owner, { targetable: t, pickable: pick, sel: selU, attrs });
+      fr.appendChild(d.firstElementChild);
+    } else {
+      const d = document.createElement('div');
+      d.className = 'slot' + (frontSlotLive() ? ' live' : '');
+      if (frontSlotLive()) { d.dataset.act = 'moveFront'; d.textContent = 'advance'; }
+      fr.appendChild(d);
+    }
+  }
+
+  const ms = $('mySupport');
+  ms.innerHTML = '<span class="tag">Your Rajya</span>';
+  for (let i = 0; i < 4; i++) {
+    const u = my.support[i];
+    if (u) {
+      const pick = myTurn && (E.canMove(state, ME, u.uid).ok || unitCanAttack(u.uid));
+      const d = document.createElement('div');
+      d.innerHTML = unitHTML(u, ME, { pickable: pick, sel: sel && sel.kind === 'unit' && sel.uid === u.uid, attrs: 'data-act="myUnit"' });
+      ms.appendChild(d.firstElementChild);
+    } else {
+      const d = document.createElement('div');
+      d.className = 'slot' + (deployLive() ? ' live' : '');
+      if (deployLive()) { d.dataset.act = 'deploy'; d.textContent = 'deploy'; }
+      ms.appendChild(d);
+    }
+  }
+
+  const hand = $('hand');
+  hand.innerHTML = '';
+  my.hand.forEach((cardId, i) => {
+    const c = E.CARDS[cardId];
+    const affordable = myTurn && E.koshaCost(state, ME, c) <= my.kosha;
+    const d = document.createElement('div');
+    d.innerHTML = cardHTML(cardId, i, affordable);
+    hand.appendChild(d.firstElementChild);
+  });
+
+  renderObjective();
+  renderCoach();
+
+  const lg = $('log');
+  lg.innerHTML = state.log.slice(-40).map(l => `<div class="${l.side === ME ? 'me' : 'foe'}">${l.msg}</div>`).join('');
+  lg.scrollTop = lg.scrollHeight;
+
+  let msg;
+  if (state.over) msg = state.winner === ME ? 'Victory.' : state.winner === null ? 'A draw.' : 'Defeat.';
+  else if (!myTurn) msg = 'The enemy is deliberating…';
+  else if (sel && sel.kind === 'hand') msg = 'Choose where to commit this card.';
+  else if (sel && sel.kind === 'unit') msg = 'Choose a target, or advance to the Yudhbhumi.';
+  else msg = `Your turn · ${my.kosha} Kosha`;
+  $('status').textContent = msg;
+  $('endBtn').disabled = !myTurn;
+}
+
+function renderObjective() {
+  const o = E.objectiveStatus(state);
+  $('objTitle').textContent = currentMission ? currentMission.title : 'Skirmish';
+  $('objYear').textContent = currentMission
+    ? `${currentMission.place} · ${currentMission.year}`
+    : `${emp(state.players[ME].empire).name} vs ${emp(state.players[FOE].empire).name}`;
+  let t = 'Destroy the enemy Durg.';
+  if (o.type === 'survive') t = `Survive <b>${o.remaining}</b> more turn${o.remaining === 1 ? '' : 's'} (of ${o.total}).`;
+  else if (o.type === 'deadline') t = `Break them within <b>${o.remaining}</b> turn${o.remaining === 1 ? '' : 's'}.`;
+  $('objText').innerHTML = t;
+}
+
+/* ---------------- tutorial coach ---------------- */
+function startTutorial(m) {
+  if (!m.tutorial) { tut = null; return; }
+  tut = { steps: m.tutorial, done: new Set(), skipped: false };
+}
+function renderCoach() {
+  const el = $('coach');
+  if (!tut || tut.skipped) { el.classList.remove('on'); el.innerHTML = ''; return; }
+  const idx = tut.steps.findIndex(s => !tut.done.has(s.done));
+  if (idx < 0) { el.classList.remove('on'); el.innerHTML = ''; return; }
+  const s = tut.steps[idx];
+  el.classList.add('on');
+  el.innerHTML = `<div class="ct">${s.text}</div>
+    <div class="dots">${tut.steps.map((x, i) => `<i class="${tut.done.has(x.done) ? 'done' : i === idx ? 'now' : ''}"></i>`).join('')}</div>
+    <button data-act="skipTutorial">Skip tips</button>`;
+}
+function tutorialToken(a) {
+  if (!tut || tut.skipped) return;
+  if (a.type === 'move') tut.done.add('move');
+  if (a.type === 'attack' && a.target && a.target.kind === 'hq') tut.done.add('attackHq');
+  if (a.type === 'attack' && a.target && a.target.kind === 'unit') tut.done.add('attack');
+  if (a.type === 'play') {
+    const card = E.CARDS[state.players[ME].hand[a.handIndex]];
+    if (card) {
+      if (card.type === 'unit') tut.done.add('deploy');
+      if (card.type === 'yantra') tut.done.add('yantra');
+      if (card.type === 'order' && card.kind !== 'shakti') tut.done.add('mantra');
+      if (card.type === 'order' && card.kind === 'shakti') tut.done.add('shakti');
+    }
+  }
+}
+
+/* ---------------- predicates ---------------- */
+function hqTargetable() {
+  if (!state || state.over || state.active !== ME || !sel || sel.kind !== 'unit') return false;
+  return E.canAttack(state, ME, sel.uid, { kind: 'hq', owner: FOE }).ok;
+}
+function attackTargetable(uid, owner) {
+  if (!state || state.over || state.active !== ME || !sel || sel.kind !== 'unit' || owner === ME) return false;
+  return E.canAttack(state, ME, sel.uid, { kind: 'unit', owner, uid }).ok;
+}
+function orderTargetable(uid, owner) {
+  if (!state || state.over || state.active !== ME || !sel || sel.kind !== 'hand' || owner === ME) return false;
+  const card = E.CARDS[state.players[ME].hand[sel.idx]];
+  if (!card || card.target !== 'enemyUnit') return false;
+  return E.canPlay(state, ME, sel.idx, { kind: 'unit', owner, uid }).ok;
+}
+function frontSlotLive() {
+  return !!(state && !state.over && state.active === ME && sel && sel.kind === 'unit' && E.canMove(state, ME, sel.uid).ok);
+}
+function deployLive() {
+  if (!state || state.over || state.active !== ME || !sel || sel.kind !== 'hand') return false;
+  const card = E.CARDS[state.players[ME].hand[sel.idx]];
+  if (!card || card.type !== 'unit') return false;
+  return E.canPlay(state, ME, sel.idx).ok;
+}
+function unitCanAttack(uid) {
+  if (E.canAttack(state, ME, uid, { kind: 'hq', owner: FOE }).ok) return true;
+  return E.allUnits(state, FOE).some(x => E.canAttack(state, ME, uid, { kind: 'unit', owner: FOE, uid: x.unit.uid }).ok);
+}
+
+/* ---------------- effects ---------------- */
+function snapshotRects() {
+  const map = {};
+  document.querySelectorAll('[data-uid]').forEach(el => {
+    const r = el.getBoundingClientRect();
+    map[el.dataset.uid] = { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height };
+  });
+  ['hqMine', 'hqEnemy'].forEach(id => {
+    const el = $(id); if (!el) return;
+    const r = el.getBoundingClientRect();
+    map[id] = { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height };
+  });
+  return map;
+}
+
+function floatText(pos, text, color) {
+  if (!pos) return;
+  const d = document.createElement('div');
+  d.className = 'floatdmg';
+  d.textContent = text;
+  d.style.left = pos.x + 'px';
+  d.style.top = (pos.y - 12) + 'px';
+  d.style.color = color || '#ff9a86';
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 950);
+}
+
+function playEvents(events, rects) {
+  if (!events || !events.length) return;
+  const shake = () => {
+    const b = $('board');
+    b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+  };
+  events.forEach(e => {
+    if (e.t === 'deploy') {
+      const el = document.querySelector(`[data-uid="${e.uid}"]`);
+      if (el) el.classList.add('fx-deploy');
+      A.sfx('deploy');
+    } else if (e.t === 'move') {
+      const el = document.querySelector(`[data-uid="${e.uid}"]`);
+      if (el) el.classList.add('fx-deploy');
+      A.sfx('move');
+    } else if (e.t === 'attack') {
+      const el = document.querySelector(`[data-uid="${e.uid}"]`);
+      if (el) el.classList.add('fx-attack');
+      A.sfx('attack');
+      const tEl = document.querySelector(`[data-uid="${e.target.uid}"]`);
+      if (tEl) setTimeout(() => tEl.classList.add('fx-hit'), 90);
+      floatText(rects[e.target.uid], '-' + e.dmg, '#ffb4a2');
+      A.sfx('hit');
+    } else if (e.t === 'death') {
+      floatText(rects[e.uid], '✕', '#e8b3a6');
+      A.sfx('death');
+    } else if (e.t === 'hq') {
+      const pos = e.owner === ME ? rects.hqMine : rects.hqEnemy;
+      floatText(pos, e.dmg > 0 ? '-' + e.dmg : 'warded', e.dmg > 0 ? '#ff9a86' : '#9ec9e8');
+      const el = e.owner === ME ? $('hqMine') : $('hqEnemy');
+      el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+      shake();
+      A.sfx('hq');
+    } else if (e.t === 'yantra' || e.t === 'yantraSet') {
+      A.sfx('yantra');
+    } else if (e.t === 'order') {
+      A.sfx('draw');
+    }
+  });
+}
+
+function act(a) {
+  const rects = snapshotRects();
+  const res = E.applyAction(state, a);
+  if (!res.ok) { $('status').textContent = '✕ ' + res.reason; A.sfx('click'); return false; }
+  tutorialToken(a);
+  sel = null;
+  render();
+  playEvents(E.drainEvents(state), rects);
+  checkOver();
+  return true;
+}
+
+function enemyTurn() {
+  if (state.over) return;
+  busy = true;
+  const lvl = state.aiLevel;
+  const runPlay = () => {
+    const rects = snapshotRects();
+    E.aiPlayPhase(state, state.active, lvl === 'hard' ? 'normal' : lvl);
+    render();
+    playEvents(E.drainEvents(state), rects);
+    setTimeout(runCombat, 620);
+  };
+  const runCombat = () => {
+    if (state.over) { busy = false; checkOver(); return; }
+    const rects = snapshotRects();
+    if (lvl === 'hard') E.aiCombatPhase(state, state.active, 'hard');
+    else E.aiCombatPhase(state, state.active, lvl);
+    render();
+    playEvents(E.drainEvents(state), rects);
+    setTimeout(() => {
+      const r2 = snapshotRects();
+      E.applyAction(state, { type: 'end' });
+      busy = false; sel = null;
+      render();
+      playEvents(E.drainEvents(state), r2);
+      if (state.over) checkOver();
+    }, 620);
+  };
+  setTimeout(runPlay, 320);
+}
+
+function checkOver() {
+  if (!state.over) return;
+  const won = state.winner === ME;
+  const draw = state.winner === null;
+  let earned = 0;
+  if (won && currentMission) {
+    const first = M.markDone(currentMission.id);
+    earned = first ? currentMission.reward : 25;
+    M.award(earned);
+    if (tut) tut.done.add('win');
+  } else if (currentMission && !won) {
+    earned = 20;
+    M.award(earned);
+  }
+  const idx = currentMission ? C.CAMPAIGN.findIndex(m => m.id === currentMission.id) : -1;
+  const next = idx >= 0 && idx + 1 < C.CAMPAIGN.length ? C.CAMPAIGN[idx + 1] : null;
+  const head = draw ? 'STALEMATE' : won ? 'VIJAY — VICTORY' : 'PARAAJAY — DEFEAT';
+  let body = draw ? 'Both capitals lie in ruin.'
+    : won ? 'The enemy Durg is rubble. Your chroniclers will remember this day.'
+    : 'Your Durg has fallen. The war is lost — for now.';
+  if (state.winReason === 'survive') body = 'The enemy host breaks camp for want of supply. The line held.';
+  if (state.winReason === 'deadline') body = 'Their reinforcements arrived first. The moment has passed.';
+
+  A.sfx(won ? 'victory' : 'defeat');
+  setTimeout(() => {
+    $('modal').classList.add('on');
+    $('modal').innerHTML = `<div class="modal" style="text-align:center;max-width:580px">
+      <h1 style="letter-spacing:6px">${head}</h1>
+      <p style="margin-top:12px">${body}</p>
+      ${earned ? `<p style="color:var(--gold);margin-top:10px">+${earned} Kirti</p>` : ''}
+      ${currentMission && currentMission.id === 't0' && won
+        ? `<p style="font-size:12.5px;color:var(--dim);margin-top:14px">
+             That is the whole game. Now spend your Kirti: open <b style="color:#f0d9a6">Army</b> and
+             upgrade a card — an upgrade lasts forever.</p>` : ''}
+      <div class="row2" style="justify-content:center;margin-top:20px">
+        ${currentMission && !won ? `<button class="bigbtn" data-act="retryMission">Try again</button>` : ''}
+        ${currentMission && won && next ? `<button class="bigbtn gold" data-act="nextMission" data-id="${next.id}">Next: ${next.title}</button>` : ''}
+        ${currentMission && won && !next ? `<button class="bigbtn gold" data-act="goCampaign">Chronicle complete</button>` : ''}
+        ${!currentMission ? `<button class="bigbtn gold" data-act="goSkirmish">Fight again</button>` : ''}
+        ${won ? `<button class="bigbtn" data-act="goArmy">Army</button>` : ''}
+        <button class="bigbtn" data-act="${currentMission ? 'goCampaign' : 'goTitle'}">${currentMission ? 'Chronicle' : 'Title'}</button>
+      </div></div>`;
+  }, 800);
+}
+
+/* ---------------- starting games ---------------- */
+function startMission(m) {
+  currentMission = m;
+  state = C.buildGame(E, m, (Date.now() % 1000000) + 1, M.upgrades());
+  sel = null; busy = false;
+  startTutorial(m);
+  showScreen('game');
+  render();
+}
+
+function startSkirmish() {
+  currentMission = null;
+  tut = null;
+  const pool = E.EMPIRE_ORDER.filter(x => x !== skirmish.empire && x !== skirmish.ally);
+  const foeEmpire = pool[Math.floor(Math.random() * pool.length)];
+  const rest = E.EMPIRE_ORDER.filter(x => x !== skirmish.empire && x !== skirmish.ally && x !== foeEmpire);
+  const foeAlly = rest[Math.floor(Math.random() * rest.length)] || 'neutral';
+  state = E.newGame({
+    seed: (Date.now() % 1000000) + 1,
+    aiLevel: skirmish.level,
+    player: { empire: skirmish.empire, ally: skirmish.ally, deck: E.buildDeck(skirmish.empire, skirmish.ally), upgrades: M.upgrades() },
+    enemy: { empire: foeEmpire, ally: foeAlly, deck: E.buildDeck(foeEmpire, foeAlly) }
+  });
+  sel = null; busy = false;
+  showScreen('game');
+  render();
+}
+
+/* ---------------- codex ---------------- */
+let codexTab = 'basics';
+function codexBody(tab) {
+  if (tab === 'basics') return `
+    <h2>The board</h2>
+    <p>Each side has a <b>Rajya</b> line of up to four units, where your Durg (capital) sits, and a shared
+    <b>Yudhbhumi</b> — the contested line between them. Only one side can hold the Yudhbhumi at a time.</p>
+    <p>Units in your Rajya can only strike enemy units standing in the Yudhbhumi — that is how you break
+    an enemy's hold on it. To reach the enemy Durg or their rear line, a unit must spend Kosha to
+    <b>advance</b> into the Yudhbhumi first.</p>
+    <h2>Kosha — the treasury</h2>
+    <p>Every card has a <b>deployment cost</b>. Every move and every attack costs that unit's
+    <b>operation cost</b> again. The treasury grows by one each turn (maximum 12) and refills at the start of
+    your turn. Spend it all on new units and you will have an army you cannot afford to command.</p>
+    <h2>Winning</h2>
+    <p>Reduce the enemy Durg to zero. A Durg can only be attacked from the Yudhbhumi, so the line is everything.</p>`;
+  if (tab === 'cards') return `
+    <h2>Four kinds of card</h2>
+    <p><b>Units</b> are deployed into your Rajya and fight. They cannot act the turn they arrive unless they
+    have Vega. Melee attackers take a counter-blow; ranged attackers do not.</p>
+    <p><b>Mantras</b> are one-shot orders — damage, healing, card draw. They resolve immediately and go to
+    the discard pile.</p>
+    <p><b>Yantras</b> are set face down for 2 Kosha (two at a time) and spring automatically on the enemy's
+    turn: <i>Vighna</i> destroys a unit as it is deployed, <i>Kavach</i> prevents 4 damage to your Durg,
+    <i>Pratikar</i> punishes any unit that attacks yours. The enemy cannot see what you set.</p>
+    <p><b>Shakti</b> are the decisive strokes — expensive, and worth building a whole turn around:
+    <i>Agni Baan</i> (5 damage to one unit), <i>Chakravyuha</i> (2 damage to every enemy unit),
+    <i>Ashwamedha</i> (all your units +2/+2).</p>
+    <h2>Unit types</h2>
+    <p><b>Padati</b> hold ground. <b>Dhanurdhar</b> and other ranged units strike from your Rajya line
+    without a counter-blow. <b>Rathi, Maharathi, Atirathi</b> are fast chariots. <b>Gaja</b> are walls that
+    walk. <b>Senapati</b> embolden the line they join. <b>Samrat</b> are your late-game win conditions.</p>`;
+  if (tab === 'keywords') return `
+    <h2>Keywords</h2>
+    <div class="kwlist">
+      <div><b>Vega</b> — can move and attack the turn it is deployed.</div>
+      <div><b>Raksha</b> — enemy attacks in that line must strike this unit first. It shields units, not your Durg.</div>
+      <div><b>Dhuan</b> — cannot be attacked until it attacks.</div>
+      <div><b>Deploy</b> — an effect that fires the moment the unit lands.</div>
+      <div><b>Operation cost</b> — the Kosha paid every time the unit moves or attacks.</div>
+      <div><b>Fatigue</b> — when a deck runs out, the Durg takes growing damage each draw.</div>
+    </div>`;
+  return `
+    <h2>Kirti</h2>
+    <p>You earn <b>Kirti</b> for every battle: a first victory pays the mission's full reward, a replay pays 25,
+    and even a defeat pays 20. Kirti is spent in the <b>Army</b> screen.</p>
+    <h2>Upgrades</h2>
+    <p>Any card can be upgraded twice. A <b>unit</b> gains +1 attack and +1 defence per level. A
+    <b>Mantra, Yantra or Shakti</b> card costs 1 less Kosha per level (never below 1). Upgrades are permanent
+    and apply in the campaign and in skirmish alike — they are how a hard mission becomes possible.</p>
+    <p>Level 1 costs 60 Kirti, level 2 costs 140. A first victory in the early campaign pays about 100.</p>
+    <h2>The chronicle</h2>
+    <p>Nine battles run from the training ground to the Deccan. Each is a fixed situation with its own deck,
+    objective and enemy — some ask you to break a Durg, some to survive, one to win before a deadline.</p>`;
+}
+function showCodex(tab) {
+  codexTab = tab || codexTab;
+  const tabs = [['basics', 'Basics'], ['cards', 'Card types'], ['keywords', 'Keywords'], ['kirti', 'Kirti & upgrades']];
+  $('modal').classList.add('on');
+  $('modal').innerHTML = `<div class="modal">
+    <h1 style="font-size:23px">The Codex</h1>
+    <div class="tagline">Everything the game does not explain twice</div>
+    <div class="tabs">${tabs.map(([id, label]) => `<button class="${codexTab === id ? 'on' : ''}" data-act="codexTab" data-id="${id}">${label}</button>`).join('')}</div>
+    <div class="codexbody">${codexBody(codexTab)}</div>
+    <div class="row2" style="margin-top:16px"><button class="bigbtn small" data-act="closemodal">Close</button></div>
+  </div>`;
+}
+
+/* ---------------- events ---------------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) {
+    if (e.target.closest('#board') && sel) { sel = null; render(); }
+    return;
+  }
+  const a = el.dataset.act;
+  A.sfx('click');
+
+  if (a === 'goTitle') { showScreen('screenTitle'); return; }
+  if (a === 'goCampaign') { renderCampaign(); showScreen('screenCampaign'); return; }
+  if (a === 'goSkirmish') { renderSkirmish(); showScreen('screenSkirmish'); return; }
+  if (a === 'goArmy') { renderArmy(); showScreen('screenArmy'); return; }
+  if (a === 'codex') { showCodex('basics'); return; }
+  if (a === 'codexTab') { showCodex(el.dataset.id); return; }
+  if (a === 'closemodal') { $('modal').classList.remove('on'); return; }
+  if (a === 'toggleMusic') { A.setMusic(!A.musicOn); syncAudioButtons(); return; }
+  if (a === 'toggleSfx') { A.setSfx(!A.sfxOn); syncAudioButtons(); A.sfx('click'); return; }
+  if (a === 'armyFilter') { armyFilter = el.dataset.id; renderArmy(); return; }
+  if (a === 'upgrade') {
+    const r = M.upgrade(el.dataset.id);
+    if (r.ok) { A.sfx('coin'); renderArmy(); }
+    return;
+  }
+  if (a === 'resetProgress') {
+    if (confirm('Erase campaign progress and all upgrades?')) { M.reset(); renderCampaign(); }
+    return;
+  }
+  if (a === 'openMission') {
+    const m = C.CAMPAIGN.find(x => x.id === el.dataset.id);
+    if (m) openBriefing(m);
+    return;
+  }
+  if (a === 'beginMission') { $('modal').classList.remove('on'); startMission(currentMission); return; }
+  if (a === 'retryMission') { $('modal').classList.remove('on'); startMission(currentMission); return; }
+  if (a === 'nextMission') {
+    const m = C.CAMPAIGN.find(x => x.id === el.dataset.id);
+    $('modal').classList.remove('on');
+    if (m) openBriefing(m);
+    return;
+  }
+  if (a === 'skipTutorial') { if (tut) tut.skipped = true; renderCoach(); return; }
+  if (a === 'quit') {
+    if (confirm('Abandon this battle?')) { state = null; showScreen('screenTitle'); }
+    return;
+  }
+  if (a === 'pickEmpire') { skirmish.empire = el.dataset.id; if (skirmish.ally === skirmish.empire) skirmish.ally = null; renderSkirmish(); return; }
+  if (a === 'pickAlly') { skirmish.ally = el.dataset.id; renderSkirmish(); return; }
+  if (a === 'pickLevel') { skirmish.level = el.dataset.id; renderSkirmish(); return; }
+  if (a === 'startSkirmish') { startSkirmish(); return; }
+
+  if (!state || state.over || state.active !== ME || busy) return;
+
+  if (a === 'end') { act({ type: 'end' }); if (!state.over) enemyTurn(); return; }
+  if (a === 'hand') {
+    const i = +el.dataset.i;
+    const card = E.CARDS[state.players[ME].hand[i]];
+    if (!card) return;
+    if (card.type === 'yantra' || (card.type === 'order' && card.target !== 'enemyUnit')) { act({ type: 'play', handIndex: i }); return; }
+    sel = (sel && sel.kind === 'hand' && sel.idx === i) ? null : { kind: 'hand', idx: i };
+    render();
+    return;
+  }
+  if (a === 'myUnit') {
+    const uid = +el.dataset.uid;
+    sel = (sel && sel.kind === 'unit' && sel.uid === uid) ? null : { kind: 'unit', uid };
+    render();
+    return;
+  }
+  if (a === 'deploy') { if (sel && sel.kind === 'hand') act({ type: 'play', handIndex: sel.idx }); return; }
+  if (a === 'moveFront') { if (sel && sel.kind === 'unit') act({ type: 'move', uid: sel.uid }); return; }
+  if (a === 'attackUnit') {
+    const uid = +el.dataset.uid, owner = +el.dataset.owner;
+    if (sel && sel.kind === 'unit') { act({ type: 'attack', uid: sel.uid, target: { kind: 'unit', owner, uid } }); return; }
+    if (sel && sel.kind === 'hand') {
+      const card = E.CARDS[state.players[ME].hand[sel.idx]];
+      if (card && card.target === 'enemyUnit') act({ type: 'play', handIndex: sel.idx, target: { kind: 'unit', owner, uid } });
+    }
+    return;
+  }
+  if (a === 'hq') { if (sel && sel.kind === 'unit') act({ type: 'attack', uid: sel.uid, target: { kind: 'hq', owner: FOE } }); return; }
+});
+
+/* ---------------- boot ---------------- */
+M.load();
+syncAudioButtons();
+renderCampaign();
+renderSkirmish();
+renderArmy();
+showScreen('screenTitle');
+</script>
+</body>
+</html>
