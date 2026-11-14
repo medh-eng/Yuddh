@@ -99,7 +99,9 @@ export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: ()
     // tab widths differ, so lay them out by their own widths
     const tabW: number[] = CAMPAIGNS.map(c => { const t = new Text({ text: c.title, style: { fontFamily: FONT_TITLE, fontSize: Math.round(20 * k), fontWeight: '700', letterSpacing: 2 } }); const w = t.width + 40; t.destroy(); return w; });
     const tabTotal = tabW.reduce((a, v) => a + v, 0) + 24 * (CAMPAIGNS.length - 1);
-    let tabX = W / 2 - tabTotal / 2;
+    // more tabs than the screen is wide: shrink the whole strip to fit inside the frame
+    const tabS = Math.min(1, (W - 2 * (ph ? 30 : 50)) / tabTotal);
+    let tabX = W / 2 - (tabTotal * tabS) / 2;
     CAMPAIGNS.forEach((c, i) => {
       const on = c === cur;
       const lab = new Text({ text: c.title, style: { fontFamily: FONT_TITLE, fontSize: Math.round(20 * k), fontWeight: '700', letterSpacing: 2, fill: on ? 0x22150d : INK.goldPale } });
@@ -107,7 +109,8 @@ export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: ()
       const w = lab.width + 40, h = lab.height + 14;
       const pill = new Graphics().roundRect(-w / 2, -h / 2, w, h, 8).fill({ color: on ? INK.gold : 0x24170e, alpha: 0.95 }).stroke({ width: 2, color: INK.gold });
       const tab = new Container(); tab.addChild(pill, lab);
-      tab.position.set(tabX + w / 2, (ph ? 118 : 205) + 30); tabX += tabW[i] + 24;
+      tab.scale.set(tabS);
+      tab.position.set(tabX + (w * tabS) / 2, (ph ? 118 : 205) + 30); tabX += (tabW[i] + 24) * tabS;
       tab.eventMode = 'static'; tab.cursor = 'pointer';
       tab.on('pointertap', () => { if (c === cur) return; audio.unlock(); audio.play('click'); cur = c; void loadBattlefield(c.map ?? c.ground).then(t => { if (alive) stage.setBackdrop(t, c.map ? 0.3 : 0.5); }); void draw(); });
       body.addChild(tab); tabs.push({ id: c.id, c: tab });

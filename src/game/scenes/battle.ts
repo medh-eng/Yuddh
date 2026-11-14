@@ -1975,12 +1975,15 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     }
   };
 
+  // the phone's Back button opens the pause menu during play (see pressBack in ui/button.ts)
+  (window as unknown as { __yuddhPause?: () => boolean }).__yuddhPause = () => { if (overlay || st.over || !alive) return false; pauseMenu(); return true; };
   s.enter = () => start();
   s.leave = () => {
     window.removeEventListener('pointerdown', onWinDown, true); window.removeEventListener('pointerup', onWinUp, true);
     Ticker.shared.remove(weatherTick);
     coachLayer.children.forEach(c => stopTweens(c as Container));
     alive = false;
+    delete (window as unknown as { __yuddhPause?: unknown }).__yuddhPause;
     online?.link.close();
     fx.children.forEach(c => stopTweens(c as Container));
     window.removeEventListener('contextmenu', blockMenu);
