@@ -9,6 +9,8 @@ export const DESIGN_W = 1920;
 export const DESIGN_H = 1080;
 
 export const FONT_SERIF = "'Cormorant Garamond', Georgia, serif";
+/** longer history, chronicle and epilogue copy: literary, but sturdy at phone size */
+export const FONT_STORY = "'Alegreya', Georgia, serif";
 /** titles, names and every number: Cinzel's capitals and lining figures stay crisp at phone size */
 export const FONT_TITLE = "'Cinzel', Georgia, serif";
 /** rules text and coaching: a sturdy humanist sans */

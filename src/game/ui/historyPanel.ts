@@ -3,7 +3,7 @@
    and a source line at the bottom. Also used for the epilogue after a victory
    and for the one-time "history and imagination" notice. */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { FONT_BODY, FONT_SERIF, FONT_TITLE, INK } from '../theme';
+import { FONT_BODY, FONT_STORY, FONT_TITLE, INK } from '../theme';
 import { view } from '../view';
 import { cardFace } from '../cards/paint';
 import { makeButton } from './button';
@@ -52,7 +52,7 @@ function build(spec: Spec): Container {
       const h = new Text({ text: b.head, style: { fontFamily: FONT_TITLE, fontSize: Math.round(f * 0.7 * k), fontWeight: '700', letterSpacing: 4, fill: INK.gold } });
       h.position.set(tx, y); body.addChild(h); y += h.height + 4;
       if (b.text) {
-        const t = new Text({ text: b.text, style: { fontFamily: FONT_SERIF, fontSize: Math.round(f * k), fill: INK.cream, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(f * k * 1.34) } });
+        const t = new Text({ text: b.text, style: { fontFamily: FONT_STORY, fontSize: Math.round(f * k), fontWeight: '500', fill: INK.cream, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(f * k * 1.38) } });
         t.position.set(tx, y); body.addChild(t); y += t.height + (ph ? 8 : 14);
       }
       for (const r of b.rows ?? []) {
@@ -60,7 +60,7 @@ function build(spec: Spec): Container {
         const tw = tg.width + 18, th = tg.height + 6;
         const pill = new Graphics().roundRect(0, 0, tw, th, 5).fill(TAG[r.basis]);
         pill.position.set(tx, y + 2); tg.position.set(tx + 9, y + 5);
-        const t = new Text({ text: r.text, style: { fontFamily: FONT_SERIF, fontSize: Math.round(f * 0.92 * k), fill: INK.cream, wordWrap: true, wordWrapWidth: wrap - 150 * k, lineHeight: Math.round(f * 0.92 * k * 1.3) } });
+        const t = new Text({ text: r.text, style: { fontFamily: FONT_STORY, fontSize: Math.round(f * 0.92 * k), fontWeight: '500', fill: INK.cream, wordWrap: true, wordWrapWidth: wrap - 150 * k, lineHeight: Math.round(f * 0.92 * k * 1.35) } });
         t.position.set(tx + Math.max(tw, 112 * k) + 14, y);
         body.addChild(pill, tg, t); y += Math.max(t.height, th) + (ph ? 6 : 10);
       }

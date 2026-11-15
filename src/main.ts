@@ -4,6 +4,7 @@ import '@fontsource/cormorant-garamond/500.css';
 import '@fontsource/cormorant-garamond/500-italic.css';
 import '@fontsource/cormorant-garamond/600.css';
 import '@fontsource/cormorant-garamond/700.css';
+import '@fontsource/alegreya/500.css';
 import '@fontsource/tiro-devanagari-hindi/400.css';
 import '@fontsource/cinzel/600.css';
 import '@fontsource/cinzel/700.css';
@@ -28,7 +29,7 @@ import type { Scenario } from './campaign/scenario';
 import { audio } from './game/audio';
 import { TUTORIAL } from './campaign/tutorial';
 import { CARD_ART, loadArt, loadBattlefield } from './assets/manifest';
-import { FONT_BODY, FONT_DEVA, FONT_SERIF, FONT_TITLE } from './game/theme';
+import { FONT_BODY, FONT_DEVA, FONT_SERIF, FONT_STORY, FONT_TITLE } from './game/theme';
 
 /** a quiet "loading" line over the screen while something is fetched */
 async function loading<T>(p: Promise<T>): Promise<T> {
@@ -48,6 +49,7 @@ async function boot(): Promise<void> {
         document.fonts.load(`600 40px ${FONT_SERIF}`),
         document.fonts.load(`500 40px ${FONT_SERIF}`),
         document.fonts.load(`italic 500 40px ${FONT_SERIF}`),
+        document.fonts.load(`500 40px ${FONT_STORY}`),
         document.fonts.load(`700 40px ${FONT_TITLE}`),
         document.fonts.load(`600 40px ${FONT_TITLE}`),
         document.fonts.load(`700 40px ${FONT_BODY}`),
