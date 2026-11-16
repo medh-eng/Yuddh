@@ -1,16 +1,19 @@
 /* ============================================================
    Chitrashala, the card gallery: every card in its empire's frame,
-   one empire at a time, over that empire's home battlefield.
+   one empire at a time, over that empire's home battlefield. The cards
+   (and the empire names below) sit in swipeable strips at one large size,
+   so nothing shrinks or crowds however many there are.
    Tap a card to read it at full size. A place for Pon to judge the
    paintings in the game itself; later the seed of the collection.
    ============================================================ */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import gsap from 'gsap';
 import { CARDS, EMPIRES, type CardDef, type EmpireId } from '../../engine';
-import { FONT_SERIF, INK, EMPIRE_STYLE, FONT_TITLE } from '../theme';
+import { FONT_BODY, FONT_SERIF, INK, EMPIRE_STYLE, FONT_TITLE } from '../theme';
 import { view } from '../view';
 import { cardFace, FACE_H, FACE_W } from '../cards/paint';
 import { makeButton } from '../ui/button';
+import { makePan, panHints, type Pan } from '../ui/pan';
 import { inspectOverlay } from '../ui/inspect';
 import { audio } from '../audio';
 import { loadArt, loadBattlefield } from '../../assets/manifest';
@@ -42,7 +45,7 @@ const order = (c: CardDef) => (c.type === 'unit' ? 0 : c.type === 'yantra' ? 2 :
 
 export function galleryScene(stage: Stage, back: () => void): Scene {
   const s: Scene = new Container();
-  let tab = 0, page = 0, alive = true, loadToken = 0;
+  let tab = 0, alive = true, loadToken = 0;
   let inspecting: Container | null = null;
 
   const head = new Container();
@@ -60,58 +63,69 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
   // the Nanda court's cards are neutral in the rules but get their own page
   const cards = (id: TabId) => Object.values(CARDS).filter(c => id === 'nanda' ? c.id.startsWith('nd_') : id === 'seleucid' ? c.id.startsWith('se_') : id === 'naga' ? c.id.startsWith('na_') : id === 'vardhana' ? c.id.startsWith('vd_') : id === 'forest' ? c.id.startsWith('mk_') : id === 'kanchi' ? c.id.startsWith('pk_') : id === 'srivijaya' ? c.id.startsWith('sv_') : id === 'pala' ? c.id.startsWith('pl_') : id === 'sinhala' ? c.id.startsWith('si_') : id === 'ghurid' ? c.id.startsWith('gh_') : id === 'pallava' ? c.id.startsWith('pv_') : id === 'kalinga' ? c.id.startsWith('kl_') : c.empire === id && !/^(nd|se|na|vd|mk|pk|sv|pl|si|gh|pv|kl)_/.test(c.id)).sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name));
 
-  /** How to lay out `n` cards: as large as possible in one or two rows when they all fit
-      on one page, otherwise two rows of the standard size, page by page. */
-  function geometry(n: number) {
+  const slots = new Map<number, Sprite>();
+  let tabOff = 0;
+
+  /** the card strip: one row at one large size, as long as it needs to be */
+  function layoutCards(list: CardDef[]): void {
     const W = view.w, H = view.h, ph = view.phone;
     const top = ph ? 172 : 210, bottom = ph ? 100 : 150;
-    const gap = ph ? 22 : 26, room = W - 200;
-    const make = (rows: number, k: number) => {
-      const ch = FACE_H * k, cw = FACE_W * k;
-      const cols = Math.max(3, Math.floor((room + gap) / (cw + gap) + 1e-6));
-      return { W, H, ph, top, bottom, rows, cols, gap, k, cw, ch, per: rows * cols };
+    const box = { x: 40, y: top, w: W - 80, h: H - top - bottom };
+    const k = Math.min(0.9, (box.h - 30) / FACE_H);
+    const cw = FACE_W * k, gap = ph ? 30 : 40, padX = ph ? 60 : 100;
+    const n = list.length;
+    const contentW = padX * 2 + n * cw + (n - 1) * gap;
+    const offX = contentW <= box.w ? (box.w - contentW) / 2 : 0;
+    const pan: Pan = makePan(box, { keys: true });
+    pan.setWidth(contentW);
+    slots.clear();
+    const xOf = (i: number): number => offX + padX + cw / 2 + i * (cw + gap);
+    const yC = box.h / 2;
+    let first = true;
+    // only the cards near the window are built; the rest are made as they come into view
+    const refresh = (): void => {
+      const lo = pan.offset() - cw * 1.5, hi = pan.offset() + box.w + cw * 1.5;
+      for (let i = 0; i < n; i++) {
+        const x = xOf(i), vis = x + cw / 2 > lo && x - cw / 2 < hi;
+        const have = slots.get(i);
+        if (!vis && have) { destroyTree(have); slots.delete(i); }
+        else if (vis && !have) {
+          const c = list[i];
+          const sp = new Sprite(cardFace(c.id)); sp.anchor.set(0.5); sp.scale.set(k); sp.position.set(x, yC);
+          sp.eventMode = 'static'; sp.cursor = 'pointer';
+          sp.on('pointerover', () => gsap.to(sp.scale, { x: k * 1.04, y: k * 1.04, duration: 0.15 }));
+          sp.on('pointerout', () => gsap.to(sp.scale, { x: k, y: k, duration: 0.15 }));
+          sp.on('pointertap', () => { if (pan.dragged()) return; inspect(c.id); });
+          pan.content.addChild(sp); slots.set(i, sp);
+          if (first) gsap.from(sp, { alpha: 0, y: yC + 20, duration: 0.35, delay: slots.size * 0.04, ease: 'power2.out' });
+        }
+      }
+      first = false;
     };
-    const kBase = (H - top - bottom - gap) / 2 / FACE_H;
-    const fit = (rows: number) => Math.min((H - top - bottom - gap * (rows - 1)) / rows / FACE_H, ((room + gap) / Math.ceil(n / rows) - gap) / FACE_W, 0.62);
-    const best = [1, 2].map(r => ({ r, k: fit(r) })).sort((a, b) => b.k - a.k)[0];
-    if (best.k >= kBase) return make(best.r, best.k);
-    return make(2, kBase);
+    pan.onScroll(refresh);
+    refresh();
+    grid.addChild(pan.view, panHints(pan, { k: view.ui }));
+    const count = new Text({ text: `${n} cards${pan.max() > 0 ? ' · swipe sideways' : ''}`, style: { fontFamily: FONT_BODY, fontSize: Math.round(24 * view.ui), fontWeight: '700', fill: INK.cream, stroke: { color: 0x000000, width: 3 } } });
+    count.anchor.set(1, 1); count.position.set(W - 50, top - 6); count.eventMode = 'none';
+    grid.addChild(count);
   }
 
-  async function show(i: number, p = 0): Promise<void> {
-    tab = i; page = p;
+  async function show(i: number): Promise<void> {
+    const sameTab = i === tab;
+    tab = i;
     const t = TABS[i];
     const token = ++loadToken;
     const list = cards(t.id);
     void loadBattlefield(t.ground).then(tex => { if (alive && token === loadToken) stage.setBackdrop(tex, 0.5); });
-    drawTabs(); drawHead();
+    drawTabs(sameTab); drawHead();
     grid.removeChildren().forEach(c => destroyTree(c as Container));
+    slots.clear();
     const wait = new Text({ text: 'Unrolling the paintings…', style: { fontFamily: FONT_SERIF, fontSize: Math.round(26 * view.ui), fontStyle: 'italic', fill: INK.cream } });
     wait.anchor.set(0.5); wait.position.set(view.w / 2, view.h / 2); grid.addChild(wait);
     await loadArt(list.map(c => c.id));
     if (!alive || token !== loadToken) return;
     grid.removeChildren().forEach(c => destroyTree(c as Container));
-    const g = geometry(list.length);
-    const pages = Math.max(1, Math.ceil(list.length / g.per));
-    page = Math.min(page, pages - 1);
-    const shown = list.slice(page * g.per, (page + 1) * g.per);
-    // fewer rows than fit: centre them in the space between the header and the tabs
-    const rowsUsed = Math.ceil(shown.length / g.cols);
-    const y0 = g.top + (g.H - g.top - g.bottom - (rowsUsed * g.ch + (rowsUsed - 1) * g.gap)) / 2;
-    shown.forEach((c, n) => {
-      const r = Math.floor(n / g.cols), col = n % g.cols;
-      const inRow = Math.min(g.cols, shown.length - r * g.cols);
-      const x = g.W / 2 + (col - (inRow - 1) / 2) * (g.cw + g.gap);
-      const y = y0 + g.ch / 2 + r * (g.ch + g.gap);
-      const sp = new Sprite(cardFace(c.id)); sp.anchor.set(0.5); sp.scale.set(g.k); sp.position.set(x, y);
-      sp.eventMode = 'static'; sp.cursor = 'pointer';
-      sp.on('pointerover', () => gsap.to(sp.scale, { x: g.k * 1.05, y: g.k * 1.05, duration: 0.15 }));
-      sp.on('pointerout', () => gsap.to(sp.scale, { x: g.k, y: g.k, duration: 0.15 }));
-      sp.on('pointertap', () => inspect(c.id));
-      grid.addChild(sp);
-      gsap.from(sp, { alpha: 0, y: y + 20, duration: 0.35, delay: n * 0.03, ease: 'power2.out' });
-    });
-    drawNav(pages, g);
+    layoutCards(list);
   }
 
   function drawHead(): void {
@@ -140,41 +154,30 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
     shade.clear().rect(0, 0, W, ph ? 168 : 205).fill({ color: 0x0a0604, alpha: 0.55 });
   }
 
-  function drawTabs(): void {
+  function drawTabs(keepScroll: boolean): void {
     tabs.removeChildren().forEach(c => destroyTree(c as Container));
-    const ph = view.phone, W = view.w, H = view.h;
-    const gap = ph ? 12 : 16;
-    const w = ph ? Math.min(170, (W - 80 - gap * 5) / TABS.length / view.ui) : 210;
-    const total = TABS.length * (w * view.ui) + (TABS.length - 1) * gap;
+    nav.removeChildren().forEach(c => destroyTree(c as Container));
+    const ph = view.phone, W = view.w, H = view.h, k = view.ui;
+    const gap = ph ? 14 : 18, w = ph ? 190 : 210, step = w * k + gap;
+    const box = { x: 40, y: H - (ph ? 100 : 134), w: W - 80, h: ph ? 96 : 120 };
+    const pan = makePan(box);
+    const contentW = TABS.length * step - gap + 24;
+    pan.setWidth(contentW);
     TABS.forEach((t, i) => {
-      const b = makeButton(t.name, () => { audio.play('click'); void show(i, 0); }, { w, primary: i === tab });
-      b.position.set(W / 2 - total / 2 + (w * view.ui) / 2 + i * (w * view.ui + gap), H - (ph ? 48 : 70));
-      tabs.addChild(b);
+      const b = makeButton(t.name, () => { if (pan.dragged()) return; audio.play('click'); void show(i); }, { w, primary: i === tab });
+      b.position.set(12 + (w * k) / 2 + i * step, box.h / 2);
+      pan.content.addChild(b);
     });
+    const want = 12 + tab * step + (w * k) / 2 - box.w / 2;
+    pan.scrollTo(keepScroll ? tabOff : want, false);
+    pan.onScroll(() => { tabOff = pan.offset(); });
+    tabOff = pan.offset();
+    tabs.addChild(pan.view);
+    nav.addChild(panHints(pan, { k, cy: box.y + box.h / 2, r: 26 * k, bar: false }));
     const bk = makeButton('Back', back, { w: ph ? 150 : 170 });
     bk.position.set(W - (ph ? 112 : 120), ph ? 60 : 70);
     if (ph) bk.position.set(W - 104, 52);
     tabs.addChild(bk);
-  }
-
-  function drawNav(pages: number, g: ReturnType<typeof geometry>): void {
-    nav.removeChildren().forEach(c => destroyTree(c as Container));
-    if (pages < 2) return;
-    const arrowBtn = (dir: -1 | 1) => {
-      const c = new Container();
-      const r = 34 * view.ui;
-      const enabled = dir < 0 ? page > 0 : page < pages - 1;
-      c.addChild(new Graphics().circle(0, 0, r).fill({ color: 0x140c07, alpha: 0.85 }).stroke({ width: 2, color: INK.gold, alpha: enabled ? 1 : 0.3 }));
-      const t = new Text({ text: dir < 0 ? '‹' : '›', style: { fontFamily: FONT_TITLE, fontSize: Math.round(54 * view.ui), fontWeight: '700', fill: INK.goldPale } });
-      t.anchor.set(0.5, 0.56); t.alpha = enabled ? 1 : 0.3; c.addChild(t);
-      c.position.set(dir < 0 ? (g.ph ? 60 : 80) : g.W - (g.ph ? 60 : 80), g.top + (g.H - g.top - g.bottom) / 2);
-      if (enabled) { c.eventMode = 'static'; c.cursor = 'pointer'; c.on('pointertap', () => { audio.play('cardDraw'); void show(tab, page + dir); }); }
-      nav.addChild(c);
-    };
-    arrowBtn(-1); arrowBtn(1);
-    const pg = new Text({ text: `${page + 1} / ${pages}`, style: { fontFamily: FONT_TITLE, fontSize: Math.round(22 * view.ui), fill: INK.cream, stroke: { color: 0x000000, width: 3 } } });
-    pg.anchor.set(0.5); pg.position.set(g.W - (g.ph ? 60 : 80), g.top + (g.H - g.top - g.bottom) / 2 + 34 * view.ui + 26);
-    nav.addChild(pg);
   }
 
   function inspect(id: string): void {
@@ -184,7 +187,8 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
     s.addChild(inspecting);
   }
 
-  s.relayout = () => { if (inspecting) { destroyTree(inspecting); inspecting = null; } void show(tab, page); };
+  s.relayout = () => { if (inspecting) { destroyTree(inspecting); inspecting = null; } void show(tab); };
+  (window as unknown as { __yuddhGalleryTab: (name: string) => void }).__yuddhGalleryTab = name => { const i = TABS.findIndex(t => t.name === name); if (i >= 0) void show(i); };
   s.enter = () => { audio.playMusic('music_title'); void show(0); };
   s.leave = () => { alive = false; };
   return s;

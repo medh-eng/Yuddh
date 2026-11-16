@@ -40,7 +40,7 @@ const [url = 'http://localhost:4173/', out = '.', W = '1600', H = '900'] = proce
   await press('Chola'); await p.waitForTimeout(2200); await shot('03-gallery-chola');
   await p.mouse.click(+W * 0.44, +H * 0.42); await p.waitForTimeout(700); await shot('04-gallery-inspect');
   await p.mouse.click(10, 10); await p.waitForTimeout(400);
-  await press('Neutral'); await p.waitForTimeout(2000); await shot('05-gallery-neutral');
+  await p.evaluate(() => window.__yuddhGalleryTab('Neutral')); await p.waitForTimeout(2000); await shot('05-gallery-neutral');
   // at a few frames a second a tap can land while the gallery is still drawing; press Back until the title is back
   for (let k = 0; k < 8; k++) {
     const bs = await p.evaluate(() => window.__yuddhButtons());

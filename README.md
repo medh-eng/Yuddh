@@ -34,6 +34,7 @@ Read `DESIGN.md` (what the game is), `TASKS.md` (what is next), `CLAUDE.md` (wor
 | Two-phone play (WebRTC, QR/paste pairing, lockstep) | `src/game/net/link.ts` (link + codes), `src/game/net/pairing.ts` (pairing overlay + handshake), `src/engine/duel.ts` (`mirrorAction`, `syncHash`), `src/game/scenes/battle.ts` (`online`, `pump`, `applyRemote`, `netLost`); test `tests/e2e/online.cjs`; Duel balance levers (`hq`, `kosha`, and the deck edits `add`/`trim` per faction): `src/data/duel.json`, padding in `src/campaign/duel.ts` |
 | The Android app (Play Store APK/AAB) | `capacitor.config.ts`, `android/` (manifest: landscape + camera; MainActivity: immersive fullscreen; app/build.gradle: version from CI, signing from secrets); built by the `android` GitHub Actions workflow, instructions in `DESIGN.md` "Google Play" |
 | How a screen looks | `src/game/scenes/` (title, campaign, standing, battle, gallery), `src/game/cards/` (card faces, tokens), `src/game/theme.ts` |
+| Sideways-swipe strips (campaign map, gallery cards and faction names) | `src/game/ui/pan.ts` (`makePan`, `panHints`); tap handlers inside must check `pan.dragged()` |
 | Art or sound | Drop masters in `art/source/{cards,battlefields,sfx}/`, run `npm run assets`, commit `public/assets/` and `src/assets/*.json` |
 
 ```

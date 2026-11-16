@@ -47,7 +47,7 @@ export function makeButton(label: string, onTap: () => void, opts: { w?: number;
 
 /** The phone's own Back (button or swipe), called by the Android shell: press the on-screen way back.
     Returns 'exit' when there is nothing to go back to (the title screen), so the shell can close the app. */
-const BACK_LABELS = ['Understood', 'Resume', 'Back', 'Change player 1', 'Title screen'];
+const BACK_LABELS = ['Close', 'Understood', 'Resume', 'Back', 'Change player 1', 'Title screen'];
 export function pressBack(): 'ok' | 'exit' {
   // the two-phone pairing panel is plain HTML laid over the game
   const dom = document.querySelector<HTMLButtonElement>('#yp #b');
