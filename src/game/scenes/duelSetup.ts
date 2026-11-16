@@ -6,7 +6,7 @@
    picker for the playtest.
    ============================================================ */
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { FONT_BODY, FONT_DEVA, FONT_SERIF, FONT_TITLE, INK } from '../theme';
+import { FONT_BODY, FONT_DEVA, FONT_STORY, FONT_TITLE, INK } from '../theme';
 import { view } from '../view';
 import { cardFace, FACE_H, FACE_W } from '../cards/paint';
 import { makeButton } from '../ui/button';
@@ -77,7 +77,7 @@ export function duelSetupScene(stage: Stage, back: () => void, begin: (a: Factio
       nm.position.set(margin + 20, iy); hi.position.set(nm.x + nm.width + 24, iy + 2); bl.position.set(margin + 20, iy + nm.height + 6);
       body.addChild(nm, hi, bl);
     } else {
-      const hint = new Text({ text: 'Tap a faction to see what it plays like.', style: { fontFamily: FONT_SERIF, fontSize: Math.round(28 * k), fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 3 } } });
+      const hint = new Text({ text: 'Tap a faction to see what it plays like.', style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(28 * k), fontStyle: 'italic', fill: INK.creamBright, stroke: { color: 0x000000, width: 3 } } });
       hint.position.set(margin + 20, iy); body.addChild(hint);
     }
 
@@ -93,7 +93,7 @@ export function duelSetupScene(stage: Stage, back: () => void, begin: (a: Factio
     }, { primary: true, w: 400, ui: ph ? 1 : 1 });
     go.position.set(W / 2, H - (ph ? 44 : 70)); go.alpha = ready ? 1 : 0.4;
     body.addChild(go);
-    const note = new Text({ text: solo ? 'Choose the faction you will command. Your friend chooses theirs on their own phone.' : step === 0 ? 'Player 1 moves first. Player 2 will choose next, so look away if you like.' : 'Player 2 draws one extra card to offset moving second.', style: { fontFamily: FONT_SERIF, fontSize: Math.round(22 * k), fontStyle: 'italic', fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
+    const note = new Text({ text: solo ? 'Choose the faction you will command. Your friend chooses theirs on their own phone.' : step === 0 ? 'Player 1 moves first. Player 2 will choose next, so look away if you like.' : 'Player 2 draws one extra card to offset moving second.', style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(22 * k), fontStyle: 'italic', fill: INK.gold, stroke: { color: 0x000000, width: 3 } } });
     note.anchor.set(0.5); note.position.set(W / 2, H - (ph ? 116 : 128));
     body.addChild(note);
   }

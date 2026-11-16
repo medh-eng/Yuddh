@@ -2,6 +2,13 @@
 
 *Updated at the end of each session (last: 16 Nov 2026). Design and rules: `DESIGN.md`.*
 
+## Done 16 Nov (later): story font, scrolling text, briefing Back
+- **Font**: it was NOT done before (history and briefing used Cormorant and shrank to 17). Now `FONT_STORY` = **Alegreya 500** (`@fontsource/alegreya`; italic 500 for sources/objectives, `INK.creamBright` text, line height 1.4, no letter spacing) for History, epilogue, chronicle, notice, briefing story and objective, end-screen lines, gallery descriptions, duel hints and the campaign place/year. Cinzel stays for titles and headings, Alegreya Sans for buttons and labels. Cormorant (`FONT_SERIF`) remains only for the title screen note, the defeat reason caption and the old AI-vs-AI preview.
+- **No more shrinking below readable**: the History panel body floors at 21 (was 17) and the briefing story at 24 (was 22); if the text still does not fit it **scrolls** (`makePan` with `axis: 'y'`, drag/wheel/arrow keys, `panBar` shows a thin position bar). Sources line floors at 17 (was 13).
+- **B1 fixed**: the battle briefing has a **Back** button (to the campaign map, the duel faction picker, or the title; not shown in two-phone play). `pressBack` now presses the newest matching button, so the History panel's Back is the one the phone Back uses.
+- Checked at 732×412, 640×360 and 1280×720 (screenshots); 134 tests, typecheck, build clean.
+- [ ] Still open: bigger keyword badges + clearer Vega mark (also on hand cards), "Know your card" first-run screen, persistent Dharma–Kuta panel, "How to play". Battle-screen font sizes need the boy's device model and screenshots.
+
 ## Done 16 Nov: swipeable campaign map and gallery (from a first-time player's feedback)
 - A 14-year-old's first look found the campaign cards and gallery cards too small and crowded. Plan: project doc `claude/yuddh-first-player-feedback-plan.md`. Pon's decisions: campaign stays **unlocked**; cards stay **large**; screens **swipe sideways** instead of shrinking; **one empire shown, the others behind "More empires"**.
 - New `src/game/ui/pan.ts` (`makePan`, `panHints`): clipped sideways strip, drag with momentum, wheel, arrow keys, edge arrows, position bar. A tap inside must check `pan.dragged()` so a swipe never presses a card.

@@ -26,7 +26,8 @@ import { markTutorialDone } from '../../campaign/tutorial';
 import { battlesWon, empireOfBattle, markBattleWon } from '../../campaign/campaign';
 import { EMPIRES as RENOWN_EMPIRES, standing, type Gain } from '../../meta/standing';
 import { foeLevel, setVeteranFoe, veteranFoe } from '../../campaign/difficulty';
-import { FONT_SERIF, INK, FONT_TITLE, FONT_BODY } from '../theme';
+import { FONT_SERIF, FONT_STORY, INK, FONT_TITLE, FONT_BODY } from '../theme';
+import { makePan, panBar } from '../ui/pan';
 import { view, type View } from '../view';
 import { audio, type Sfx, type Track } from '../audio';
 import { cardFace } from '../cards/paint';
@@ -499,21 +500,29 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const tx = L.phone ? 40 + 480 * as + 60 : 860, wrap = L.phone ? W - tx - 50 : 820;
     const t1 = new Text({ text: `${sc.place.toUpperCase()} · ${sc.year.toUpperCase()}`, style: { fontFamily: FONT_TITLE, fontSize: Math.round(22 * k), fontWeight: '700', letterSpacing: 8, fill: INK.gold } });
     const t2 = new Text({ text: sc.title, style: { fontFamily: FONT_TITLE, fontSize: 86, fontWeight: '700', fill: INK.goldPale } });
-    const t3 = new Text({ text: sc.briefing, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * k), fill: INK.cream, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(42 * k) } });
-    const t4 = new Text({ text: sc.objective, style: { fontFamily: FONT_SERIF, fontSize: Math.round(26 * k), fontStyle: 'italic', fill: INK.gold, wordWrap: true, wordWrapWidth: wrap } });
+    const t3 = new Text({ text: sc.briefing, style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(30 * k), fill: INK.creamBright, wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(42 * k) } });
+    const t4 = new Text({ text: sc.objective, style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(27 * k), fontStyle: 'italic', fill: INK.gold, wordWrap: true, wordWrapWidth: wrap } });
     const ss = SEASONS[st.season ?? 'sharad'];
     const t5 = new Text({ text: `${ss.name.toUpperCase()} · ${ss.english.toUpperCase()}\n${ss.rule}`, style: { fontFamily: FONT_BODY, fontSize: Math.round(24 * k), fontWeight: '700', fill: SEASON_TINT[st.season ?? 'sharad'], wordWrap: true, wordWrapWidth: wrap, lineHeight: Math.round(32 * k) } });
-    if (L.phone) {
-      t2.style.fontSize = 76; t1.position.set(tx, 34); t2.position.set(tx - 4, 64);
-      while (t2.width > W - tx - 24 && +t2.style.fontSize > 48) t2.style.fontSize = +t2.style.fontSize - 2;
-      // long briefings step their type down so the season and the button still fit
-      for (let f = 30; f >= 22; f -= 2) {
-        t3.style.fontSize = Math.round(f * k); t3.style.lineHeight = Math.round(f * k * 1.36);
-        t3.position.set(tx, 166); t4.position.set(tx, t3.y + t3.height + 14); t5.position.set(tx, t4.y + t4.height + 14);
-        if (t5.y + t5.height + 110 <= H) break;
-      }
-    } else { while (t2.width > W - tx - 40 && +t2.style.fontSize > 48) t2.style.fontSize = +t2.style.fontSize - 2; // long titles step down to fit
-      t1.position.set(tx, 260); t2.position.set(tx - 4, 296); t3.position.set(tx, 420); t4.position.set(tx, t3.y + t3.height + 24); t5.position.set(tx, t4.y + t4.height + 22); }
+    t2.style.fontSize = L.phone ? 76 : 86;
+    while (t2.width > (L.phone ? W - tx - 24 : W - tx - 40) && +t2.style.fontSize > 48) t2.style.fontSize = +t2.style.fontSize - 2; // long titles step down to fit
+    t1.position.set(tx, L.phone ? 34 : 260); t2.position.set(tx - 4, L.phone ? 64 : 296);
+    // the story text keeps a readable size; if it still does not fit above the button it scrolls
+    const goY = H - (L.phone ? 56 : 90);
+    const textTop = L.phone ? 166 : 420, textAvail = goY - (L.phone ? 52 : 60) * (L.phone ? 1 : k) - textTop;
+    const blk = new Container();
+    blk.addChild(t3, t4, t5);
+    let blkH = 0;
+    for (let f = 30; f >= 24; f -= 2) {
+      t3.style.fontSize = Math.round(f * k); t3.style.lineHeight = Math.round(f * k * 1.4);
+      t4.style.fontSize = Math.round((f - 3) * k);
+      t3.position.set(0, 0); t4.position.set(0, t3.height + (L.phone ? 14 : 24)); t5.position.set(0, t4.y + t4.height + (L.phone ? 14 : 22));
+      blkH = t5.y + t5.height;
+      if (blkH <= textAvail) break;
+    }
+    const bpan = makePan({ x: tx, y: textTop, w: wrap + 12, h: textAvail }, { axis: 'y', keys: true });
+    bpan.content.addChild(blk); bpan.setWidth(blkH);
+    const shownH = Math.min(blkH, textAvail);
     const go = makeButton(sc.goLabel, () => {
       audio.unlock(); audio.play('conch');
       audio.playMusic(tune('calm', 'music_battle_calm'));
@@ -527,8 +536,15 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
         }
       });
     }, { primary: true, w: 340 });
-    go.position.set(L.phone ? tx + 215 : 1030, Math.min(H - (L.phone ? 56 : 90), t5.y + t5.height + (L.phone ? 70 : 80)));
-    panel.addChild(dim, art, t1, t2, t3, t4, t5, go);
+    go.position.set(L.phone ? tx + 215 : 1030, Math.min(goY, textTop + shownH + (L.phone ? 70 : 80)));
+    panel.addChild(dim, art, t1, t2, bpan.view, panBar(bpan, tx + wrap + 16), go);
+    if (!online) {
+      // a way back: to the campaign map (or the faction picker in a duel, or the title)
+      const leave = nav?.map ?? nav?.setup ?? nav?.title ?? exit;
+      const bkb = makeButton('Back', () => { audio.play('click'); leave(); }, { w: 170, ui: L.phone ? 0.85 : 1 });
+      bkb.position.set(L.phone ? W - 118 : W - 190, goY);
+      panel.addChild(bkb);
+    }
     if (historyOf(sc.id)) {
       const hb = makeButton('History', () => showHistory(), { w: 190, ui: L.phone ? 0.85 : 1 });
       hb.position.set(L.phone ? W - 118 : W - 190, L.phone ? 40 : 70);
@@ -551,7 +567,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     s.addChild(panel);
     overlay = { kind: 'briefing', view: panel };
     if (animate) {
-      gsap.from([t1, t2, t3, t4, t5, go], { alpha: 0, y: '+=24', duration: 0.8, stagger: 0.1, ease: 'power2.out' });
+      gsap.from([t1, t2, blk, go], { alpha: 0, y: '+=24', duration: 0.8, stagger: 0.1, ease: 'power2.out' });
       gsap.from(art, { alpha: 0, x: '-=60', duration: 0.9, ease: 'power2.out' });
     }
   }
@@ -1758,7 +1774,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const tx = ph ? W * 0.5 : W * 0.5;
     const t1 = new Text({ text: 'PASS THE DEVICE TO', style: { fontFamily: FONT_TITLE, fontSize: Math.round(26 * k), fontWeight: '700', letterSpacing: 10, fill: INK.gold } });
     const t2 = new Text({ text: side.name.toUpperCase(), style: { fontFamily: FONT_TITLE, fontSize: Math.round(80 * k), fontWeight: '700', fill: INK.goldPale, wordWrap: true, wordWrapWidth: W - tx - 60 } });
-    const t3 = new Text({ text: 'The other commander should look away. Tap when you hold the device and are ready to see your hand.', style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * (ph ? 0.9 : 1)), fontStyle: 'italic', fill: INK.cream, wordWrap: true, wordWrapWidth: W - tx - 80, lineHeight: Math.round(40 * (ph ? 0.9 : 1)) } });
+    const t3 = new Text({ text: 'The other commander should look away. Tap when you hold the device and are ready to see your hand.', style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(30 * (ph ? 0.9 : 1)), fontStyle: 'italic', fill: INK.creamBright, wordWrap: true, wordWrapWidth: W - tx - 80, lineHeight: Math.round(40 * (ph ? 0.9 : 1)) } });
     t1.position.set(tx, H / 2 - t2.height / 2 - 70 * k); t2.position.set(tx, t1.y + t1.height + 12); t3.position.set(tx, t2.y + t2.height + 18);
     const go = makeButton('I am ready', () => {
       audio.play('conch');
@@ -1783,7 +1799,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const title = new Text({ text: `${win.name.toUpperCase()} WINS`, style: { fontFamily: FONT_TITLE, fontSize: ph ? 72 : 100, fontWeight: '700', letterSpacing: 10, fill: INK.goldPale, stroke: { color: 0x000000, width: 8 } } });
     title.anchor.set(0.5); title.position.set(W / 2, ph ? 345 : 675);
     if (title.width > W - 120) title.scale.set((W - 120) / title.width);
-    const sub = new Text({ text: `The Durg of ${duel!.sides[(1 - winnerReal) as 0 | 1].name} falls in turn ${st.turn}.`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * (ph ? 1.1 : 1)), fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - 200 } });
+    const sub = new Text({ text: `The Durg of ${duel!.sides[(1 - winnerReal) as 0 | 1].name} falls in turn ${st.turn}.`, style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(30 * (ph ? 1.1 : 1)), fontStyle: 'italic', fill: INK.creamBright, align: 'center', wordWrap: true, wordWrapWidth: W - 200 } });
     sub.anchor.set(0.5); sub.position.set(W / 2, ph ? 442 : 775);
     const kk = ph ? 1.1 : 1, w = ph ? 230 : 300;
     const btns: Container[] = online ? [makeButton('Title screen', nav ? nav.title : exit, { primary: true, w: 340, ui: kk })] : [makeButton('Rematch', () => { overlay = null; destroyTree(c); busy = false; start(); }, { primary: true, w: 340, ui: kk })];
@@ -1832,7 +1848,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     if (ph) title.style.fontSize = 80;
     const sub = new Text({
       text: won ? sc.winText(st.turn) : sc.loseText,
-      style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * (ph ? 1.1 : L.ui)), fontStyle: 'italic', fill: INK.cream, align: 'center', wordWrap: true, wordWrapWidth: W - (ph ? 260 : 200) }
+      style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(30 * (ph ? 1.1 : L.ui)), fontStyle: 'italic', fill: INK.creamBright, align: 'center', wordWrap: true, wordWrapWidth: W - (ph ? 260 : 200) }
     });
     sub.anchor.set(0.5); sub.position.set(W / 2, ph ? 442 : 775);
     if (won && sc.coached) markTutorialDone();
@@ -1898,7 +1914,7 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const dim = new Graphics().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.72 }); dim.eventMode = 'static';
     const t = new Text({ text: 'PAUSED', style: { fontFamily: FONT_TITLE, fontSize: ph ? 72 : 88, fontWeight: '700', letterSpacing: 16, fill: INK.goldPale, stroke: { color: 0x000000, width: 6 } } });
     t.anchor.set(0.5); t.position.set(W / 2, ph ? H * 0.2 : H * 0.22);
-    const sub = new Text({ text: sc.title, style: { fontFamily: FONT_SERIF, fontSize: Math.round(30 * L.ui), fontStyle: 'italic', fill: INK.cream } });
+    const sub = new Text({ text: sc.title, style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(30 * L.ui), fontStyle: 'italic', fill: INK.cream } });
     sub.anchor.set(0.5); sub.position.set(W / 2, t.y + (ph ? 62 : 74));
     c.addChild(dim, t, sub);
     const items: [string, () => void, boolean][] = [['Resume', close, true]];

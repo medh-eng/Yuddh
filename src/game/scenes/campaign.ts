@@ -8,7 +8,7 @@
    ============================================================ */
 import { Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import gsap from 'gsap';
-import { FONT_BODY, FONT_SERIF, FONT_TITLE, INK } from '../theme';
+import { FONT_BODY, FONT_STORY, FONT_TITLE, INK } from '../theme';
 import { view } from '../view';
 import { cardFace, FACE_H, FACE_W } from '../cards/paint';
 import { makeButton } from '../ui/button';
@@ -165,7 +165,7 @@ export function campaignScene(stage: Stage, go: (sc: Scenario) => void, back: ()
       const t1 = new Text({ text: sc.title, style: { fontFamily: FONT_TITLE, fontSize: Math.round(28 * k), fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 4 }, align: 'center' } });
       t1.anchor.set(0.5, 0); t1.position.set(0, ch / 2 + (ph ? 8 : 14));
       if (t1.width > room) t1.scale.set(room / t1.width);
-      const t2 = new Text({ text: `${sc.place} · ${sc.year}`, style: { fontFamily: FONT_SERIF, fontSize: Math.round(24 * k), fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 3 }, align: 'center' } });
+      const t2 = new Text({ text: `${sc.place} · ${sc.year}`, style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(24 * k), fontStyle: 'italic', fill: INK.creamBright, stroke: { color: 0x000000, width: 3 }, align: 'center' } });
       t2.anchor.set(0.5, 0); t2.position.set(0, t1.y + t1.height * t1.scale.y + 2);
       if (t2.width > room) t2.scale.set(room / t2.width);
       c.addChild(t1, t2);

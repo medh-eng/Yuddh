@@ -118,3 +118,6 @@ Since Durg hit points could not offset a whole deck (the strongest factions won 
 
 ## Swipeable campaign map and gallery (16 Nov 2026)
 Rule: **screens that hold many things scroll sideways at one large size; they never shrink the things to fit.** Built on `src/game/ui/pan.ts`. The campaign shows one empire at a time (the story's next one first) with a **More empires** picker; everything stays unlocked (replay any battle, start anywhere), with NEXT and WON marks only. The gallery is one row of large cards plus a swipeable strip of faction names. Reason: a first-time 14-year-old found the earlier tiny cards and 18 squeezed tabs hard to read on a phone.
+
+## Reading text (16 Nov 2026)
+Story paragraphs use Alegreya Medium (500) in a slightly brighter cream, line height 1.4, no letter spacing; Cinzel keeps titles and headings; Alegreya Sans keeps buttons and labels. Text never shrinks below a readable floor (History 21, briefing 24, sources 17 design px before the phone's `ui` scale); if it does not fit it scrolls. Cormorant remains only for one-line dramatic captions. Reason: Cormorant's thin strokes were hard to read on a phone.

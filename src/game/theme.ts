@@ -8,7 +8,10 @@ import type { EmpireId } from '../engine';
 export const DESIGN_W = 1920;
 export const DESIGN_H = 1080;
 
+/** one-line dramatic captions only: Cormorant's thin strokes fade on a phone */
 export const FONT_SERIF = "'Cormorant Garamond', Georgia, serif";
+/** history, story and chronicle paragraphs (use weight 500): Alegreya is clearer than Cormorant on a phone */
+export const FONT_STORY = "'Alegreya', Georgia, serif";
 /** titles, names and every number: Cinzel's capitals and lining figures stay crisp at phone size */
 export const FONT_TITLE = "'Cinzel', Georgia, serif";
 /** rules text and coaching: a sturdy humanist sans */
@@ -22,6 +25,8 @@ export const INK = {
   gold: 0xd4a94f,
   goldPale: 0xf0d79a,
   cream: 0xf3e6c8,
+  /** story paragraphs: a little brighter than cream */
+  creamBright: 0xfbf3df,
   vermilion: 0xc2412d,
   lapis: 0x23407a,
   malachite: 0x2f7d5b,

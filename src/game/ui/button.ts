@@ -54,7 +54,7 @@ export function pressBack(): 'ok' | 'exit' {
   if (dom) { dom.click(); return 'ok'; }
   const visible = [...live].filter(b => !b.destroyed && b.parent && shownOnScreen(b));
   for (const label of BACK_LABELS) {
-    const b = visible.find(x => x.label === label);
+    const b = visible.filter(x => x.label === label).pop(); // the newest one is the one on top
     if (b) { b.emit('pointertap', {} as never); return 'ok'; }
   }
   const pause = (window as unknown as { __yuddhPause?: () => boolean }).__yuddhPause;

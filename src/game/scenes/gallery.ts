@@ -9,7 +9,7 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import gsap from 'gsap';
 import { CARDS, EMPIRES, type CardDef, type EmpireId } from '../../engine';
-import { FONT_BODY, FONT_SERIF, INK, EMPIRE_STYLE, FONT_TITLE } from '../theme';
+import { FONT_BODY, FONT_STORY, INK, EMPIRE_STYLE, FONT_TITLE } from '../theme';
 import { view } from '../view';
 import { cardFace, FACE_H, FACE_W } from '../cards/paint';
 import { makeButton } from '../ui/button';
@@ -56,7 +56,7 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
 
   const kicker = new Text({ text: 'CHITRASHALA · THE CARD GALLERY', style: { fontFamily: FONT_TITLE, fontSize: 20, fontWeight: '700', letterSpacing: 8, fill: INK.gold, stroke: { color: 0x000000, width: 4 } } });
   const name = new Text({ text: '', style: { fontFamily: FONT_TITLE, fontSize: 72, fontWeight: '700', fill: INK.goldPale, stroke: { color: 0x000000, width: 6 } } });
-  const line = new Text({ text: '', style: { fontFamily: FONT_SERIF, fontSize: 24, fontStyle: 'italic', fill: INK.cream, stroke: { color: 0x000000, width: 4 }, wordWrap: true, wordWrapWidth: 1200 } });
+  const line = new Text({ text: '', style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: 24, fontStyle: 'italic', fill: INK.creamBright, stroke: { color: 0x000000, width: 4 }, wordWrap: true, wordWrapWidth: 1200 } });
   const shade = new Graphics();
   head.addChild(shade, kicker, name, line);
 
@@ -120,7 +120,7 @@ export function galleryScene(stage: Stage, back: () => void): Scene {
     drawTabs(sameTab); drawHead();
     grid.removeChildren().forEach(c => destroyTree(c as Container));
     slots.clear();
-    const wait = new Text({ text: 'Unrolling the paintings…', style: { fontFamily: FONT_SERIF, fontSize: Math.round(26 * view.ui), fontStyle: 'italic', fill: INK.cream } });
+    const wait = new Text({ text: 'Unrolling the paintings…', style: { fontFamily: FONT_STORY, fontWeight: '500', fontSize: Math.round(26 * view.ui), fontStyle: 'italic', fill: INK.cream } });
     wait.anchor.set(0.5); wait.position.set(view.w / 2, view.h / 2); grid.addChild(wait);
     await loadArt(list.map(c => c.id));
     if (!alive || token !== loadToken) return;

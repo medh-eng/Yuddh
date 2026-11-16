@@ -1,4 +1,4 @@
-/* A sideways-swipeable strip: a clipped window onto a wider `content`
+/* A swipeable strip (sideways by default, or `axis: 'y'` for text that scrolls down): a clipped window onto a wider `content`
    container. Drag (mouse or finger) with a little momentum, wheel, arrow
    keys, or the edge arrows. Things inside keep one fixed, large size and the
    strip simply gets longer, instead of everything shrinking to fit.
@@ -14,6 +14,7 @@ export interface Pan {
   /** put the strip's contents here; x runs from the strip's left edge */
   content: Container;
   box: PanBox;
+  /** the full length of the content along the scroll direction (sideways for 'x', downwards for 'y') */
   setWidth(contentW: number): void;
   offset(): number;
   max(): number;
@@ -24,7 +25,9 @@ export interface Pan {
   onScroll(cb: () => void): void;
 }
 
-export function makePan(box: PanBox, opts: { keys?: boolean } = {}): Pan {
+export function makePan(box: PanBox, opts: { keys?: boolean; axis?: 'x' | 'y' } = {}): Pan {
+  const vert = opts.axis === 'y';
+  const span = vert ? box.h : box.w;
   const view = new Container();
   view.position.set(box.x, box.y);
   const content = new Container();
@@ -34,15 +37,15 @@ export function makePan(box: PanBox, opts: { keys?: boolean } = {}): Pan {
   view.eventMode = 'static';
   view.hitArea = new Rectangle(0, 0, box.w, box.h);
 
-  let width = box.w, off = 0;
+  let width = span, off = 0;
   let down = false, moved = false, startX = 0, startOff = 0, lastX = 0, lastT = 0, vel = 0;
   const listeners: (() => void)[] = [];
   const state = { v: 0 };
-  const max = (): number => Math.max(0, width - box.w);
+  const max = (): number => Math.max(0, width - span);
   const stop = (): void => { gsap.killTweensOf(state); };
   const apply = (o: number): void => {
     if (content.destroyed) return;
-    off = o; content.x = -o;
+    off = o; if (vert) content.y = -o; else content.x = -o;
     listeners.forEach(f => f());
   };
   const rubber = (o: number): number => (o < 0 ? o * 0.35 : o > max() ? max() + (o - max()) * 0.35 : o);
@@ -51,7 +54,7 @@ export function makePan(box: PanBox, opts: { keys?: boolean } = {}): Pan {
     stop(); state.v = off;
     gsap.to(state, { v: to, duration: dur, ease: 'power3.out', onUpdate: () => apply(state.v) });
   };
-  const lx = (e: { global: { x: number; y: number } }): number => view.toLocal(e.global).x;
+  const lx = (e: { global: { x: number; y: number } }): number => { const p = view.toLocal(e.global); return vert ? p.y : p.x; };
 
   view.on('pointerdown', e => {
     stop(); down = true; moved = false; startX = lx(e); startOff = off; lastX = startX; lastT = performance.now(); vel = 0;
@@ -78,7 +81,7 @@ export function makePan(box: PanBox, opts: { keys?: boolean } = {}): Pan {
   view.on('pointercancel', up);
   view.on('wheel', e => {
     if (max() === 0) return;
-    const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    const d = !vert && Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     stop(); apply(clamp(off + (d / (view.worldTransform.a || 1)) * 1.2));
   });
 
@@ -94,8 +97,8 @@ export function makePan(box: PanBox, opts: { keys?: boolean } = {}): Pan {
   };
 
   const key = (e: KeyboardEvent): void => {
-    if (e.key === 'ArrowRight') pan.scrollBy(box.w * 0.5, true);
-    else if (e.key === 'ArrowLeft') pan.scrollBy(-box.w * 0.5, true);
+    if (e.key === (vert ? 'ArrowDown' : 'ArrowRight')) pan.scrollBy(span * 0.5, true);
+    else if (e.key === (vert ? 'ArrowUp' : 'ArrowLeft')) pan.scrollBy(-span * 0.5, true);
   };
   if (opts.keys) window.addEventListener('keydown', key);
   view.on('destroyed', () => { stop(); window.removeEventListener('keydown', key); });
@@ -140,4 +143,23 @@ export function panHints(pan: Pan, o: { k: number; cy?: number; r?: number; bar?
   pan.onScroll(update);
   update();
   return c;
+}
+
+/** A thin bar beside a downward-scrolling text, showing how much more there is. Only drawn when the text overflows. */
+export function panBar(pan: Pan, x: number): Graphics {
+  const g = new Graphics();
+  g.eventMode = 'none';
+  const { box } = pan;
+  const draw = (): void => {
+    if (g.destroyed) return;
+    g.clear();
+    const m = pan.max();
+    if (m <= 0) return;
+    const frac = box.h / (box.h + m);
+    g.roundRect(x, box.y, 5, box.h, 2.5).fill({ color: 0x000000, alpha: 0.45 })
+      .roundRect(x, box.y + (box.h - box.h * frac) * (pan.offset() / m), 5, box.h * frac, 2.5).fill({ color: INK.gold, alpha: 0.9 });
+  };
+  pan.onScroll(draw);
+  draw();
+  return g;
 }
