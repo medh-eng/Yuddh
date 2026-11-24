@@ -81,4 +81,4 @@ Each side has a **Rajya** line (four units) where its **Durg** (capital) sits, a
 
 Prototype engine, campaign and tests by Sarwam and Pon. New engine and renderer built with Claude.
 
-- `STATUS.json` / `STATUS.md`: project progress (percent done, done list, remaining list). Keep current each session.
+- `ROADMAP.md`: project progress as `- [x]` / `- [ ]` checklists (read by the Repo Command Center app). Keep current each session.

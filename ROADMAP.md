@@ -1,8 +1,8 @@
-# Status: 70% done
+# YUDDH: Rise of the Rajyas — Roadmap
 
-Updated 2026-11-24. Game complete and live on the web; Android build runs; remaining work is device testing and the Play Store release.
+KARDS-style card game of ancient Indian empires. Web (live) and Google Play (Android via Capacitor). Updated 2026-11-24.
 
-## Done (14)
+## Done
 - [x] Engine, golden test and two rulesets
 - [x] Search AI (Standard / Veteran foe)
 - [x] Five campaigns, 20 battles built, all art and regalia in
@@ -18,7 +18,7 @@ Updated 2026-11-24. Game complete and live on the web; Android build runs; remai
 - [x] Dharma-Kuta panel stays open until tapped
 - [x] How to play on the title screen
 
-## Remaining (6)
+## Remaining
 - [ ] Check battle-screen font sizes on the test player's phone (needs device model and 3 screenshots)
 - [ ] Add the four Actions secrets and run the android workflow for a signed AAB (Pon)
 - [ ] Play Console account, store listing, screenshots and privacy policy (Pon + Claude)
@@ -26,4 +26,6 @@ Updated 2026-11-24. Game complete and live on the web; Android build runs; remai
 - [ ] Play the seven newest battles and report balance (Pon)
 - [ ] Gate 2: judge the Veteran AI and morale (Pon)
 
-(Machine-readable copy: STATUS.json. Percent = done items / all items.)
+## Notes
+- Remaining items marked (Pon) need Pon's device, accounts or playing time; the rest need Claude.
+- Keep this file, TASKS.md and DESIGN.md current at the end of every session.
