@@ -9,13 +9,16 @@
 - Checked at 732×412, 640×360 and 1280×720 (screenshots); 134 tests, typecheck, build clean.
 - [ ] Still open: bigger keyword badges + clearer Vega mark (also on hand cards), "Know your card" first-run screen, persistent Dharma–Kuta panel, "How to play". Battle-screen font sizes need the boy's device model and screenshots.
 
+## Done 24 Nov: housekeeping
+- Closed obsolete PR #1 (duplicate Alegreya font change, already on main). 134 tests, typecheck, build clean; deploy and android workflows green on 6f1c852.
+
 ## Done 16 Nov: swipeable campaign map and gallery (from a first-time player's feedback)
 - A 14-year-old's first look found the campaign cards and gallery cards too small and crowded. Plan: project doc `claude/yuddh-first-player-feedback-plan.md`. Pon's decisions: campaign stays **unlocked**; cards stay **large**; screens **swipe sideways** instead of shrinking; **one empire shown, the others behind "More empires"**.
 - New `src/game/ui/pan.ts` (`makePan`, `panHints`): clipped sideways strip, drag with momentum, wheel, arrow keys, edge arrows, position bar. A tap inside must check `pan.dragged()` so a swipe never presses a card.
 - **Campaign map** (`scenes/campaign.ts`): battle cards 0.68 (desktop) / 0.52 (phone) of full size (were 0.56 / 0.42), fixed; the strip scrolls to the next unwon battle; the road scrolls with it; empire tabs replaced by the current empire's pill + **More empires** → a picker (`openPicker`, shows "n of N won"). Compass removed. `window.__yuddhCampaignReveal(id)` scrolls a battle into view for the bots; picker buttons are `tab:<id>`, the opener is `tab:more`.
 - **Gallery** (`scenes/gallery.ts`): one row of cards at one large size (0.9 desktop, ~0.62 phone; was ~0.32 on phones in two rows), swipeable, built lazily near the window; faction names are a second swipeable strip at one constant size (190–210 wide) instead of 18 squeezed buttons; no pages. `window.__yuddhGalleryTab(name)` for bots. `Close` added first in `BACK_LABELS` so the phone Back closes the picker.
 - e2e: `campaign.cjs` opens the picker and reveals the battle; `playtest.cjs` reaches the Neutral tab through `__yuddhGalleryTab`. 134 tests, typecheck, build, phone (732×412) and desktop (1280×720) playtests clean; screenshots checked.
-- [ ] Still open from that feedback: **back button on the battle briefing** (no way back to the map), bigger keyword badges + a clearer Vega mark (also on hand cards), a first-run "Know your card" screen, a persistent Dharma–Kuta panel, a "How to play" entry. Needs the boy's device model and screenshots to size the fonts properly.
+- [ ] Still open from that feedback: bigger keyword badges + a clearer Vega mark (also on hand cards), a first-run "Know your card" screen, a persistent Dharma–Kuta panel, a "How to play" entry. (Battle-briefing Back button: done, 6f1c852.) Needs the boy's device model and screenshots to size the fonts properly.
 
 ## Done 13 Nov: duel balance round 2 + the Android app
 - **Duel field tuned by simulation**: new `add`/`trim` per-faction deck levers in `duel.json` (applied before the 52-card padding; campaign decks untouched), found by greedy search over every ordered pair. Field spread 21-76% → **36-61%**; elephants in, elephants out was the pattern. New tripwire test sweeps all 420 pairs (22-78% band). 134/134 tests pass.
