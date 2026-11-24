@@ -10,7 +10,7 @@ const [url = 'http://localhost:4173/', out = '.', W = '1280', H = '720'] = proce
   const mk = async name => {
     const ctx = await b.newContext({ viewport: { width: +W, height: +H } });
     const p = await ctx.newPage();
-    await p.addInitScript(() => { window.__yuddhLongPressMs = 4000; window.__yuddhIce = []; try { localStorage.setItem('yuddh.notice.v1', '1'); } catch (e) { /* notice */ } });
+    await p.addInitScript(() => { window.__yuddhLongPressMs = 4000; window.__yuddhIce = []; try { localStorage.setItem('yuddh.notice.v1', '1'); localStorage.setItem('yuddh.knowcard.v1', '1'); } catch (e) { /* notice */ } });
     p.errs = []; p.on('pageerror', e => p.errs.push(name + ': ' + e.message)); p.on('console', m => { if (m.type() === 'error') p.errs.push(name + ': ' + m.text()); });
     await p.goto(url); await p.waitForTimeout(2500);
     p.name = name; return p;

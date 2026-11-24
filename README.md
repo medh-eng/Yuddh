@@ -80,3 +80,5 @@ Each side has a **Rajya** line (four units) where its **Durg** (capital) sits, a
 ## Credits
 
 Prototype engine, campaign and tests by Sarwam and Pon. New engine and renderer built with Claude.
+
+- `STATUS.json` / `STATUS.md`: project progress (percent done, done list, remaining list). Keep current each session.

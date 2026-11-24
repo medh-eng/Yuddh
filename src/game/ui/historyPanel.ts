@@ -104,3 +104,38 @@ export function noticePanel(onClose: () => void, button = 'Understood'): Contain
 export function chroniclePanel(title: string, text: string, source: string, card: string, onClose: () => void): Container {
   return build({ kicker: 'WAR COUNCIL · CHRONICLE', title, card, button: 'Close', onClose, source, blocks: [{ head: 'FROM THE RECORD', text }] });
 }
+
+/** a plain guide page (How to play, Know your card): same layout, text blocks only, scrolls when long */
+export function guidePanel(kicker: string, title: string, blocks: { head: string; text: string }[], card: string | undefined, onClose: () => void, button = 'Back', source = 'Rules are the same in every battle.'): Container {
+  return build({ kicker, title, card, button, onClose, source, blocks });
+}
+
+const KNOW_KEY = 'yuddh.knowcard.v1';
+export const knowCardSeen = (): boolean => { try { return localStorage.getItem(KNOW_KEY) === '1'; } catch { return true; } };
+export const markKnowCard = (): void => { try { localStorage.setItem(KNOW_KEY, '1'); } catch { /* private mode */ } };
+
+/** the first-run "Know your card" screen: a real card and what each mark on it means */
+export function knowCardPanel(onClose: () => void, button = 'Understood'): Container {
+  return guidePanel('BEFORE YOUR FIRST BATTLE', 'Know your card', [
+    { head: 'THE TWO COINS', text: 'Gold coin, top left: the Kosha you pay to play the card. Bronze coin with a sword, top right: the Kosha it costs each time the unit advances or attacks.' },
+    { head: 'THE TWO BADGES', text: 'Red badge, bottom left: Attack, the damage it deals. Blue badge, bottom right: Health. A unit with no health left is destroyed.' },
+    { head: 'THE MARKS BESIDE THE COIN', text: 'Silver shield = Raksha (guard): it must be struck first, and on the Rajya line it shields your Durg. Gold lightning bolt = Vega (swift): it can move or attack the turn it is played. Green bow = Ranged: it shoots without taking a counter-blow.' },
+    { head: 'THE CLASS LINE', text: 'The class under the painting (Cavalry, Chariot, Swordsman...) tells you how it moves. Cavalry and chariots charge: they can advance and strike in one turn. Foot soldiers do one or the other.' },
+    { head: 'READING MORE', text: 'Press and hold any card, in your hand or on the board, to read what every word on it means.' }
+  ], 'n_rathi', onClose, button, 'You can read this again any time from How to play on the title screen.');
+}
+
+/** How to play: one scrolling page that gathers the rules */
+export function howToPlayPanel(onClose: () => void, button = 'Back'): Container {
+  return guidePanel('HOW TO PLAY', 'The way of war', [
+    { head: 'THE AIM', text: 'Break the enemy Durg (fortress): bring its health to zero before yours falls. Your units strike the Durg once they stand on the Yudhbhumi (the battlefield between the armies).' },
+    { head: 'YOUR TURN', text: 'You gain one more Kosha (gold) each turn, up to ten. Play cards from your hand by dragging them up or tapping them. Advance a unit to the Yudhbhumi, or attack with it: each costs the bronze coin. Tap End Turn when you are done.' },
+    { head: 'FIGHTING', text: 'Drag a unit onto an enemy to attack. Melee units trade blows; ranged units shoot without a counter-blow. Raksha units must be struck first. A unit that wins a fight and survives is promoted: Veer, then Mahaveer.' },
+    { head: 'KOSHA, ORDERS AND YANTRAS', text: 'Orders (Mantras, Shaktis) take effect at once. A Yantra is a hidden trap: it is set face-down and springs by itself.' },
+    { head: 'DHARMA AND KUTA', text: 'The meter under each Durg runs from Kuta (cunning) at -3 to Dharma (honour) at +3. Fair melee kills push you toward Dharma; traps, poison and spies push you toward Kuta. At +3 your blows on the enemy Durg hit 1 harder and your units never break. At -3 your orders and Yantras cost 1 less. Neither end loses the battle: it is a bonus, not a health bar. Tap the meter in battle to open this panel; it stays open until you tap it again.' },
+    { head: 'MORALE', text: 'A unit that is hurt down to its break line flees and loses its next turn. Raksha units, heroes and Mahaveer never break.' },
+    { head: 'SEASONS', text: 'Some battles have weather. Varsha (monsoon): nothing advances and attacks in one turn. Grishma (summer): ranged units deal 1 less. Hemanta (winter): +1 Kosha each turn.' },
+    { head: 'WHEN THE DECK RUNS OUT', text: 'Each draw from an empty deck costs your Durg health, more every time (1, 2, 3...). Long sieges can be lost this way, so win before the cards run out.' },
+    { head: 'FIRST TIME?', text: 'Choose Learn to play on the title screen for a coached battle.' }
+  ], undefined, onClose, button);
+}

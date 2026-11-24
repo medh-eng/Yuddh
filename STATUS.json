@@ -1,0 +1,33 @@
+{
+  "project": "YUDDH: Rise of the Rajyas",
+  "updated": "2026-11-24",
+  "percent_done": 70,
+  "done_count": 14,
+  "total_count": 20,
+  "state": "in_progress",
+  "summary": "Game complete and live on the web; Android build runs; remaining work is device testing and the Play Store release.",
+  "done": [
+    "Engine, golden test and two rulesets",
+    "Search AI (Standard / Veteran foe)",
+    "Five campaigns, 20 battles built, all art and regalia in",
+    "History notes for every battle",
+    "Rank and renown",
+    "Pass-and-play Duel with balanced factions",
+    "Two-phone play over WebRTC (built)",
+    "Android app shell and CI workflow (debug APK builds)",
+    "Web build deployed to GitHub Pages",
+    "First-player feedback: swipeable campaign map and gallery, Back on briefing, readable story fonts",
+    "Bigger keyword badges on tokens and cards, clearer Vega bolt",
+    "First-run Know your card screen",
+    "Dharma-Kuta panel stays open until tapped",
+    "How to play on the title screen"
+  ],
+  "remaining": [
+    "Check battle-screen font sizes on the test player's phone (needs device model and 3 screenshots)",
+    "Add the four Actions secrets and run the android workflow for a signed AAB (Pon)",
+    "Play Console account, store listing, screenshots and privacy policy (Pon + Claude)",
+    "Retest two-phone play on real phones (Pon)",
+    "Play the seven newest battles and report balance (Pon)",
+    "Gate 2: judge the Veteran AI and morale (Pon)"
+  ]
+}

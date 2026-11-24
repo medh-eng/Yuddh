@@ -9,6 +9,13 @@
 - Checked at 732×412, 640×360 and 1280×720 (screenshots); 134 tests, typecheck, build clean.
 - [ ] Still open: bigger keyword badges + clearer Vega mark (also on hand cards), "Know your card" first-run screen, persistent Dharma–Kuta panel, "How to play". Battle-screen font sizes need the boy's device model and screenshots.
 
+## Done 24 Nov (evening): first-player feedback, round 2
+- **Keyword badges**: one drawing (`kwBadge` in paint.ts) for Raksha (shield), Vega (gold lightning bolt), Ranged (bow); tokens use it at radius 26 design px (1.35x on phones; ranged sits on the right edge), and unit cards now carry the badges under the cost coin, so they show in the hand and the gallery.
+- **Know your card**: first-run screen (`knowCardPanel`, key `yuddh.knowcard.v1`) after the history notice; e2e bots set the key. **How to play**: title button, scrolling `howToPlayPanel`. Both in `ui/historyPanel.ts` (`guidePanel`).
+- **Dharma-Kuta panel** now stays open until tapped (the 7 s auto-close is gone).
+- `STATUS.json` / `STATUS.md` at the repo root: percent done, done list, remaining list. Update both with TASKS.md each session.
+- [ ] Still open: battle-screen font sizes need the test player's phone model and 3 screenshots.
+
 ## Done 24 Nov: housekeeping
 - Closed obsolete PR #1 (duplicate Alegreya font change, already on main). 134 tests, typecheck, build clean; deploy and android workflows green on 6f1c852.
 

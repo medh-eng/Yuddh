@@ -428,13 +428,13 @@ export function battleScene(stage: Stage, exit: () => void, sc: Scenario = FIRST
     const p = glossPanel([
       { icon: 'rank', title: `${i === 0 ? 'YOUR' : 'ENEMY'} DHARMA–KUTA`, body: now },
       { icon: 'melee', title: 'DHARMA (HONOUR)', body: 'A melee unit that destroys an enemy in its own attack: +1. At +3, blows on the enemy Durg strike +1.' },
-      { icon: 'yantra', title: 'KUTA (CUNNING)', body: 'Setting a Yantra, poisoned arrows or a spy: −1. At −3, orders and Yantras cost 1 less.' }
+      { icon: 'yantra', title: 'KUTA (CUNNING)', body: 'Setting a Yantra, poisoned arrows or a spy: −1. At −3, orders and Yantras cost 1 less.' },
+      { icon: 'rank', title: 'NOT A HEALTH BAR', body: 'Neither end loses the battle. Tap this panel to close it.' }
     ], L.phone ? 640 : 520, L.H - 20, L.phone ? 1.2 : 1);
     const m = meters[i];
     p.position.set(Math.max(8, m.x - 60), Math.min(L.H - p.height - 8, Math.max(8, m.y + 30)));
     p.eventMode = 'static'; p.on('pointertap', () => toggleDharmaTip(i));
     s.addChild(p); dharmaTip = p;
-    setTimeout(() => { if (dharmaTip === p) toggleDharmaTip(i); }, 7000);
   }
 
   function toggleSeasonTip(): void {

@@ -143,6 +143,33 @@ function coin(g: CanvasRenderingContext2D, x: number, y: number, r: number, labe
   g.fillText(label, x, y + r * 0.08);
 }
 
+/** keyword badges: Raksha (shield), Vega (lightning bolt), Ranged (bow). One drawing for tokens, hand cards and big cards. */
+export type KwKind = 'raksha' | 'veg' | 'ranged';
+export function kwBadge(g: CanvasRenderingContext2D, kind: KwKind, x: number, y: number, r: number): void {
+  const col = kind === 'raksha' ? '#dfe6ee' : kind === 'veg' ? '#ffd23f' : '#9be08a';
+  const fill = kind === 'raksha' ? '#26303f' : kind === 'veg' ? '#5a2a06' : '#16301a';
+  g.save(); g.translate(x, y);
+  g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fillStyle = fill; g.fill();
+  g.lineWidth = r * 0.14; g.strokeStyle = col; g.stroke();
+  g.beginPath(); g.arc(0, 0, r + r * 0.12, 0, Math.PI * 2); g.lineWidth = r * 0.08; g.strokeStyle = 'rgba(0,0,0,0.75)'; g.stroke();
+  const u = r / 20;
+  g.fillStyle = col; g.strokeStyle = col; g.lineJoin = 'round'; g.lineCap = 'round';
+  if (kind === 'raksha') {
+    g.beginPath(); g.moveTo(-10 * u, -11 * u); g.quadraticCurveTo(0, -15 * u, 10 * u, -11 * u); g.lineTo(9 * u, 2 * u);
+    g.quadraticCurveTo(5 * u, 11 * u, 0, 14 * u); g.quadraticCurveTo(-5 * u, 11 * u, -9 * u, 2 * u); g.closePath(); g.fill();
+    g.fillStyle = fill; g.fillRect(-1.5 * u, -8 * u, 3 * u, 17 * u);
+  } else if (kind === 'veg') {
+    // a bold lightning bolt, with two speed lines behind it
+    g.beginPath(); g.moveTo(5 * u, -15 * u); g.lineTo(-8 * u, 3 * u); g.lineTo(-1 * u, 3 * u); g.lineTo(-5 * u, 15 * u); g.lineTo(9 * u, -4 * u); g.lineTo(2 * u, -4 * u); g.closePath(); g.fill();
+    g.lineWidth = 2.2 * u; g.beginPath(); g.moveTo(-14 * u, -7 * u); g.lineTo(-9 * u, -7 * u); g.moveTo(-15 * u, 0); g.lineTo(-11 * u, 0); g.stroke();
+  } else {
+    g.lineWidth = 3 * u; g.beginPath(); g.arc(-4 * u, 0, 12 * u, -Math.PI * 0.42, Math.PI * 0.42); g.stroke();
+    g.lineWidth = 2.4 * u; g.beginPath(); g.moveTo(-11 * u, 0); g.lineTo(13 * u, 0); g.stroke();
+    g.beginPath(); g.moveTo(14 * u, 0); g.lineTo(7 * u, -5 * u); g.lineTo(7 * u, 5 * u); g.closePath(); g.fill();
+  }
+  g.restore();
+}
+
 /** attack (vermilion, blade) and defence (lapis, shield) badges */
 export function statBadge(g: CanvasRenderingContext2D, x: number, y: number, r: number, kind: 'atk' | 'hp', label?: string): void {
   g.save();
@@ -303,6 +330,14 @@ export function cardFace(id: string, upgrade = 0, cost?: number): Texture {
   if (c.type === 'unit') coin(g, W - 56, 58, 36, String(c.op ?? 0), 'bronze');
   gem(g, W / 2, 26, 15, c.rarity);
 
+  // keyword badges under the cost coin, so Raksha / Vega / Ranged read without the text
+  if (c.type === 'unit') {
+    const kinds: KwKind[] = [];
+    if (c.kw?.includes('raksha')) kinds.push('raksha');
+    if (c.kw?.includes('veg')) kinds.push('veg');
+    if (c.range === 'ranged') kinds.push('ranged');
+    kinds.forEach((kd, n) => kwBadge(g, kd, 62, 150 + n * 76, 33));
+  }
   // stats
   if (c.type === 'unit') {
     statBadge(g, 66, H - 64, 46, 'atk', String((c.atk ?? 0) + upgrade));

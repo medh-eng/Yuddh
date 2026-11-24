@@ -23,7 +23,7 @@ function shadePool(): Texture {
   return shadeTex;
 }
 
-import { noticePanel } from '../ui/historyPanel';
+import { howToPlayPanel, knowCardPanel, knowCardSeen, markKnowCard, noticePanel } from '../ui/historyPanel';
 import { destroyTree } from '../stage';
 
 const NOTICE_KEY = 'yuddh.notice.v1';
@@ -57,7 +57,17 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
   let noticeUp: Container | null = null;
   function openNotice(): void {
     if (noticeUp) return;
-    const p = noticePanel(() => { markNotice(); destroyTree(p); noticeUp = null; });
+    const p = noticePanel(() => { markNotice(); destroyTree(p); noticeUp = null; if (!knowCardSeen()) openKnowCard(); });
+    noticeUp = p; s.addChild(p);
+  }
+  function openKnowCard(): void {
+    if (noticeUp) return;
+    const p = knowCardPanel(() => { markKnowCard(); destroyTree(p); noticeUp = null; });
+    noticeUp = p; s.addChild(p);
+  }
+  function openHowTo(): void {
+    if (noticeUp) return;
+    const p = howToPlayPanel(() => { destroyTree(p); noticeUp = null; });
     noticeUp = p; s.addChild(p);
   }
 
@@ -107,7 +117,9 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
     about.removeChildren().forEach(c => c.destroy({ children: true }));
     const ab = makeButton('History', openNotice, { w: 170, ui: ph ? 0.85 : 1 });
     ab.position.set(ph ? W - 106 : W - 140, ph ? 40 : 56);
-    about.addChild(ab);
+    const hb = makeButton('How to play', openHowTo, { w: 210, ui: ph ? 0.85 : 1 });
+    hb.position.set(ph ? W - 106 : W - 140, ph ? 40 + 62 : 56 + 66);
+    about.addChild(ab, hb);
     pool2.position.set(W / 2, ph ? 530 : 800); pool2.width = ph ? 1400 : 900; pool2.height = ph ? 400 : 640;
     note.style.fontSize = Math.round(20 * k); note.position.set(W / 2, H - (ph ? 34 : 40));
     specks.forEach(p => p.g.position.set(Math.random() * W, Math.random() * H));
@@ -125,7 +137,7 @@ export function titleScene(stage: Stage, go: { battle(): void; tutorial(): void;
   s.enter = () => {
     stage.setBackdrop(painting, 0.35);
     audio.playMusic('music_title');
-    if (!noticeSeen()) openNotice();
+    if (!noticeSeen()) openNotice(); else if (!knowCardSeen()) openKnowCard();
     Ticker.shared.add(tick);
     gsap.from([deva, title, sub], { y: '+=30', alpha: 0, duration: 1.2, stagger: 0.15, ease: 'power3.out' });
     gsap.from(buttons.children, { alpha: 0, duration: 0.8, delay: 0.7, stagger: 0.12 });

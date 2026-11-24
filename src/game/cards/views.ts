@@ -3,7 +3,7 @@ import { Container, Graphics, Sprite, Text, Texture, Ticker } from 'pixi.js';
 import gsap from 'gsap';
 import { CARDS, type Unit } from '../../engine';
 import { FONT_DEVA, INK, FONT_TITLE } from '../theme';
-import { cardBack, cardFace, durgFace, statBadge, tokenFace } from './paint';
+import { cardBack, cardFace, durgFace, kwBadge, statBadge, tokenFace, type KwKind } from './paint';
 import { flipSprite, type FlipOptions } from './flip';
 
 /* ---------- stat badge textures (cached per value and tone) ---------- */
@@ -97,11 +97,13 @@ export class TokenView extends Container {
     // keyword marks along the left edge
     this.icons.removeChildren().forEach(ch => ch.destroy());
     const k = this.big ? 1.35 : 1;
-    let y = -TOKEN_DH / 2 + 26 * k;
-    const add = (kind: 'raksha' | 'veg' | 'ranged') => { const ic = kwIcon(kind, -TOKEN_DW / 2 + 4, y); ic.scale.set(k); this.icons.addChild(ic); y += 40 * k; };
+    // bigger badges (radius 26 design px, 1.35x on phones); ranged sits on the right edge so three marks never meet the attack badge
+    const R = 26 * k;
+    let y = -TOKEN_DH / 2 + R + 4;
+    const add = (kind: KwKind) => { this.icons.addChild(kwIcon(kind, -TOKEN_DW / 2 + R * 0.55, y, R)); y += R * 2 + 6; };
     if (u.kw.includes('raksha')) add('raksha');
     if (u.kw.includes('veg')) add('veg');
-    if (u.range === 'ranged') add('ranged');
+    if (u.range === 'ranged') this.icons.addChild(kwIcon('ranged', TOKEN_DW / 2 - R * 0.55, -TOKEN_DH / 2 + R + 4, R));
     // battle honours: a gold star per rank along the top edge
     for (let r = 0; r < (u.rank ?? 0); r++) {
       const st = new Graphics();
@@ -142,23 +144,18 @@ export class TokenView extends Container {
 /** stop every tween on a display object before it is destroyed */
 export function stopTweens(o: Container): void { gsap.killTweensOf(o); gsap.killTweensOf(o.scale); }
 
-function kwIcon(kind: 'raksha' | 'veg' | 'ranged', x: number, y: number): Container {
-  const c = new Container();
-  const g = new Graphics();
-  if (kind === 'raksha') {
-    g.circle(0, 0, 17).fill(0x2a3240).stroke({ width: 2.5, color: 0xdfe6ee });
-    g.moveTo(-8, -9).quadraticCurveTo(0, -12, 8, -9).lineTo(7, 2).quadraticCurveTo(4, 9, 0, 11).quadraticCurveTo(-4, 9, -7, 2).closePath().fill(0xdfe6ee);
-  } else if (kind === 'veg') {
-    g.circle(0, 0, 17).fill(0x3a2410).stroke({ width: 2.5, color: 0xffc04a });
-    g.poly([-9, -8, -1, 0, -9, 8, -5, 8, 3, 0, -5, -8]).fill(0xffc04a);
-    g.poly([-1, -8, 7, 0, -1, 8, 3, 8, 11, 0, 3, -8]).fill(0xffc04a);
-  } else {
-    g.circle(0, 0, 17).fill(0x1a2a1a).stroke({ width: 2.5, color: 0x9be08a });
-    g.moveTo(-9, 9).lineTo(9, -9).stroke({ width: 2.5, color: 0x9be08a });
-    g.poly([9, -9, 1, -7, 7, -1]).fill(0x9be08a);
-  }
-  c.addChild(g); c.position.set(x, y);
-  return c;
+const kwCache = new Map<KwKind, Texture>();
+function kwTexture(kind: KwKind): Texture {
+  const hit = kwCache.get(kind); if (hit) return hit;
+  const cv = document.createElement('canvas'); cv.width = cv.height = 112;
+  kwBadge(cv.getContext('2d')!, kind, 56, 56, 46);
+  const t = Texture.from(cv); kwCache.set(kind, t); return t;
+}
+/** a keyword badge sprite, about 2·r wide on the token */
+function kwIcon(kind: KwKind, x: number, y: number, r: number): Sprite {
+  const sp = new Sprite(kwTexture(kind)); sp.anchor.set(0.5); sp.position.set(x, y);
+  sp.scale.set((r * 2) / 112 * (112 / 92));
+  return sp;
 }
 
 /* ============================================================ hand card */
